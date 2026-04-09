@@ -1,7 +1,6 @@
 package repository;
 
 import domain.Truck;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,5 +18,14 @@ public class TruckRepository {
 
     public List<Truck> getAllTrucks() {
         return trucks;
+    }
+    
+    public Truck getTruckByLicenseNumber(String licenseNumber) {
+        for (Truck truck : trucks) {
+            if (truck.getLicenseNumber().equals(licenseNumber)) {
+                return truck;
+            }
+        }
+        return null;
     }
 }

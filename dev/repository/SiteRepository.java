@@ -1,7 +1,6 @@
 package repository;
 
 import domain.Site;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,5 +18,14 @@ public class SiteRepository {
 
     public List<Site> getAllSites() {
         return sites;
+    }
+    
+    public Site getSiteById(int id) {
+        for (Site site : sites) {
+            if (site.getId() == id) {
+                return site;
+            }
+        }
+        return null;
     }
 }

@@ -1,7 +1,6 @@
 package repository;
 
 import domain.Delivery;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,5 +18,14 @@ public class DeliveryRepository {
 
     public List<Delivery> getAllDeliveries() {
         return deliveries;
+    }
+    
+    public Delivery getDeliveryById(int id) {
+        for (Delivery delivery : deliveries) {
+            if (delivery.getId() == id) {
+                return delivery;
+            }
+        }
+        return null;
     }
 }

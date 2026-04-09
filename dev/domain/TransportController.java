@@ -56,7 +56,21 @@ public class TransportController {
     public boolean isOverweight(double recordedWeight, Truck truck) {
         return recordedWeight > truck.getMaxCapacityWeight();
     }
-
+    public boolean hasDocuments(Delivery delivery) {
+        return delivery.getDocuments() != null && !delivery.getDocuments().isEmpty();
+    }
+    public boolean isValidDocument(DeliveryDocument document) {
+        return document.getItems() != null && !document.getItems().isEmpty();
+    }
+    
+    public boolean areAllDocumentsValid(Delivery delivery) {
+        for (DeliveryDocument document : delivery.getDocuments()) {
+            if (!isValidDocument(document)) {
+                return false;
+            }
+        }
+        return true;
+    }
     public boolean createDelivery(Delivery delivery) {
         if (!isDriverCompatibleWithTruck(delivery.getDriver(), delivery.getTruck())) {
             return false;
@@ -66,6 +80,15 @@ public class TransportController {
             delivery.setStatus(DeliveryStatus.OVERWEIGHT);
             return false;
         }
+
+        if (!hasDocuments(delivery)) {
+            return false;
+        }
+
+        if (!areAllDocumentsValid(delivery)) {
+            return false;
+        }
+
         delivery.setStatus(DeliveryStatus.READY);
         deliveryRepository.addDelivery(delivery);
         return true;
