@@ -7,6 +7,6 @@ public class EmployeeController {
 
     public void addEmployee(int ID, String name, int bankAccount, Date startDate, EmpType employementType, SalType salaryType, int salary,
      int vacationDay, String status, List<String> certificationsList) {}
-    public boolean addConstraint(String empId, Date date, String timeStart, String timeEnd, boolean doubleShiftAllowed) { return false; }
-    public boolean checkAvailabilityAndRole(String empId, Date date, String role) { return false; }
+    public boolean addConstraint(int empId, Date date, String timeStart, String timeEnd, boolean doubleShiftAllowed) { return false; }
+    public boolean checkAvailabilityAndRole(int empId, Date date, String role) { return false; }
 }

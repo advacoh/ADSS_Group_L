@@ -9,10 +9,10 @@ public class PersonnelService {
     private UserController userController;
     private EmployeeController employeeController;
 
-    public void addEmployee(String activeUserId, String newEmpID, String name, int bankAccount, Date startDate, EmpType employementType,
+    public void addEmployee(int activeUserId, int newEmpID, String name, int bankAccount, Date startDate, EmpType employementType,
      SalType salaryType, int salary, int vacDay, List<String> certificationsList) {}
-    public boolean deactivateEmployee(String activeUserId, String targetEmpId) { return false; }
-    public String getEmployeeDetails(String activeUserId, String targetEmpId) { return ""; }
-    public boolean addCertification(String activeUserId, String targetEmpId, String role) { return false; }
-    public boolean requireHRAuthorization(String activeUserId) { return false; }
+    public boolean deactivateEmployee(int activeUserId, int targetEmpId) { return false; }
+    public String getEmployeeDetails(int activeUserId, int targetEmpId) { return ""; }
+    public boolean addCertification(int activeUserId, int targetEmpId, String role) { return false; }
+    public boolean requireHRAuthorization(int activeUserId) { return false; }
 }
