@@ -3,6 +3,8 @@ package test;
 import domain.*;
 import enums.DeliveryStatus;
 import enums.LicenseType;
+import enums.SiteType;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +12,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TransportControllerTest {
@@ -115,10 +116,40 @@ public class TransportControllerTest {
     // Successfully creating a transport with all data correct
     @Test
     public void testCreateDelivery_Success() {
+        DeliveryZone zone = new DeliveryZone(1, "Center");
+
+        Site destination = new Site(
+                1,
+                "Tel Aviv Store",
+                "Rothschild 1",
+                "0501234567",
+                "Dan",
+                SiteType.BRANCH,
+                zone
+        );
+
+        List<TransportedItem> items = new ArrayList<>();
+        items.add(new TransportedItem(1, "Milk", 10)); // תתאימי אם צריך
+
+        DeliveryDocument doc = new DeliveryDocument(1, destination, items);
+
         List<DeliveryDocument> validDocs = new ArrayList<>();
-        Delivery delivery = new Delivery(4, LocalDate.now(), LocalTime.now(), 10000, DeliveryStatus.PLANNED, 
-                null, heavyTruck, qualifiedDriver, validDocs);
+        validDocs.add(doc);
+
+        Delivery delivery = new Delivery(
+                4,
+                LocalDate.now(),
+                LocalTime.now(),
+                10000,
+                DeliveryStatus.PLANNED,
+                null,
+                heavyTruck,
+                qualifiedDriver,
+                validDocs
+        );
+
         boolean result = controller.createDelivery(delivery);
+
         assertTrue(result, "Delivery creation should be successful");
     }
 }
