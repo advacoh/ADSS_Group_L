@@ -1,4 +1,5 @@
 package dev.domain;
+
 public class Constraint {
     private String day;
     private String startTime;
@@ -6,5 +7,5 @@ public class Constraint {
     private boolean doubleShiftAllowed;
 
     public boolean isValidTime() { return false; }
-    public boolean overlapsWith(string day, String start, String end) { return false; }
+    public boolean overlapsWith(String day, String start, String end) { return false; }
 }
