@@ -16,23 +16,20 @@ public class User {
         this.password = password;
     }
 
-
     public int getId() {
         return ID;
     }
-
 
     public boolean login(String pass) {
         return this.password.equals(pass);
     }
 
-   private boolean isValidPassword(String pass) {
-        if (pass == null) {
-            return false;
-        }
-        return pass.length() >= 6;
+    private boolean isValidPassword(String pass) {
+         if (pass == null) {
+             return false;
+         }
+         return pass.length() >= 6;
     }
-
 
     private boolean isValidID(int ID) {
         return ID >= 100000000 && ID <= 999999999;
