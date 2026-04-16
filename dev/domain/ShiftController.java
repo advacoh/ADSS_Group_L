@@ -10,41 +10,53 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-
 public class ShiftController {
     private ShiftMemory shiftMemory;
     private EmployeeMemory employeeMemory;
     private UserController userController;
+    private RequestMemory requestMemory;
     private Date deadline;
 
-    public ShiftController(ShiftMemory shiftMemory, EmployeeMemory employeeMemory, UserController userController) {
+    public ShiftController(ShiftMemory shiftMemory, EmployeeMemory employeeMemory, UserController userController, RequestMemory requestMemory) {
         this.shiftMemory = shiftMemory;
         this.employeeMemory = employeeMemory;
         this.userController = userController;
+        this.requestMemory = requestMemory;
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.YEAR, 1);
         this.deadline = cal.getTime();
     }
 
-    public void assignEmployee(int userId, int empId, Date date, ShiftType type, Certification roleId) {
+    public void assignEmployee(int userId, int empId, Date date, ShiftType type, Certification roleId, boolean isOvertime) {
         try {
             verifyHR(userId);
             updateHistory();
             LocalDate localDate = toLocalDate(date);
+
             Shift shift = shiftMemory.get(localDate, type);
             Employee emp = employeeMemory.get(empId);
-            // ensure available
+            if (emp == null) {
+                throw new IllegalArgumentException("Employee " + empId + " not found");
+            }
+            if (isOvertime) {
+                if (type != ShiftType.MORNING) {
+                    throw new IllegalArgumentException("Overtime is only allowed for morning shifts");
+                }
+                if (!emp.willOvertime()) {
+                    throw new IllegalStateException("Employee " + empId + " is not willing to do overtime");
+                }
+            }
             if (!emp.isAvailable(date, type)) {
                 throw new IllegalStateException("Employee " + empId + " is unavailable for shift " + localDate + " " + type);
             }
             if (!emp.isCertified(roleId)) {
                 throw new IllegalStateException("Employee " + empId + " is not certified for role " + roleId);
             }
+
             if (!emp.willDouble()) {
                 List<Shift> shiftsOnDate = shiftMemory.getByDate(localDate);
                 for (Shift s : shiftsOnDate) {
-                    if (s.isEmployeeAssigned(empId)) {
+                    if (!s.getID().equals(shift.getID()) && s.isEmployeeAssigned(empId)) {
                         throw new IllegalStateException("Employee " + empId + " does not allow double shifts");
                     }
                 }
@@ -52,12 +64,14 @@ public class ShiftController {
             if (!shift.addEmployee(roleId, empId)) {
                 throw new IllegalStateException("Assignment failed: role " + roleId + " is full or not required in this shift");
             }
+            if (isOvertime) {
+                shift.addOvertimeEmployee(empId);
+            }
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("assignEmployee failed: " + e.getMessage());
         } catch (IllegalStateException e) {
             throw new IllegalStateException("assignEmployee failed: " + e.getMessage());
         }
-
     }
 
     public void createShift(int userId, Date day, ShiftType type) {
@@ -132,6 +146,182 @@ public class ShiftController {
         }
     }
 
+    public void setWeeklyConstraints(int userId, int empId, Map<Date, Set<ShiftType>> cons) {
+        try {
+            verifyLogged(userId);
+            verifyCanAccessEmployee(userId, empId);
+            checkDeadline();
+            Employee emp = employeeMemory.get(empId);
+            if (emp == null) {
+                throw new IllegalArgumentException("Employee " + empId + " not found");
+            }
+            emp.setWeeklyConstraints(cons);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("setWeeklyConstraints failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("setWeeklyConstraints failed: " + e.getMessage());
+        }
+    }
+
+    public void setWeeklyPreferences(int userId, int empId, Map<Date, Set<ShiftType>> prefs) {
+        try {
+            verifyLogged(userId);
+            verifyCanAccessEmployee(userId, empId);
+            checkDeadline();
+            Employee emp = employeeMemory.get(empId);
+            if (emp == null) {
+                throw new IllegalArgumentException("Employee " + empId + " not found");
+            }
+            emp.setWeeklyPreferences(prefs);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("setWeeklyPreferences failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("setWeeklyPreferences failed: " + e.getMessage());
+        }
+    }
+
+    public Map<Date, Map<ShiftType, Boolean>> getWeeklyConstraints(int userId, int empId) {
+        try {
+            verifyLogged(userId);
+            verifyCanAccessEmployee(userId, empId);
+            Employee emp = employeeMemory.get(empId);
+            if (emp == null) {
+                throw new IllegalArgumentException("Employee " + empId + " not found");
+            }
+            return emp.getWeeklyConstraints();
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("getWeeklyConstraints failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("getWeeklyConstraints failed: " + e.getMessage());
+        }
+    }
+
+    public Map<Date, Map<ShiftType, Boolean>> getWeeklyPreferences(int userId, int empId) {
+        try {
+            verifyLogged(userId);
+            verifyCanAccessEmployee(userId, empId);
+            Employee emp = employeeMemory.get(empId);
+            if (emp == null) {
+                throw new IllegalArgumentException("Employee " + empId + " not found");
+            }
+            return emp.getWeeklyPreferences();
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("getWeeklyPreferences failed: " + e.getMessage());
+        }  catch (IllegalStateException e) {
+            throw new IllegalStateException("getWeeklyPreferences failed: " + e.getMessage());
+        }
+    }
+
+    public String createOverrideRequest(int hrId, int empId, Date date, ShiftType type, Certification role) {
+        try {
+            verifyHR(hrId);
+            LocalDate localDate = toLocalDate(date);
+            shiftMemory.get(localDate, type);
+            Employee emp = employeeMemory.get(empId);
+            if (emp == null) {
+                throw new IllegalArgumentException("Employee " + empId + " not found");
+            }
+            if (emp.isAvailable(date, type)) {
+                throw new IllegalStateException("Employee " + empId + " is already available for this shift, no override needed");
+            }
+            String requestId = requestMemory.generateId();
+            OverrideRequest request = new OverrideRequest(requestId, hrId, empId, localDate, type, role);
+            requestMemory.save(request);
+            return requestId;
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("createOverrideRequest failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("createOverrideRequest failed: " + e.getMessage());
+        }
+    }
+
+    public void assignWithOverride(int hrId, String requestId) {
+        try {
+            verifyHR(hrId);
+            OverrideRequest request = requestMemory.get(requestId);
+            if (request.getStatus() != RequestStatus.APPROVED) {
+                throw new IllegalStateException("Cannot override: request " + requestId + " has not been approved by the employee");
+            }
+            Shift shift = shiftMemory.get(request.getDate(), request.getShiftType());
+            Employee emp = employeeMemory.get(request.getEmpId());
+            if (emp == null) {
+                throw new IllegalArgumentException("Employee " + request.getEmpId() + " not found");
+            }
+            if (!emp.isCertified(request.getRole())) {
+                throw new IllegalStateException("Employee " + request.getEmpId() + " is not certified for role " + request.getRole());
+            }
+
+            if (!shift.addEmployee(request.getRole(), request.getEmpId())) {
+                throw new IllegalStateException("Assignment failed: role " + request.getRole() + " is full or not required");
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("assignWithOverride failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("assignWithOverride failed: " + e.getMessage());
+        }
+    }
+
+    public void respondToRequest(int empId, String requestId, boolean approved) {
+        try {
+            verifyLogged(empId);
+            OverrideRequest request = requestMemory.get(requestId);
+
+            if (request.getEmpId() != empId) {
+                throw new IllegalStateException("Employee " + empId + " is not the target of request " + requestId);
+            }
+            if (request.getStatus() != RequestStatus.PENDING) {
+                throw new IllegalStateException("Request " + requestId + " is no longer pending");
+            }
+
+            if (approved) request.approve();
+            else          request.reject();
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("respondToRequest failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("respondToRequest failed: " + e.getMessage());
+        }
+    }
+
+    public List<OverrideRequest> viewSentRequests(int hrId) {
+        try {
+            verifyHR(hrId);
+            return requestMemory.getByHR(hrId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("viewSentRequests failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("viewSentRequests failed: " + e.getMessage());
+        }
+    }
+
+    public List<OverrideRequest> viewReceivedRequests(int userId) {
+        try {
+            verifyLogged(userId);
+            return requestMemory.getByEmployee(userId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("viewReceivedRequests failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("viewReceivedRequests failed: " + e.getMessage());
+        }
+    }
+
+    public OverrideRequest viewRequest(int hrId, String requestId) {
+        try {
+            verifyHR(hrId);
+            OverrideRequest request = requestMemory.get(requestId);
+            if (request.getHrId() != hrId) {
+                throw new IllegalStateException("Request " + requestId + " does not belong to HR " + hrId);
+            }
+            return request;
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("viewRequest failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("viewRequest failed: " + e.getMessage());
+        }
+    }
+
+
     private void checkDeadline() {
         if (deadline.before(new Date())) {
             throw new IllegalStateException("The submission deadline has passed");
@@ -150,6 +340,7 @@ public class ShiftController {
             throw new IllegalArgumentException("updateHistory failed: " + e.getMessage());
         }
     }
+
     private LocalDate toLocalDate(Date date) {
         return date.toInstant()
                 .atZone(ZoneId.systemDefault())
@@ -180,61 +371,14 @@ public class ShiftController {
         }
     }
 
-    public void setWeeklyConstraints(int userId, Map<Date, Set<ShiftType>> cons) {
-        try {
-            verifyLogged(userId);
-            checkDeadline();
-            Employee emp = employeeMemory.get(userId);
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + userId + " not found");
-            }
-            emp.setWeeklyConstraints(cons);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("setWeeklyConstraints failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("setWeeklyConstraints failed: " + e.getMessage());
+    private void verifyCanAccessEmployee(int userId, int empId) {
+        Employee user = employeeMemory.get(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User " + userId + " not found");
         }
-
-    }
-
-    public void setWeeklyPreferences(int userId, Map<Date, Set<ShiftType>> prefs) {
-        try {
-            verifyLogged(userId);
-            checkDeadline();
-            Employee emp = employeeMemory.get(userId);
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + userId + " not found");
-            }
-            emp.setWeeklyPreferences(prefs);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("setWeeklyPreferences failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("setWeeklyPreferences failed: " + e.getMessage());
+        if (!user.isHR() && userId != empId) {
+            throw new IllegalStateException("Access denied: User " + userId + " can only access their own data");
         }
     }
 
-    public Map<Date, Map<ShiftType, Boolean>> getWeeklyConstraints(int userId) {
-        try {
-            verifyLogged(userId);
-            Employee emp = employeeMemory.get(userId);
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + userId + " not found");
-            }
-            return emp.getWeeklyConstraints();
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("getWeeklyConstraints failed: " + e.getMessage());
-        }
-    }
-    public Map<Date, Map<ShiftType, Boolean>> getWeeklyPrefrences(int userId) {
-        try {
-            verifyLogged(userId);
-            Employee emp = employeeMemory.get(userId);
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + userId + " not found");
-            }
-            return emp.getWeeklyPreferences();
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("getWeeklyPreferences failed: " + e.getMessage());
-        }
-    }
 }

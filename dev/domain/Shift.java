@@ -8,9 +8,9 @@ public class Shift {
     private final LocalDate date;
     private final ShiftType type;
 
-    // Fixed: Using Certification consistently
     private final Map<Certification, Integer> requiredRoles;
     private final Map<Certification, List<Integer>> assignments;
+    private final List<Integer> overtimeEmployees;
 
     public Shift(String id, LocalDate date, ShiftType type) {
         this.ID = id;
@@ -18,8 +18,8 @@ public class Shift {
         this.type = type;
         this.requiredRoles = new HashMap<>();
         this.assignments = new HashMap<>();
+        this.overtimeEmployees = new ArrayList<>();
     }
-
 
     public void setRequirement(Certification role, int newCount) {
         if (newCount <= 0) {
@@ -37,6 +37,22 @@ public class Shift {
     }
 
     public boolean addEmployee(Certification role, int employeeId) {
+        if (isEmployeeAssigned(employeeId)) {
+            boolean isShiftManager = assignments
+                    .getOrDefault(Certification.SHIFT_MANAGER, Collections.emptyList())
+                    .contains(employeeId);
+            if (!isShiftManager) {
+                throw new IllegalStateException("Employee " + employeeId + " is already assigned in this shift and is not the shift manager");
+            }
+            // Count how many roles they already hold
+            long rolesHeld = assignments.values().stream()
+                    .filter(list -> list.contains(employeeId))
+                    .count();
+            if (rolesHeld >= 2) {
+                throw new IllegalStateException("Shift manager " + employeeId + " already holds 2 roles in this shift");
+            }
+        }
+
         if (isRoleFilled(role)) {
             return false;
         }
@@ -44,10 +60,27 @@ public class Shift {
         return true;
     }
 
+    public void addOvertimeEmployee(int employeeId) {
+        if (!isEmployeeAssigned(employeeId)) {
+            throw new IllegalStateException("Employee " + employeeId + " is not assigned to this shift");
+        }
+        if (overtimeEmployees.contains(employeeId)) {
+            throw new IllegalStateException("Employee " + employeeId + " is already marked for overtime");
+        }
+        overtimeEmployees.add(employeeId);
+    }
+
+    public boolean hasShiftManager() {
+        List<Integer> managers = assignments.getOrDefault(Certification.SHIFT_MANAGER, Collections.emptyList());
+        return managers.size() == 1;
+    }
+
+
     public void removeEmployee(Certification role, int employeeId) {
         if (assignments.containsKey(role)) {
             assignments.get(role).remove(Integer.valueOf(employeeId));
         }
+        overtimeEmployees.remove(Integer.valueOf(employeeId));
     }
 
     public boolean isRoleFilled(Certification role) {
@@ -77,6 +110,7 @@ public class Shift {
     public String getID() { return ID; }
     public LocalDate getDate() { return date; }
     public ShiftType getType() { return type; }
+    public List<Integer> getOvertimeEmployees() { return Collections.unmodifiableList(overtimeEmployees); }
 
     public Map<Certification, List<Integer>> getAssignments() {
         return assignments;
