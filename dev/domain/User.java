@@ -1,17 +1,20 @@
 package dev.domain;
 public class User {
-    protected int ID; 
+
+    protected int ID;
     private String password;
 
     public User(int ID, String password) {
-        if (!isValidID(ID)) {
-            throw new IllegalArgumentException("Invalid ID");
+        try {
+            if (!isValidID(ID)) {
+                throw new IllegalArgumentException("Invalid ID: must be a 9-digit number");
+            }
+            if (!isValidPassword(password)) {
+                throw new IllegalArgumentException("Invalid password: must be at least 6 characters");
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("User creation failed: " + e.getMessage());
         }
-
-        if (!isValidPassword(password)) {
-            throw new IllegalArgumentException("Invalid password");
-        }
-
         this.ID = ID;
         this.password = password;
     }
@@ -25,10 +28,7 @@ public class User {
     }
 
     private boolean isValidPassword(String pass) {
-         if (pass == null) {
-             return false;
-         }
-         return pass.length() >= 6;
+        return pass != null && pass.length() >= 6;
     }
 
     private boolean isValidID(int ID) {
