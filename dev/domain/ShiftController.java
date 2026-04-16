@@ -1,6 +1,7 @@
 package dev.domain;
 import java.util.Date;
 
+
 public class ShiftController {
     private ShiftMemory shiftMemory;
 
