@@ -1,7 +1,7 @@
 package dev.domain;
 import java.util.List;
 import java.util.Date;
-ד
+
 public class Availability {
     private List<Constraint> constraints;
 

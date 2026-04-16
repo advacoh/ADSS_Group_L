@@ -1,4 +1,5 @@
 package dev.domain;
+
 import java.util.Map;
 
 public class EmployeeMemory {
