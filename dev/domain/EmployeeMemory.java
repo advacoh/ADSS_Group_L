@@ -1,4 +1,5 @@
 package dev.domain;
+
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
