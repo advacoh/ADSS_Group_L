@@ -3,6 +3,8 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Date;
+
 
 public class EmployeeMemory {
     private Map<Integer, Employee> employees;
@@ -35,7 +37,17 @@ public class EmployeeMemory {
             }
         }
         return activeList;
-    }     
+    }
+    
+    public List<Employee> getAllAvailableAndCertified(Date date, ShiftType shiftType, Certification role){
+        List<Employee> allActive = getAllActiveEmployees();
+        List<Employee> res = new ArrayList<>();
+        for(Employee emp: allActive){
+            if(emp.isAvailable(date, shiftType) && emp.isCertified(role))
+                res.add(emp);
+        }
+        return res;
+    }
 
     public void update(Employee employee) {
         int id = employee.getID();
