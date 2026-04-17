@@ -238,9 +238,9 @@ public class ShiftController {
         }
     }
 
-    public String createOverrideRequest(int hrId, int empId, Date date, ShiftType type, Certification role) {
+    public String createOverrideRequest(int userId, int empId, Date date, ShiftType type, Certification role) {
         try {
-            verifyHR(hrId);
+            verifyHR(userId);
             LocalDate localDate = toLocalDate(date);
             shiftMemory.get(localDate, type);
             Employee emp = employeeMemory.get(empId);
@@ -251,7 +251,7 @@ public class ShiftController {
                 throw new IllegalStateException("Employee " + empId + " is already available for this shift, no override needed");
             }
             String requestId = requestMemory.generateId();
-            OverrideRequest request = new OverrideRequest(requestId, hrId, empId, localDate, type, role);
+            OverrideRequest request = new OverrideRequest(requestId, userId, empId, localDate, type, role);
             requestMemory.save(request);
             return requestId;
 
@@ -262,9 +262,9 @@ public class ShiftController {
         }
     }
 
-    public void assignWithOverride(int hrId, String requestId) {
+    public void assignWithOverride(int userId, String requestId) {
         try {
-            verifyHR(hrId);
+            verifyHR(userId);
             OverrideRequest request = requestMemory.get(requestId);
             if (request.getStatus() != RequestStatus.APPROVED) {
                 throw new IllegalStateException("Cannot override: request " + requestId + " has not been approved by the employee");
@@ -288,13 +288,13 @@ public class ShiftController {
         }
     }
 
-    public void respondToRequest(int empId, String requestId, boolean approved) {
+    public void respondToRequest(int userId, String requestId, boolean approved) {
         try {
-            verifyLogged(empId);
+            verifyLogged(userId);
             OverrideRequest request = requestMemory.get(requestId);
 
-            if (request.getEmpId() != empId) {
-                throw new IllegalStateException("Employee " + empId + " is not the target of request " + requestId);
+            if (request.getEmpId() != userId) {
+                throw new IllegalStateException("Employee " + userId + " is not the target of request " + requestId);
             }
             if (request.getStatus() != RequestStatus.PENDING) {
                 throw new IllegalStateException("Request " + requestId + " is no longer pending");
@@ -310,10 +310,10 @@ public class ShiftController {
         }
     }
 
-    public List<OverrideRequest> viewSentRequests(int hrId) {
+    public List<OverrideRequest> viewSentRequests(int userId) {
         try {
-            verifyHR(hrId);
-            return requestMemory.getByHR(hrId);
+            verifyHR(userId);
+            return requestMemory.getByHR(userId);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("viewSentRequests failed: " + e.getMessage());
         } catch (IllegalStateException e) {
@@ -332,12 +332,12 @@ public class ShiftController {
         }
     }
 
-    public OverrideRequest viewRequest(int hrId, String requestId) {
+    public OverrideRequest viewRequest(int userId, String requestId) {
         try {
-            verifyHR(hrId);
+            verifyHR(userId);
             OverrideRequest request = requestMemory.get(requestId);
-            if (request.getHrId() != hrId) {
-                throw new IllegalStateException("Request " + requestId + " does not belong to HR " + hrId);
+            if (request.getHrId() != userId) {
+                throw new IllegalStateException("Request " + requestId + " does not belong to HR " + userId);
             }
             return request;
         } catch (IllegalArgumentException e) {
