@@ -86,7 +86,6 @@ public class EmployeeController {
         catch (IllegalArgumentException e) {
             throw e; 
         }
-        
     }
 
     // Update Methods
@@ -106,13 +105,14 @@ public class EmployeeController {
 
     }
 
-    public void updateEmploymentDetails(int userID, int empId, EmpType employementType, int vacationDay) {
+    public void updateEmploymentDetails(int userID, int empId, EmpType employementType, int vacationDay, Date startDate) {
         try{
             verifyLogged(userID);
             verifyHR(userID);
             Employee emp = getEmployeeOrThrow(empId);
             emp.setEmployementType(employementType);
             emp.setVacation(vacationDay);
+            emp.setStartDate(startDate);
             employeeMemory.update(emp); 
         }
         catch (IllegalArgumentException e) {
@@ -137,6 +137,20 @@ public class EmployeeController {
             }
             emp.setName(newName);
             employeeMemory.update(emp);
+        }
+        catch (IllegalArgumentException e) {
+            throw e; 
+        }
+    }
+
+    public void updateEmployeeSettings(int userID, int empId, int dayOff, boolean willDouble, boolean willOverTime){
+        try{
+            verifyLogged(userID);
+            verifyHR(userID);
+            Employee emp = getEmployeeOrThrow(empId);
+            emp.setDayOff(dayOff);
+            emp.setWillDouble(willOverTime);
+            emp.setWillOverTime(willOverTime);
         }
         catch (IllegalArgumentException e) {
             throw e; 
@@ -172,14 +186,26 @@ public class EmployeeController {
         }
     } 
 
-    public String getEmployeeDetails(int userID, int empId) {
+    public Employee getEmployeeDetails(int userID, int empId) {
         try{
             verifyLogged(userID);
-            verifyHR(userID);
+            verifyCanAccessEmployee(userID,empId);
             Employee emp = getEmployeeOrThrow(empId);
-            return emp.toString(); 
+            return emp; 
         } catch (IllegalArgumentException e) {
             throw e; 
         }
     }
+
+    private void verifyCanAccessEmployee(int userId, int empId) {
+        Employee user = employeeMemory.get(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User " + userId + " not found");
+        }
+        if (!user.isHR() && userId != empId) {
+            throw new IllegalStateException("Access denied: User " + userId + " can only access their own data");
+        }
+    }
+
+    
 }

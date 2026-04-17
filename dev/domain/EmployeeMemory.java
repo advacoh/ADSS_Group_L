@@ -14,6 +14,10 @@ public class EmployeeMemory {
         this.employees = new HashMap<>();
     }
 
+    public EmployeeMemory(Map<Integer, Employee> employees) {
+        this.employees = employees;
+    }
+
     public boolean save(Employee employee) { 
         int id = employee.getID();
         if(!employees.containsKey(id)){

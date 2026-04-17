@@ -98,6 +98,13 @@ public class WeeklySubmission {
         }
     }
 
+    public void setDayOff(int dayOff){
+        if(dayOff < 1 || dayOff > 7){
+            throw new IllegalArgumentException("The day off value that was submitted " + dayOff + " is invalid (1-7).");
+        }
+        this.dayOff = dayOff;
+    }
+
 
 // Helpers
 
