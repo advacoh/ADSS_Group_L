@@ -19,10 +19,17 @@ public class Shift {
         this.requiredRoles = new HashMap<>();
         this.assignments = new HashMap<>();
         this.overtimeEmployees = new ArrayList<>();
+        this.requiredRoles.put(Certification.SHIFT_MANAGER, 1);
     }
 
     public void setRequirement(Certification role, int newCount) {
-        if (newCount <= 0) {
+        if (newCount < 0) {
+            throw new IllegalArgumentException("Requirement count cannot be negative");
+        }
+        if (role == Certification.SHIFT_MANAGER && newCount < 1) {
+            throw new IllegalArgumentException("There must be at least one SHIFT_MANAGER");
+        }
+        if (newCount == 0) {
             requiredRoles.remove(role);
             assignments.remove(role);
             return;
@@ -36,7 +43,7 @@ public class Shift {
         }
     }
 
-    public boolean addEmployee(Certification role, int employeeId) {
+    public boolean assignEmployee(Certification role, int employeeId) {
         if (isEmployeeAssigned(employeeId)) {
             boolean isShiftManager = assignments
                     .getOrDefault(Certification.SHIFT_MANAGER, Collections.emptyList())
@@ -70,15 +77,10 @@ public class Shift {
         overtimeEmployees.add(employeeId);
     }
 
-    public boolean hasShiftManager() {
-        List<Integer> managers = assignments.getOrDefault(Certification.SHIFT_MANAGER, Collections.emptyList());
-        return managers.size() == 1;
-    }
-
-
     public void removeEmployee(Certification role, int employeeId) {
-        if (assignments.containsKey(role)) {
-            assignments.get(role).remove(Integer.valueOf(employeeId));
+        List<Integer> assigned = assignments.get(role);
+        if (assigned == null || !assigned.remove(Integer.valueOf(employeeId))) {
+            throw new IllegalArgumentException("Employee " + employeeId + " is not assigned to role " + role + " in this shift");
         }
         overtimeEmployees.remove(Integer.valueOf(employeeId));
     }
@@ -106,13 +108,12 @@ public class Shift {
     }
 
     // --- Getters ---
-
     public String getID() { return ID; }
     public LocalDate getDate() { return date; }
     public ShiftType getType() { return type; }
-    public List<Integer> getOvertimeEmployees() { return Collections.unmodifiableList(overtimeEmployees); }
-
-    public Map<Certification, List<Integer>> getAssignments() {
-        return assignments;
-    }
+//    public List<Integer> getOvertimeEmployees() { return Collections.unmodifiableList(overtimeEmployees); }
+//
+//    public Map<Certification, List<Integer>> getAssignments() {
+//        return assignments;
+//    }
 }

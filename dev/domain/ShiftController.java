@@ -61,7 +61,7 @@ public class ShiftController {
                     }
                 }
             }
-            if (!shift.addEmployee(roleId, empId)) {
+            if (!shift.assignEmployee(roleId, empId)) {
                 throw new IllegalStateException("Assignment failed: role " + roleId + " is full or not required in this shift");
             }
             if (isOvertime) {
@@ -71,6 +71,24 @@ public class ShiftController {
             throw new IllegalArgumentException("assignEmployee failed: " + e.getMessage());
         } catch (IllegalStateException e) {
             throw new IllegalStateException("assignEmployee failed: " + e.getMessage());
+        }
+    }
+
+    public void removeEmployee(int userId, Date date, ShiftType type, Certification role, int employeeId) {
+        try {
+            verifyHR(userId);
+
+            LocalDate localDate = toLocalDate(date);
+            Shift shift = shiftMemory.get(localDate, type);
+
+            shift.removeEmployee(role, employeeId);
+
+            updateHistory();
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "removeEmployee failed: " + e.getMessage()
+            );
         }
     }
 
@@ -118,7 +136,7 @@ public class ShiftController {
         }
     }
 
-    public List<Shift> getActiveShifts(int userId) {
+    public List<Shift> getWeeklySchedule(int userId) {
         try {
             verifyLogged(userId);
             return shiftMemory.getAllActiveShifts();
@@ -126,6 +144,16 @@ public class ShiftController {
             throw new IllegalArgumentException("getActiveShifts failed: " + e.getMessage());
         } catch (IllegalStateException e) {
             throw new IllegalStateException("getActiveShifts failed: " + e.getMessage());
+        }
+    }
+
+    public Shift getShift(int userId, Date date, ShiftType type) {
+        try {
+            verifyLogged(userId);
+            LocalDate localDate = toLocalDate(date);
+            return shiftMemory.get(localDate, type);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("getShift failed: " + e.getMessage());
         }
     }
 
@@ -252,7 +280,7 @@ public class ShiftController {
                 throw new IllegalStateException("Employee " + request.getEmpId() + " is not certified for role " + request.getRole());
             }
 
-            if (!shift.addEmployee(request.getRole(), request.getEmpId())) {
+            if (!shift.assignEmployee(request.getRole(), request.getEmpId())) {
                 throw new IllegalStateException("Assignment failed: role " + request.getRole() + " is full or not required");
             }
         } catch (IllegalArgumentException e) {
@@ -320,7 +348,6 @@ public class ShiftController {
             throw new IllegalStateException("viewRequest failed: " + e.getMessage());
         }
     }
-
 
     private void checkDeadline() {
         if (deadline.before(new Date())) {
