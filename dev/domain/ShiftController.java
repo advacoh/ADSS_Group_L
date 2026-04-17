@@ -39,7 +39,7 @@ public class ShiftController {
                 throw new IllegalArgumentException("Employee " + empId + " not found");
             }
             if (isOvertime) {
-                if (type != ShiftType.MORNING) {
+                if (!shift.canAcceptOvertime()) {
                     throw new IllegalArgumentException("Overtime is only allowed for morning shifts");
                 }
                 if (!emp.willOvertime()) {

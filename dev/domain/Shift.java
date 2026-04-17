@@ -80,9 +80,11 @@ public class Shift {
     public void removeEmployee(Certification role, int employeeId) {
         List<Integer> assigned = assignments.get(role);
         if (assigned == null || !assigned.remove(Integer.valueOf(employeeId))) {
-            throw new IllegalArgumentException("Employee " + employeeId + " is not assigned to role " + role + " in this shift");
+            throw new IllegalArgumentException("Employee " + employeeId + " is not assigned to role " + role);
         }
-        overtimeEmployees.remove(Integer.valueOf(employeeId));
+        if (!isEmployeeAssigned(employeeId)) {
+            overtimeEmployees.remove(Integer.valueOf(employeeId));
+        }
     }
 
     public boolean isRoleFilled(Certification role) {
@@ -111,6 +113,9 @@ public class Shift {
     public String getID() { return ID; }
     public LocalDate getDate() { return date; }
     public ShiftType getType() { return type; }
+    public boolean canAcceptOvertime() {
+        return this.type == ShiftType.MORNING;
+    }
 //    public List<Integer> getOvertimeEmployees() { return Collections.unmodifiableList(overtimeEmployees); }
 //
 //    public Map<Certification, List<Integer>> getAssignments() {
