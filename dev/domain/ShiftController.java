@@ -174,14 +174,13 @@ public class ShiftController {
         }
     }
 
-    public void setWeeklyConstraints(int userId, int empId, Map<Date, Set<ShiftType>> cons) {
+    public void setWeeklyConstraints(int userId, Map<Date, Set<ShiftType>> cons) {
         try {
             verifyLogged(userId);
-            verifyCanAccessEmployee(userId, empId);
             checkDeadline();
-            Employee emp = employeeMemory.get(empId);
+            Employee emp = employeeMemory.get(userId);
             if (emp == null) {
-                throw new IllegalArgumentException("Employee " + empId + " not found");
+                throw new IllegalArgumentException("Employee " + userId + " not found");
             }
             emp.setWeeklyConstraints(cons);
         } catch (IllegalArgumentException e) {
@@ -191,14 +190,13 @@ public class ShiftController {
         }
     }
 
-    public void setWeeklyPreferences(int userId, int empId, Map<Date, Set<ShiftType>> prefs) {
+    public void setWeeklyPreferences(int userId, Map<Date, Set<ShiftType>> prefs) {
         try {
             verifyLogged(userId);
-            verifyCanAccessEmployee(userId, empId);
             checkDeadline();
-            Employee emp = employeeMemory.get(empId);
+            Employee emp = employeeMemory.get(userId);
             if (emp == null) {
-                throw new IllegalArgumentException("Employee " + empId + " not found");
+                throw new IllegalArgumentException("Employee " + userId + " not found");
             }
             emp.setWeeklyPreferences(prefs);
         } catch (IllegalArgumentException e) {
@@ -211,7 +209,7 @@ public class ShiftController {
     public Map<Date, Map<ShiftType, Boolean>> getWeeklyConstraints(int userId, int empId) {
         try {
             verifyLogged(userId);
-            verifyCanAccessEmployee(userId, empId);
+            verifyReadAccess(userId, empId);
             Employee emp = employeeMemory.get(empId);
             if (emp == null) {
                 throw new IllegalArgumentException("Employee " + empId + " not found");
@@ -227,7 +225,7 @@ public class ShiftController {
     public Map<Date, Map<ShiftType, Boolean>> getWeeklyPreferences(int userId, int empId) {
         try {
             verifyLogged(userId);
-            verifyCanAccessEmployee(userId, empId);
+            verifyReadAccess(userId, empId);
             Employee emp = employeeMemory.get(empId);
             if (emp == null) {
                 throw new IllegalArgumentException("Employee " + empId + " not found");
@@ -398,7 +396,7 @@ public class ShiftController {
         }
     }
 
-    private void verifyCanAccessEmployee(int userId, int empId) {
+    private void verifyReadAccess(int userId, int empId) {
         Employee user = employeeMemory.get(userId);
         if (user == null) {
             throw new IllegalArgumentException("User " + userId + " not found");

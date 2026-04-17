@@ -26,6 +26,9 @@ public class Shift {
         if (newCount < 0) {
             throw new IllegalArgumentException("Requirement count cannot be negative");
         }
+        if (role == Certification.HR_MANAGER) {
+            throw new IllegalArgumentException("HR_MANAGER cannot be set as a shift requirement");
+        }
         if (role == Certification.SHIFT_MANAGER && newCount < 1) {
             throw new IllegalArgumentException("There must be at least one SHIFT_MANAGER");
         }
