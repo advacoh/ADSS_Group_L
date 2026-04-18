@@ -29,7 +29,7 @@ public class ServiceFactory {
    
     private final AuthService authService;
     private final SchedulingService schedulingService; 
-    private final PersonalService personalService; 
+    private final PersonnelService PersonnelService; 
 
    
     public ServiceFactory(boolean noNeedForData) {
@@ -47,7 +47,7 @@ public class ServiceFactory {
         ShiftController shiftController = new ShiftController(shiftMemory, employeeMemory, userController, requestMemory);
 
         this.authService = new AuthService(userController);
-        this.personalService = new PersonalService(userController, employeeController);
+        this.PersonnelService = new PersonnelService(userController, employeeController);
         this.schedulingService = new SchedulingService(shiftController, employeeController);
     }
 
@@ -200,8 +200,8 @@ public class ServiceFactory {
         return this.authService;
     }
 
-    public PersonalService getPersonalService(){
-        return this.personalService;
+    public PersonnelService getPersonnelService(){
+        return this.PersonnelService;
     }
 
     public SchedulingService getSchedulingService(){
