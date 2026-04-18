@@ -6,6 +6,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
+
 
 public class ShiftController {
     private ShiftMemory shiftMemory;
@@ -22,42 +24,17 @@ public class ShiftController {
         this.deadline = LocalDate.now().plusYears(1);
     }
 
-    public void assignEmployee(int userId, int empId, LocalDate date, ShiftType type, Certification roleId, boolean isOvertime) {
+    // setters
+
+    public void assignEmployee(int userId, int empId, LocalDate date, ShiftType type, Certification role, boolean isOvertime) {
         try {
             verifyHR(userId);
             updateHistory();
-
             Shift shift = shiftMemory.get(date, type);
             Employee emp = employeeMemory.get(empId);
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + empId + " not found");
-            }
-            if (isOvertime) {
-                if (!shift.canAcceptOvertime()) {
-                    throw new IllegalArgumentException("Overtime is only allowed for morning shifts");
-                }
-                if (!emp.willOvertime()) {
-                    throw new IllegalStateException("Employee " + empId + " is not willing to do overtime");
-                }
-            }
-            if (!emp.isAvailable(date, type)) {
-                throw new IllegalStateException("Employee " + empId + " is unavailable for shift " + date + " " + type);
-            }
-            if (!emp.isCertified(roleId)) {
-                throw new IllegalStateException("Employee " + empId + " is not certified for role " + roleId);
-            }
-
-            if (!emp.willDouble()) {
-                List<Shift> shiftsOnDate = shiftMemory.getByDate(date);
-                for (Shift s : shiftsOnDate) {
-                    if (!s.getID().equals(shift.getID()) && s.isEmployeeAssigned(empId)) {
-                        throw new IllegalStateException("Employee " + empId + " does not allow double shifts");
-                    }
-                }
-            }
-            if (!shift.assignEmployee(roleId, empId)) {
-                throw new IllegalStateException("Assignment failed: role " + roleId + " is full or not required in this shift");
-            }
+            if (emp == null) throw new IllegalArgumentException("Employee " + empId + " not found");
+            if (!canAssign(emp, shift, role, date, type, isOvertime)) throw new IllegalStateException("Employee " + empId + " cannot be assigned to this shift");
+            if (!shift.assignEmployee(role, empId)) throw new IllegalStateException("Assignment failed: role full or not required");
             if (isOvertime) {
                 shift.addOvertimeEmployee(empId);
             }
@@ -115,6 +92,8 @@ public class ShiftController {
         }
     }
 
+    // getters
+
     public Shift getPastShift(int userId, LocalDate day, ShiftType type) {
         try {
             verifyHR(userId);
@@ -144,6 +123,39 @@ public class ShiftController {
             throw new IllegalArgumentException("getShift failed: " + e.getMessage());
         }
     }
+
+    public List<Employee> getAvailableForRole(int userId, LocalDate date, ShiftType type, Certification role) {
+        try {
+            verifyHR(userId);
+            Shift shift = shiftMemory.get(date, type);
+            List<Employee> candidates = employeeMemory.getAllAvailableAndCertified(date, type, role);
+            List<Employee> result = new ArrayList<>();
+            for (Employee emp : candidates) {
+                if (canAssign(emp, shift, role, date, type, false)) {
+                    result.add(emp);
+                }
+            }
+
+            return result;
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("getAvailableForRole: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("getAvailableForRole: " + e.getMessage());
+        }
+
+    }
+    public List<Employee> getAllWithCertification(int userId, Certification role) {
+        try {
+            verifyHR(userId);
+            return employeeMemory.getByrole(role);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("getAllWithCertification failed: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("getAllWithCertification failed: " + e.getMessage());
+        }
+    }
+
+    // constraints && prefrences logic
 
     public void setDeadline(int userId, LocalDate date) {
         try {
@@ -225,6 +237,9 @@ public class ShiftController {
             throw new IllegalStateException("getWeeklyPreferences failed: " + e.getMessage());
         }
     }
+
+
+    // override logic
 
     public String createOverrideRequest(int userId, int empId, LocalDate date, ShiftType type, Certification role) {
         try {
@@ -332,6 +347,36 @@ public class ShiftController {
         } catch (IllegalStateException e) {
             throw new IllegalStateException("viewRequest failed: " + e.getMessage());
         }
+    }
+
+    // helpers
+
+    private boolean canAssign(Employee emp, Shift shift, Certification role, LocalDate date, ShiftType type, boolean isOvertime) {
+        if (!emp.isAvailable(date, type)) return false;
+        if (!emp.isCertified(role)) return false;
+        if (isOvertime) {
+            if (!shift.canAcceptOvertime() || !emp.willOvertime()) return false;
+
+        }
+        if (!emp.willDouble()) {
+            List<Shift> shiftsOnDate = shiftMemory.getByDate(date);
+            for (Shift s : shiftsOnDate) {
+                if (!s.getID().equals(shift.getID())
+                        && s.isEmployeeAssigned(emp.getID())) {
+                    return false;
+                }
+            }
+        }
+        if (shift.isEmployeeAssigned(emp.getID())) {
+            boolean isShiftManager = shift.isAssignedAsRole(Certification.SHIFT_MANAGER, emp.getID());
+            if (!isShiftManager) return false;
+            int rolesHeld = shift.countRoles(emp.getID());
+            if (rolesHeld >= 2) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void checkDeadline() {

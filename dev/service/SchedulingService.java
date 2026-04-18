@@ -193,4 +193,25 @@ public class SchedulingService {
             return Response.failure(e.getMessage());
         }
     }
+
+    // SchedulingService
+    public Response<List<EmployeeSL>> getAvailableForRole(int userId, LocalDate date, ShiftType type, Certification role) {
+        try {
+            List<EmployeeSL> employees = shiftController.getAvailableForRole(userId, date, type, role)
+                    .stream().map(EmployeeSL::new).collect(Collectors.toList());
+            return Response.success(employees);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+    public Response<List<EmployeeSL>> getAllWithCertification(int userId, Certification role) {
+        try {
+            List<EmployeeSL> employees = shiftController.getAllWithCertification(userId, role)
+                    .stream().map(EmployeeSL::new).collect(Collectors.toList());
+            return Response.success(employees);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
 }
