@@ -46,9 +46,9 @@ public class ServiceFactory {
         EmployeeController employeeController = new EmployeeController(userController, employeeMemory);
         ShiftController shiftController = new ShiftController(shiftMemory, employeeMemory, userController, requestMemory);
 
-        this.authService = new AuthService(userController);
+        this.authService = new AuthService(userController, employeeController);
         this.PersonnelService = new PersonnelService(userController, employeeController);
-        this.schedulingService = new SchedulingService(shiftController, employeeController);
+        this.schedulingService = new SchedulingService(shiftController);
     }
 
     public void populateEmployeeMemory(EmployeeMemory employeeMemory) {

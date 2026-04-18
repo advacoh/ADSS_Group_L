@@ -23,184 +23,93 @@ public class PersonnelService {
         this.employeeController = employeeController;
     }
 
-    public void addEmployee(int activeUserId, String rawData) {
-        if (rawData == null || rawData.trim().isEmpty()) {
-            throw new IllegalArgumentException("Input cannot be empty.");
-        }
-
-        String[] parts = rawData.split(",");
-        if (parts.length < 14) {
-            throw new IllegalArgumentException("Missing information. Expected 14 fields, but got " + parts.length);
-        }
-
-        try {
-            int newEmpID = Integer.parseInt(parts[0].trim());
-            String password = parts[1].trim();
-            String name = parts[2].trim();
-            int bankAccount = Integer.parseInt(parts[3].trim());
-
-            LocalDate startDate;
-            try {
-                startDate = LocalDate.parse(parts[4].trim(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Invalid date format. Please use dd/MM/yyyy.");
-            }
-
-            EmpType empType = parseEnum(EmpType.class, parts[5].trim(), "Employment Type");
-            SalType salaryType = parseEnum(SalType.class, parts[6].trim(), "Salary Type");
-
-            int salary = Integer.parseInt(parts[7].trim());
-            int vacationDay = Integer.parseInt(parts[8].trim());
-            boolean willOvertime = parseBooleanStrict(parts[9].trim(), "Overtime Preference");
-            int dayOff = Integer.parseInt(parts[10].trim());
-            boolean doubleShiftAllowed = parseBooleanStrict(parts[11].trim(), "Double Shift Preference");
-
-            List<Certification> certificationsList = parseCertifications(parts[12].trim());
-
+    public Response<Void> addEmployee(int activeUserId, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType empType,
+        SalType salaryType, int salary, int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, List<Certification> certificationsList) {
+        try{
             employeeController.addEmployee(
                 activeUserId, newEmpID, password, name, bankAccount, startDate,
                 empType, salaryType, salary, vacationDay, willOvertime,
-                dayOff, doubleShiftAllowed, certificationsList
-            );
-
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Numeric error: One of the fields (ID, Bank Account, Salary, vacation Day and day off) must be a whole number.");
+                dayOff, doubleShiftAllowed, certificationsList);
+                return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
         }
     }
 
-    private <T extends Enum<T>> T parseEnum(Class<T> enumClass, String value, String fieldName) {
-        try {
-            return Enum.valueOf(enumClass, value.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid " + fieldName + ": '" + value + "'.");
-        }
-    }
-
-    private boolean parseBooleanStrict(String value, String fieldName) {
-        if (value == null) {
-            throw new IllegalArgumentException(fieldName + " cannot be empty.");
-        }
-        String val = value.trim().toLowerCase();
-        if (val.equals("true")) return true;
-        if (val.equals("false")) return false;
-        throw new IllegalArgumentException(fieldName + " must be either 'true' or 'false'. Received: '" + value + "'");
-    }
-
-    private List<Certification> parseCertifications(String certsString) {
-        List<Certification> list = new ArrayList<>();
-        if (certsString == null || certsString.isEmpty() || certsString.equalsIgnoreCase("none")) {
-            return list;
-        }
-        
-        String[] certNames = certsString.split(";");
-        for (String certName : certNames) {
-            list.add(parseEnum(Certification.class, certName, "Certification"));
-        }
-        return list;
-    }
-
-    public String deactivateEmployee(int activeUserId, int targetEmpId) {
+    public Response<Void> deactivateEmployee(int activeUserId, int targetEmpId) {
         try {
             employeeController.dismissEmployee(activeUserId, targetEmpId);
-            return "Employee with ID " + targetEmpId + " has been successfully deactivated.";
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Deactivation failed: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException("An error occurred during deactivation: " + e.getMessage());
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
         }
     }
 
-    public String addCertification(int activeUserId, int targetEmpId, String role) { 
+    public Response<Void> addCertification(int activeUserId, int targetEmpId, Certification role) { 
         try{
-            Certification cert = Certification.valueOf(role.trim().toUpperCase());
-            this.employeeController.addCertification(activeUserId, targetEmpId, cert);
-            return "Employee certification: " + role + " was added successfully.";
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Adding certification faild: " + role);
+            this.employeeController.addCertification(activeUserId, targetEmpId, role);
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
         }
      }
 
-    public String removeCertification(int activeUserId, int targetEmpId, String role){
+    public Response<Void> removeCertification(int activeUserId, int targetEmpId, Certification role){
         try{
-            Certification cert = Certification.valueOf(role.trim().toUpperCase());
-            this.employeeController.removeCertification(activeUserId, targetEmpId, cert);
-            return "Employee certification: " + role + " was removed successfully.";
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("removing certification failed: " + role);
+            this.employeeController.removeCertification(activeUserId, targetEmpId, role);
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
         }
     }
 
-    public String updateFinancialDetails(int userID, int empId, int newBankAccount, String newSalaryType, int newSalary){
-        try{
-            SalType salType;
-            try {
-                salType = SalType.valueOf(newSalaryType.trim().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid Salary Type: '" + newSalaryType + "'. Must be MONTHLY or HOURLY.");
-            }
-
-            this.employeeController.updateFinancialDetails(userID, empId, newBankAccount, salType, newSalary);
-            return "Updating financial details was successful. ";
-        }
-        catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Updating financial details failed: " + e.getMessage());
+    public Response<Void> updateFinancialDetails(int userID, int empId, int newBankAccount, SalType newSalaryType, int newSalary){
+        try{  
+            this.employeeController.updateFinancialDetails(userID, empId, newBankAccount, newSalaryType, newSalary);
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
         }
     }
 
-    public String updateEmploymentDetails(int userID, int empId, String rawEmpType, int vacationDay, String rawStartDay){
+    public Response<Void> updateEmploymentDetails(int userID, int empId, EmpType empType, int vacationDay, LocalDate startDate){
         try{
-            EmpType empType;
-            try {
-                empType = EmpType.valueOf(rawEmpType.trim().toUpperCase());
-            } catch (IllegalArgumentException | NullPointerException e) {
-                throw new IllegalArgumentException("Invalid Employment Type: '" + rawEmpType + "'.");
-            }
-           
-            LocalDate startDate;
-            try {
-                startDate = LocalDate.parse(rawStartDay.trim(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Invalid date format: '" + rawStartDay + "'. Use dd/MM/yyyy.");
-            }
             this.employeeController.updateEmploymentDetails(userID, empId, empType, vacationDay, startDate);
-            return "Updating employment details was successful.";
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Updating employment details failed: " + e.getMessage());
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
         }
     }
     
 
-    public String updateEmployeeName(int userID, int empId, String newName){
+    public Response<Void> updateEmployeeName(int userID, int empId, String newName){
         try{
             this.employeeController.updateEmployeeName(userID, empId, newName);
-            return "Updating the employee's name was successful. ";
-        }
-        catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Updating the employee's name failed: " + e.getMessage());
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
         }
     }
 
 
-    public String updateEmployeeSettings(int userID, int empId, int dayOff, String rawWillDouble, String rawWillOverTime) {
+    public Response<Void> updateEmployeeSettings(int userID, int empId, int dayOff, boolean willDouble, boolean willOverTime) {
         try {
-            boolean willDouble = parseBooleanStrict(rawWillDouble, "Double Shift preference");
-            boolean willOverTime = parseBooleanStrict(rawWillOverTime, "Overtime preference");
             this.employeeController.updateEmployeeSettings(userID, empId, dayOff, willDouble, willOverTime);
-            return "Updating the employee's settings was successful.";
-        } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Updating the employee's settings failed: " + e.getMessage());
-            }
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
     }
 
-    public String getEmployeeDetails(int activeUserId, int targetEmpId) { 
+    public Response<EmployeeSL> getEmployeeDetails(int activeUserId, int targetEmpId) { 
         try{
             Employee emp = this.employeeController.getEmployeeDetails(activeUserId,targetEmpId);
             EmployeeSL empSL = new EmployeeSL(targetEmpId, emp.getName(), emp.getBankAccount(), emp.getStartDate(), 
             emp.getEmployementType(), emp.getSalaryType(), emp.getSalary(), emp.getVacation(), emp.willOvertime(), emp.getDayOff(),
             emp.willDouble(), emp.getCertifications());
-            return empSL.toString();
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(e.getMessage());
+            return Response.success(empSL);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
         }
     }
 }
