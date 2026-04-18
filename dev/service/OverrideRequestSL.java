@@ -26,6 +26,34 @@ public class OverrideRequestSL {
         this.status = request.getStatus();
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+                "=== Request Details ===\n" +
+                        "Request ID : %s\n" +
+                        "Employee   : %d\n" +
+                        "Date       : %s\n" +
+                        "Shift      : %s\n" +
+                        "Role       : %s\n" +
+                        "Status     : %s",
+                id, empId, date, shiftType.getValue(), role.getValue(), status.getValue()
+        );
+    }
+
+    /**
+     * Single-line representation for lists.
+     * Format: Employee [ID] | [Date] | [Shift] | [Role] | [Status]
+     */
+    public String toShortString() {
+        return String.format("Employee %d | %s | %s | %s | %s",
+                empId,
+                date,
+                shiftType.getValue(),
+                role.getValue(),
+                status.getValue()
+        );
+    }
+
     // --- Getters ---
     public String getId() { return id; }
     public int getHrId() { return hrId; }
