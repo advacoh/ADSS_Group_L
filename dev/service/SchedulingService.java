@@ -114,17 +114,21 @@ public class SchedulingService {
         }
     }
 
-    public Response<Map<LocalDate, Map<ShiftType, Boolean>>> getWeeklyConstraints(int userId, int targetEmpId) {
+    public Response<WeeklyConstraintsSL> getWeeklyConstraints(int userId, int targetEmpId) {
         try {
-            return Response.success(shiftController.getWeeklyConstraints(userId, targetEmpId));
+            Map<LocalDate, Map<ShiftType, Boolean>> consts = shiftController.getWeeklyConstraints(userId, targetEmpId);
+            WeeklyConstraintsSL weeklyConstraintsSL = new WeeklyConstraintsSL(consts);
+            return Response.success(weeklyConstraintsSL);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
     }
 
-    public Response<Map<LocalDate, Map<ShiftType, Boolean>>> getWeeklyPreferences(int userId, int targetEmpId) {
+    public Response<WeeklyPrefrencesSL> getWeeklyPreferences(int userId, int targetEmpId) {
         try {
-            return Response.success(shiftController.getWeeklyPreferences(userId, targetEmpId));
+            Map<LocalDate, Map<ShiftType, Boolean>> prefs = shiftController.getWeeklyPreferences(userId, targetEmpId);
+            WeeklyPrefrencesSL weeklyPrefrencesSL = new WeeklyPrefrencesSL(consts);
+            return Response.success(weeklyPrefrencesSL);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
