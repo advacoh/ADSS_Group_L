@@ -80,38 +80,13 @@ public class HRMenu {
             System.out.println("\n=== View History ===");
             System.out.println("Enter 'q' to go back.");
 
-            LocalDate date = readDateOrQuit();
+            LocalDate date = InputUtil.readDate();
             if (date == null) return;
 
-            ShiftType type = readShiftTypeOrQuit();
+            ShiftType type = InputUtil.readShiftType();
             if (type == null) return;
 
             displayPastShift(date, type);
-        }
-    }
-
-    private LocalDate readDateOrQuit() {
-        System.out.print("Enter date (dd/MM/yyyy) or 'q' to go back: ");
-        String input = InputUtil.readRaw();
-        if (input.equalsIgnoreCase("q")) return null;
-        try {
-            return LocalDate.parse(input, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        } catch (Exception e) {
-            System.out.println("Invalid date format. Please use dd/MM/yyyy.");
-            return readDateOrQuit();
-        }
-    }
-
-    private ShiftType readShiftTypeOrQuit() {
-        while (true) {
-            System.out.print("Enter the Shift type — m for morning, e for evening, or 'q' to go back: ");
-            String input = InputUtil.readRaw();
-            switch (input.toLowerCase()) {
-                case "m" -> { return ShiftType.MORNING; }
-                case "e" -> { return ShiftType.EVENING; }
-                case "q" -> { return null; }
-                default  -> System.out.println("Please enter M, E, or Q.");
-            }
         }
     }
 
