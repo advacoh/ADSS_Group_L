@@ -75,8 +75,8 @@ public class ShiftFillingMenu {
         }
         List<EmployeeSL> available = availableResponse.getValue();
         if (!available.isEmpty()) {
-            // Step 5a: normal assignment flow
-            EmployeeSL selected = selectEmployee(available);
+            System.out.println("\nAvailable employees:");
+            EmployeeSL selected = InputUtil.selectItem(available);
             if (selected == null) return;
 
             Response<Void> assignResponse = schedulingService.assignEmployee(
@@ -90,23 +90,9 @@ public class ShiftFillingMenu {
                 if (!updated.isError()) System.out.println(updated.getValue());
             }
         } else {
-            // Step 5b: no one available, offer override request
+            // no one available, offer override request
             System.out.println("No " + role.getValue() + " available.");
             sendOverrideRequest(userId, date, type, role);
-        }
-    }
-
-    private EmployeeSL selectEmployee(List<EmployeeSL> employees) {
-        System.out.println("\nAvailable employees:");
-        for (int i = 0; i < employees.size(); i++) {
-            System.out.println((i + 1) + ") " + employees.get(i).getID());
-        }
-        System.out.print("Select employee (0 to cancel): ");
-        while (true) {
-            int choice = InputUtil.readInt();
-            if (choice == 0) return null;
-            if (choice >= 1 && choice <= employees.size()) return employees.get(choice - 1);
-            System.out.println("Invalid option.");
         }
     }
 
@@ -124,7 +110,7 @@ public class ShiftFillingMenu {
         }
 
         System.out.println("\nSend override request to:");
-        EmployeeSL selected = selectEmployee(certified);
+        EmployeeSL selected = InputUtil.selectItem(certified);
         if (selected == null) return;
 
         Response<String> requestResponse = schedulingService.createOverrideRequest(
@@ -137,14 +123,59 @@ public class ShiftFillingMenu {
     }
 
     private void unassignEmployee() {
-        // TODO
+        int userId = manager.getLoggedInUserId();
+        LocalDate date = InputUtil.readDayOfWeek();
+        ShiftType type = InputUtil.readShiftType();
+        Certification role = InputUtil.readRole();
+
+        Response<ShiftSL> shiftResponse = schedulingService.getShift(userId, date, type);
+        if (shiftResponse.isError()) {
+            System.out.println("No shift found: " + shiftResponse.getErrorMessage());
+            return;
+        }
+
+        List<Integer> assigned = shiftResponse.getValue().getAssignments()
+                .getOrDefault(role, List.of());
+
+        if (assigned.isEmpty()) {
+            System.out.println("No employees assigned to this role.");
+            return;
+        }
+
+        System.out.println("\nAssigned employees:");
+        Integer selected = InputUtil.selectItem(assigned);
+        if (selected == null) return;
+
+        Response<Void> removeResponse = schedulingService.removeEmployee(
+                userId, date, type, role, selected
+        );
+        if (removeResponse.isError())
+            System.out.println("Removal failed: " + removeResponse.getErrorMessage());
+        else
+            System.out.println("Employee removed successfully!");
     }
 
     private void viewConstraints() {
-        // TODO
+        int userId = manager.getLoggedInUserId();
+        int empId = InputUtil.readEmployeeId();
+
+        Response<WeeklyConstraintsSL> response = schedulingService.getWeeklyConstraints(userId, empId);
+        if (response.isError())
+            System.out.println("Could not fetch constraints: " + response.getErrorMessage());
+        else
+            System.out.println(response.getValue());
     }
 
     private void viewPreferences() {
-        // TODO
+        int userId = manager.getLoggedInUserId();
+        int empId = InputUtil.readEmployeeId();
+
+        Response<WeeklyPreferenceSL> response = schedulingService.getWeeklyPreferences(userId, empId);
+        if (response.isError())
+            System.out.println("Could not fetch preferences: " + response.getErrorMessage());
+        else
+            System.out.println(response.getValue());
     }
+
+
 }
