@@ -34,6 +34,87 @@ public class ShiftSL {
         this.isFullyStaffed = shift.isFullyStaffed();
     }
 
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("====================================\n");
+        sb.append("Shift ID: ").append(id).append("\n");
+        sb.append("Date: ").append(date).append("\n");
+        sb.append("Type: ").append(type).append("\n");
+        sb.append("------------------------------------\n");
+
+        // Required Roles
+        sb.append("Required Roles:\n");
+
+        if (requiredRoles.isEmpty()) {
+            sb.append("  None\n");
+        } else {
+            for (Map.Entry<Certification, Integer> entry
+                    : requiredRoles.entrySet()) {
+
+                sb.append("  ")
+                        .append(entry.getKey())
+                        .append(" -> Required: ")
+                        .append(entry.getValue())
+                        .append("\n");
+            }
+        }
+
+        sb.append("------------------------------------\n");
+
+        // Assignments
+        sb.append("Assignments:\n");
+
+        if (assignments.isEmpty()) {
+            sb.append("  None\n");
+        } else {
+            for (Map.Entry<Certification, List<Integer>> entry
+                    : assignments.entrySet()) {
+
+                sb.append("  ")
+                        .append(entry.getKey())
+                        .append(" -> Employees: ");
+
+                if (entry.getValue().isEmpty()) {
+                    sb.append("None");
+                } else {
+                    sb.append(entry.getValue());
+                }
+
+                sb.append("\n");
+            }
+        }
+
+        sb.append("------------------------------------\n");
+
+        // Overtime
+        sb.append("Overtime Employees: ");
+
+        if (overtimeEmployees.isEmpty()) {
+            sb.append("None\n");
+        } else {
+            sb.append(overtimeEmployees).append("\n");
+        }
+
+        sb.append("------------------------------------\n");
+
+        // Status
+        sb.append("Fully Staffed: ")
+                .append(isFullyStaffed ? "YES" : "NO")
+                .append("\n");
+
+        sb.append("====================================\n");
+
+        return sb.toString();
+    }
+    public String shortString() {
+        return date + " " + type +
+                " | Fully Staffed: " +
+                (isFullyStaffed ? "YES" : "NO");
+    }
+
     // --- Getters ---
     public String getId() { return id; }
     public LocalDate getDate() { return date; }

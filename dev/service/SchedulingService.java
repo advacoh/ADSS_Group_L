@@ -127,7 +127,7 @@ public class SchedulingService {
     public Response<WeeklyPrefrencesSL> getWeeklyPreferences(int userId, int targetEmpId) {
         try {
             Map<LocalDate, Map<ShiftType, Boolean>> prefs = shiftController.getWeeklyPreferences(userId, targetEmpId);
-            WeeklyPrefrencesSL weeklyPrefrencesSL = new WeeklyPrefrencesSL(consts);
+            WeeklyPrefrencesSL weeklyPrefrencesSL = new WeeklyPrefrencesSL(prefs);
             return Response.success(weeklyPrefrencesSL);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
