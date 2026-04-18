@@ -9,6 +9,11 @@ public class SchedulingService {
     private ShiftController shiftController;
     private EmployeeController employeeController;
 
+    public SchedulingService(ShiftController shiftController, EmployeeController employeeController){
+        this.shiftController = shiftController;
+        this.employeeController = employeeController;
+    }
+
     public void submitConstraint(int activeUser, Date date, string startTime, string endTime) {} 
     public String getWeeklySchedule(int activeUser) { return ""; }
     public void createShift(int activeUser, Date date, string type) {} 

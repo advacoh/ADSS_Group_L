@@ -7,8 +7,18 @@ import java.util.List;
 import java.util.Map;
 
 public class RequestMemory {
-    private final Map<String, OverrideRequest> requests = new HashMap<>();
-    private int counter = 0;
+    private final Map<String, OverrideRequest> requests;
+    private int counter;
+
+    public RequestMemory(){
+        this.requests = new HashMap<>();
+        this.counter = 0;
+    }
+
+    public RequestMemory(Map<String, OverrideRequest> requests, int counter){
+        this.requests = requests;
+        this.counter = counter;
+    }
 
     public void save(OverrideRequest request) {
         requests.put(request.getId(), request);

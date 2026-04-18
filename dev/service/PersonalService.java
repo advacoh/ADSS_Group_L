@@ -8,13 +8,20 @@ import dev.domain.SalType;
 import java.util.List;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Date;
 
 
-public class PersonnelService {
+public class PersonalService {
     private UserController userController;
     private EmployeeController employeeController;
+
+    public PersonalService(UserController userController, EmployeeController employeeController){
+        this.userController = userController;
+        this.employeeController = employeeController;
+    }
 
     public void addEmployee(int activeUserId, String rawData) {
         if (rawData == null || rawData.trim().isEmpty()) {
@@ -32,10 +39,10 @@ public class PersonnelService {
             String name = parts[2].trim();
             int bankAccount = Integer.parseInt(parts[3].trim());
 
-            Date startDate;
+            LocalDate startDate;
             try {
-                startDate = new SimpleDateFormat("dd/MM/yyyy").parse(parts[4].trim());
-            } catch (ParseException e) {
+                startDate = LocalDate.parse(parts[4].trim(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException("Invalid date format. Please use dd/MM/yyyy.");
             }
 
@@ -148,10 +155,11 @@ public class PersonnelService {
             } catch (IllegalArgumentException | NullPointerException e) {
                 throw new IllegalArgumentException("Invalid Employment Type: '" + rawEmpType + "'.");
             }
-            Date startDate;
+           
+            LocalDate startDate;
             try {
-                startDate = new SimpleDateFormat("dd/MM/yyyy").parse(rawStartDay.trim());
-            } catch (ParseException e) {
+                startDate = LocalDate.parse(rawStartDay.trim(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException("Invalid date format: '" + rawStartDay + "'. Use dd/MM/yyyy.");
             }
             this.employeeController.updateEmploymentDetails(userID, empId, empType, vacationDay, startDate);

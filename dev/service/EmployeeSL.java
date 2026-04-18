@@ -1,17 +1,17 @@
 package dev.service;
-import java.util.Date;
 import java.util.List;
 import dev.domain.Certification;
 import dev.domain.EmpType;
 import dev.domain.SalType;
 import dev.domain.WeeklySubmission;
 import dev.domain.Status;
+import java.time.LocalDate;
 
 public class EmployeeSL {
     private int ID;
     private String name;
     private int bankAccount;
-    private Date startDate;
+    private LocalDate startDate;
     private EmpType employementType;
     private SalType salaryType;
     private int salary;
@@ -22,7 +22,7 @@ public class EmployeeSL {
     private List<Certification> certifications;
     private String dayOff;
 
-    public EmployeeSL(int ID, String name, int bankAccount, Date startDate, 
+    public EmployeeSL(int ID, String name, int bankAccount, LocalDate startDate, 
                     EmpType employementType, SalType salaryType, int salary, 
                     int vacation, boolean willOvertime, String dayOff, boolean doubleShiftAllowed, 
                     List<Certification> certifications) {
@@ -58,7 +58,7 @@ public class EmployeeSL {
         sb.append(String.format("%-18s %s\n", "Salary Type:", salaryType));
         sb.append(String.format("%-18s %d\n", "Salary:", salary));
         sb.append(String.format("%-18s %d\n", "Vacation Days:", vacation));
-        sb.append(String.format("%-18s %d\n", "Day Off:", dayOff));
+        sb.append(String.format("%-18s %s\n", "Day Off:", dayOff));
         
         sb.append(String.format("%-18s ", "Certifications:"));
         if (certifications == null || certifications.isEmpty()) {

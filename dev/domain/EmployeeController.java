@@ -1,18 +1,19 @@
 package dev.domain;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Date;
+import java.util.Map;
+import java.time.LocalDate;
 
 public class EmployeeController {
     private UserController userController;
     private EmployeeMemory employeeMemory;
 
-    public EmployeeController(UserController userController) {
+    public EmployeeController(UserController userController, EmployeeMemory employeeMemory) {
         this.userController = userController;
-        this.employeeMemory = new EmployeeMemory();
+        this.employeeMemory = employeeMemory;
     }
 
     // Private Helper Methods
-
     private void verifyLogged(int userId) {
         if (!userController.isLogged(userId)) {
             throw new RuntimeException("Access Denied: User is not logged in.");
@@ -41,7 +42,7 @@ public class EmployeeController {
     }
 
 
-    public void addEmployee(int userID, int newEmpID, String password, String name, int bankAccount, Date startDate, EmpType employementType, SalType salaryType, int salary,
+    public void addEmployee(int userID, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType employementType, SalType salaryType, int salary,
     int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, List<Certification> certificationsList) {
         try{
             verifyLogged(userID);
@@ -52,7 +53,7 @@ public class EmployeeController {
             }
             verifyDayOff(dayOff);
             Employee newEmp = new Employee(newEmpID, name, bankAccount, startDate, employementType, salaryType, salary, vacationDay, willOvertime, dayOff, doubleShiftAllowed, certificationsList);
-            employeeMemory.save(newEmp);
+            this.employeeMemory.save(newEmp);
             this.userController.register(newEmpID, password);
         }
         catch (IllegalArgumentException e) {
@@ -88,6 +89,22 @@ public class EmployeeController {
         }
     }
 
+    public void registerHR(int userID, String password){
+        try{
+            if(!this.employeeMemory.doesHRExist()){
+                List<Certification> cert = new ArrayList<>();
+                cert.add(Certification.HR_MANAGER);
+                Employee HREmp = new Employee(userID, "name", 0, LocalDate.now(), EmpType.FULL_TIME, SalType.GLOBAL, 0, 0, false, 7, false, cert);
+                this.employeeMemory.save(HREmp);
+                this.userController.register(userID, password); 
+            } else{
+                throw new IllegalArgumentException("HR manager employee already exists in the system.");
+            } 
+        } catch (IllegalArgumentException e) {
+            throw e; 
+        }     
+    }
+
     // Update Methods
     public void updateFinancialDetails(int userID, int empId, int newBankAccount, SalType newSalaryType, int newSalary) {
         try{
@@ -105,7 +122,7 @@ public class EmployeeController {
 
     }
 
-    public void updateEmploymentDetails(int userID, int empId, EmpType employementType, int vacationDay, Date startDate) {
+    public void updateEmploymentDetails(int userID, int empId, EmpType employementType, int vacationDay, LocalDate startDate) {
         try{
             verifyLogged(userID);
             verifyHR(userID);
@@ -149,7 +166,7 @@ public class EmployeeController {
             verifyHR(userID);
             Employee emp = getEmployeeOrThrow(empId);
             emp.setDayOff(dayOff);
-            emp.setWillDouble(willOverTime);
+            emp.setWillDouble(willDouble);
             emp.setWillOverTime(willOverTime);
         }
         catch (IllegalArgumentException e) {
