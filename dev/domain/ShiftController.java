@@ -2,10 +2,7 @@ package dev.domain;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,25 +12,22 @@ public class ShiftController {
     private EmployeeMemory employeeMemory;
     private UserController userController;
     private RequestMemory requestMemory;
-    private Date deadline;
+    private LocalDate deadline;
 
     public ShiftController(ShiftMemory shiftMemory, EmployeeMemory employeeMemory, UserController userController, RequestMemory requestMemory) {
         this.shiftMemory = shiftMemory;
         this.employeeMemory = employeeMemory;
         this.userController = userController;
         this.requestMemory = requestMemory;
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.YEAR, 1);
-        this.deadline = cal.getTime();
+        this.deadline = LocalDate.now().plusYears(1);
     }
 
-    public void assignEmployee(int userId, int empId, Date date, ShiftType type, Certification roleId, boolean isOvertime) {
+    public void assignEmployee(int userId, int empId, LocalDate date, ShiftType type, Certification roleId, boolean isOvertime) {
         try {
             verifyHR(userId);
             updateHistory();
-            LocalDate localDate = toLocalDate(date);
 
-            Shift shift = shiftMemory.get(localDate, type);
+            Shift shift = shiftMemory.get(date, type);
             Employee emp = employeeMemory.get(empId);
             if (emp == null) {
                 throw new IllegalArgumentException("Employee " + empId + " not found");
@@ -47,14 +41,14 @@ public class ShiftController {
                 }
             }
             if (!emp.isAvailable(date, type)) {
-                throw new IllegalStateException("Employee " + empId + " is unavailable for shift " + localDate + " " + type);
+                throw new IllegalStateException("Employee " + empId + " is unavailable for shift " + date + " " + type);
             }
             if (!emp.isCertified(roleId)) {
                 throw new IllegalStateException("Employee " + empId + " is not certified for role " + roleId);
             }
 
             if (!emp.willDouble()) {
-                List<Shift> shiftsOnDate = shiftMemory.getByDate(localDate);
+                List<Shift> shiftsOnDate = shiftMemory.getByDate(date);
                 for (Shift s : shiftsOnDate) {
                     if (!s.getID().equals(shift.getID()) && s.isEmployeeAssigned(empId)) {
                         throw new IllegalStateException("Employee " + empId + " does not allow double shifts");
@@ -74,13 +68,11 @@ public class ShiftController {
         }
     }
 
-    public void removeEmployee(int userId, Date date, ShiftType type, Certification role, int employeeId) {
+    public void removeEmployee(int userId, LocalDate date, ShiftType type, Certification role, int employeeId) {
         try {
             verifyHR(userId);
 
-            LocalDate localDate = toLocalDate(date);
-            Shift shift = shiftMemory.get(localDate, type);
-
+            Shift shift = shiftMemory.get(date, type);
             shift.removeEmployee(role, employeeId);
 
             updateHistory();
@@ -92,45 +84,42 @@ public class ShiftController {
         }
     }
 
-    public void createShift(int userId, Date day, ShiftType type) {
+    public void createShift(int userId, LocalDate day, ShiftType type) {
         try {
             verifyHR(userId);
-            LocalDate localDate = toLocalDate(day);
             LocalDate today = LocalDate.now();
 
             LocalDate nextSunday = today.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
             LocalDate nextSaturday = nextSunday.plusDays(6);
 
-            if (localDate.isBefore(nextSunday) || localDate.isAfter(nextSaturday)) {
+            if (day.isBefore(nextSunday) || day.isAfter(nextSaturday)) {
                 throw new IllegalArgumentException("Shift date must be within the next week (" + nextSunday + " to " + nextSaturday + ")");
             }
 
-            String id = localDate.toString() + "_" + type.name();
-            Shift newShift = new Shift(id, localDate, type);
+            String id = day.toString() + "_" + type.name();
+            Shift newShift = new Shift(id, day, type);
             shiftMemory.save(newShift);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("createShift failed: " + e.getMessage());
         }
     }
 
-    public void setRequirement(int userId, Date date, ShiftType type, Certification role, int count) {
+    public void setRequirement(int userId, LocalDate date, ShiftType type, Certification role, int count) {
         try {
             verifyHR(userId);
             updateHistory();
-            LocalDate localDate = toLocalDate(date);
-            Shift shift = shiftMemory.get(localDate, type);
+            Shift shift = shiftMemory.get(date, type);
             shift.setRequirement(role, count);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("setRequirement failed: " + e.getMessage());
         }
     }
 
-    public Shift getPastShift(int userId, Date day, ShiftType type) {
+    public Shift getPastShift(int userId, LocalDate day, ShiftType type) {
         try {
             verifyHR(userId);
             updateHistory();
-            LocalDate localDate = toLocalDate(day);
-            return shiftMemory.getPast(localDate, type);
+            return shiftMemory.getPast(day, type);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("getPastShift failed: " + e.getMessage());
         }
@@ -147,23 +136,22 @@ public class ShiftController {
         }
     }
 
-    public Shift getShift(int userId, Date date, ShiftType type) {
+    public Shift getShift(int userId, LocalDate date, ShiftType type) {
         try {
             verifyLogged(userId);
-            LocalDate localDate = toLocalDate(date);
-            return shiftMemory.get(localDate, type);
+            return shiftMemory.get(date, type);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("getShift failed: " + e.getMessage());
         }
     }
 
-    public void setDeadline(int userId, Date date) {
+    public void setDeadline(int userId, LocalDate date) {
         try {
             verifyHR(userId);
             if (date == null) {
                 throw new IllegalArgumentException("Deadline cannot be null");
             }
-            if (date.before(new Date())) {
+            if (date.isBefore(LocalDate.now())) {
                 throw new IllegalArgumentException("Deadline cannot be in the past");
             }
             this.deadline = date;
@@ -174,7 +162,7 @@ public class ShiftController {
         }
     }
 
-    public void setWeeklyConstraints(int userId, Map<Date, Set<ShiftType>> cons) {
+    public void setWeeklyConstraints(int userId, Map<LocalDate, Set<ShiftType>> cons) {
         try {
             verifyLogged(userId);
             checkDeadline();
@@ -190,7 +178,7 @@ public class ShiftController {
         }
     }
 
-    public void setWeeklyPreferences(int userId, Map<Date, Set<ShiftType>> prefs) {
+    public void setWeeklyPreferences(int userId, Map<LocalDate, Set<ShiftType>> prefs) {
         try {
             verifyLogged(userId);
             checkDeadline();
@@ -206,7 +194,7 @@ public class ShiftController {
         }
     }
 
-    public Map<Date, Map<ShiftType, Boolean>> getWeeklyConstraints(int userId, int empId) {
+    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyConstraints(int userId, int empId) {
         try {
             verifyLogged(userId);
             verifyReadAccess(userId, empId);
@@ -222,7 +210,7 @@ public class ShiftController {
         }
     }
 
-    public Map<Date, Map<ShiftType, Boolean>> getWeeklyPreferences(int userId, int empId) {
+    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyPreferences(int userId, int empId) {
         try {
             verifyLogged(userId);
             verifyReadAccess(userId, empId);
@@ -238,11 +226,10 @@ public class ShiftController {
         }
     }
 
-    public String createOverrideRequest(int userId, int empId, Date date, ShiftType type, Certification role) {
+    public String createOverrideRequest(int userId, int empId, LocalDate date, ShiftType type, Certification role) {
         try {
             verifyHR(userId);
-            LocalDate localDate = toLocalDate(date);
-            shiftMemory.get(localDate, type);
+            shiftMemory.get(date, type);
             Employee emp = employeeMemory.get(empId);
             if (emp == null) {
                 throw new IllegalArgumentException("Employee " + empId + " not found");
@@ -251,7 +238,7 @@ public class ShiftController {
                 throw new IllegalStateException("Employee " + empId + " is already available for this shift, no override needed");
             }
             String requestId = requestMemory.generateId();
-            OverrideRequest request = new OverrideRequest(requestId, userId, empId, localDate, type, role);
+            OverrideRequest request = new OverrideRequest(requestId, userId, empId, date, type, role);
             requestMemory.save(request);
             return requestId;
 
@@ -348,7 +335,7 @@ public class ShiftController {
     }
 
     private void checkDeadline() {
-        if (deadline.before(new Date())) {
+        if (deadline.isBefore(LocalDate.now())) {
             throw new IllegalStateException("The submission deadline has passed");
         }
     }
@@ -364,12 +351,6 @@ public class ShiftController {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("updateHistory failed: " + e.getMessage());
         }
-    }
-
-    private LocalDate toLocalDate(Date date) {
-        return date.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
     }
 
     private void verifyLogged(int userId) {

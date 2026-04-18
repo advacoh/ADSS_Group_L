@@ -2,7 +2,7 @@ package dev.service;
 
 import dev.domain.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +18,7 @@ public class SchedulingService {
 
     // --- Shift Management ---
 
-    public Response<Void> createShift(int userId, Date date, ShiftType type) {
+    public Response<Void> createShift(int userId, LocalDate date, ShiftType type) {
         try {
             shiftController.createShift(userId, date, type);
             return Response.success(null);
@@ -27,7 +27,7 @@ public class SchedulingService {
         }
     }
 
-    public Response<Void> setRequirement(int userId, Date date, ShiftType type, Certification role, int count) {
+    public Response<Void> setRequirement(int userId, LocalDate date, ShiftType type, Certification role, int count) {
         try {
             shiftController.setRequirement(userId, date, type, role, count);
             return Response.success(null);
@@ -36,7 +36,7 @@ public class SchedulingService {
         }
     }
 
-    public Response<Void> assignEmployee(int userId, int targetEmpId, Date date, ShiftType type, Certification role, boolean isOvertime) {
+    public Response<Void> assignEmployee(int userId, int targetEmpId, LocalDate date, ShiftType type, Certification role, boolean isOvertime) {
         try {
             shiftController.assignEmployee(userId, targetEmpId, date, type, role, isOvertime);
             return Response.success(null);
@@ -45,7 +45,7 @@ public class SchedulingService {
         }
     }
 
-    public Response<Void> removeEmployee(int userId, Date date, ShiftType type, Certification role, int targetEmpId) {
+    public Response<Void> removeEmployee(int userId, LocalDate date, ShiftType type, Certification role, int targetEmpId) {
         try {
             shiftController.removeEmployee(userId, date, type, role, targetEmpId);
             return Response.success(null);
@@ -56,7 +56,7 @@ public class SchedulingService {
 
     // --- Queries ---
 
-    public Response<ShiftSL> getShift(int userId, Date date, ShiftType type) {
+    public Response<ShiftSL> getShift(int userId, LocalDate date, ShiftType type) {
         try {
             Shift shift = shiftController.getShift(userId, date, type);
             return Response.success(new ShiftSL(shift));
@@ -76,7 +76,7 @@ public class SchedulingService {
         }
     }
 
-    public Response<ShiftSL> getPastShift(int userId, Date date, ShiftType type) {
+    public Response<ShiftSL> getPastShift(int userId, LocalDate date, ShiftType type) {
         try {
             Shift shift = shiftController.getPastShift(userId, date, type);
             return Response.success(new ShiftSL(shift));
@@ -87,7 +87,7 @@ public class SchedulingService {
 
     // --- Constraints & Preferences ---
 
-    public Response<Void> setDeadline(int userId, Date date) {
+    public Response<Void> setDeadline(int userId, LocalDate date) {
         try {
             shiftController.setDeadline(userId, date);
             return Response.success(null);
@@ -96,7 +96,7 @@ public class SchedulingService {
         }
     }
 
-    public Response<Void> setWeeklyConstraints(int userId, Map<Date, Set<ShiftType>> constraints) {
+    public Response<Void> setWeeklyConstraints(int userId, Map<LocalDate, Set<ShiftType>> constraints) {
         try {
             shiftController.setWeeklyConstraints(userId, constraints);
             return Response.success(null);
@@ -105,7 +105,7 @@ public class SchedulingService {
         }
     }
 
-    public Response<Void> setWeeklyPreferences(int userId, Map<Date, Set<ShiftType>> preferences) {
+    public Response<Void> setWeeklyPreferences(int userId, Map<LocalDate, Set<ShiftType>> preferences) {
         try {
             shiftController.setWeeklyPreferences(userId, preferences);
             return Response.success(null);
@@ -114,7 +114,7 @@ public class SchedulingService {
         }
     }
 
-    public Response<Map<Date, Map<ShiftType, Boolean>>> getWeeklyConstraints(int userId, int targetEmpId) {
+    public Response<Map<LocalDate, Map<ShiftType, Boolean>>> getWeeklyConstraints(int userId, int targetEmpId) {
         try {
             return Response.success(shiftController.getWeeklyConstraints(userId, targetEmpId));
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -122,7 +122,7 @@ public class SchedulingService {
         }
     }
 
-    public Response<Map<Date, Map<ShiftType, Boolean>>> getWeeklyPreferences(int userId, int targetEmpId) {
+    public Response<Map<LocalDate, Map<ShiftType, Boolean>>> getWeeklyPreferences(int userId, int targetEmpId) {
         try {
             return Response.success(shiftController.getWeeklyPreferences(userId, targetEmpId));
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -132,7 +132,7 @@ public class SchedulingService {
 
     // --- Override Requests ---
 
-    public Response<String> createOverrideRequest(int userId, int targetEmpId, Date date, ShiftType type, Certification role) {
+    public Response<String> createOverrideRequest(int userId, int targetEmpId, LocalDate date, ShiftType type, Certification role) {
         try {
             String requestId = shiftController.createOverrideRequest(userId, targetEmpId, date, type, role);
             return Response.success(requestId);
