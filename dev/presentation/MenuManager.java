@@ -71,5 +71,5 @@ public class MenuManager {
             System.out.println("HR registered successfully.");
     }
 
-//    public int getLoggedInUserId() { return loggedInUserId; }
+    public int getLoggedInUserId() { return loggedInUserId; }
 }

@@ -1,10 +1,16 @@
 package dev.presentation.hr;
 
+import dev.domain.ShiftType;
 import dev.presentation.InputUtil;
 import dev.presentation.MenuManager;
 import dev.presentation.MenuManager;
 import dev.service.PersonnelService;
+import dev.service.Response;
 import dev.service.SchedulingService;
+import dev.service.ShiftSL;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class HRMenu {
 
@@ -14,6 +20,7 @@ public class HRMenu {
     private final ShiftFillingMenu shiftFillingMenu;
     private final EmployeeManagementMenu employeeMenu;
     private final HRRequestMenu requestMenu;
+    private final SchedulingService schedulingService;
 
     public HRMenu(MenuManager manager, SchedulingService schedulingService, PersonnelService personnelService) {
         this.manager = manager;
@@ -21,6 +28,7 @@ public class HRMenu {
         shiftFillingMenu = new ShiftFillingMenu(manager, schedulingService);
         employeeMenu = new EmployeeManagementMenu(manager, personnelService);
         requestMenu = new HRRequestMenu(manager, schedulingService);
+        this.schedulingService = schedulingService;
     }
 
     public void show() {
@@ -68,7 +76,29 @@ public class HRMenu {
     }
 
     private void viewHistory() {
-        // TODO: read date, read shift type, display past shift details
+        while (true) {
+            System.out.println("\n=== View History ===");
+            System.out.println("Enter 'q' to go back.");
+
+            LocalDate date = InputUtil.readDate();
+            if (date == null) return;
+
+            ShiftType type = InputUtil.readShiftType();
+            if (type == null) return;
+
+            displayPastShift(date, type);
+        }
+    }
+
+    private void displayPastShift(LocalDate date, ShiftType type) {
+        Response<ShiftSL> response = schedulingService.getPastShift(
+                manager.getLoggedInUserId(), date, type
+        );
+        if (response.isError()) {
+            System.out.println("Shift not found: " + response.getErrorMessage());
+        } else {
+            System.out.println(response.getValue().toString());
+        }
     }
 
 }

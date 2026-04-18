@@ -114,17 +114,21 @@ public class SchedulingService {
         }
     }
 
-    public Response<Map<LocalDate, Map<ShiftType, Boolean>>> getWeeklyConstraints(int userId, int targetEmpId) {
+    public Response<WeeklyConstraintsSL> getWeeklyConstraints(int userId, int targetEmpId) {
         try {
-            return Response.success(shiftController.getWeeklyConstraints(userId, targetEmpId));
+            Map<LocalDate, Map<ShiftType, Boolean>> consts = shiftController.getWeeklyConstraints(userId, targetEmpId);
+            WeeklyConstraintsSL weeklyConstraintsSL = new WeeklyConstraintsSL(consts);
+            return Response.success(weeklyConstraintsSL);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
     }
 
-    public Response<Map<LocalDate, Map<ShiftType, Boolean>>> getWeeklyPreferences(int userId, int targetEmpId) {
+    public Response<WeeklyPreferenceSL> getWeeklyPreferences(int userId, int targetEmpId) {
         try {
-            return Response.success(shiftController.getWeeklyPreferences(userId, targetEmpId));
+            Map<LocalDate, Map<ShiftType, Boolean>> prefs = shiftController.getWeeklyPreferences(userId, targetEmpId);
+            WeeklyPreferenceSL weeklyPreferenceSL = new WeeklyPreferenceSL(prefs);
+            return Response.success(weeklyPreferenceSL);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
@@ -185,6 +189,27 @@ public class SchedulingService {
         try {
             OverrideRequest request = shiftController.viewRequest(userId, requestId);
             return Response.success(new OverrideRequestSL(request));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+    // SchedulingService
+    public Response<List<EmployeeSL>> getAvailableForRole(int userId, LocalDate date, ShiftType type, Certification role) {
+        try {
+            List<EmployeeSL> employees = shiftController.getAvailableForRole(userId, date, type, role)
+                    .stream().map(EmployeeSL::new).collect(Collectors.toList());
+            return Response.success(employees);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+    public Response<List<EmployeeSL>> getAllWithCertification(int userId, Certification role) {
+        try {
+            List<EmployeeSL> employees = shiftController.getAllWithCertification(userId, role)
+                    .stream().map(EmployeeSL::new).collect(Collectors.toList());
+            return Response.success(employees);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }

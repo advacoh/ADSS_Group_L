@@ -2,7 +2,11 @@ package dev.presentation.hr;
 
 import dev.presentation.InputUtil;
 import dev.presentation.MenuManager;
+import dev.service.Response;
 import dev.service.SchedulingService;
+import dev.domain.ShiftType;
+import dev.domain.Certification;
+import java.time.LocalDate;
 
 public class ShiftDefinitionMenu {
 
@@ -31,10 +35,33 @@ public class ShiftDefinitionMenu {
     }
 
     private void createShift() {
-        // TODO
+        LocalDate date = InputUtil.readDayOfWeek();
+        ShiftType type = InputUtil.readShiftType();
+
+        Response<Void> response = schedulingService.createShift(
+                manager.getLoggedInUserId(), date, type
+        );
+
+        if (response.isError())
+            System.out.println("Shift was not created: " + response.getErrorMessage());
+        else
+            System.out.println("Shift created successfully!");
     }
 
     private void setRequirements() {
-        // TODO
+        LocalDate date = InputUtil.readDayOfWeek();
+        ShiftType type = InputUtil.readShiftType();
+        Certification role = InputUtil.readRole();
+
+        int count = InputUtil.readInt("Select amount: ");
+
+        Response<Void> response = schedulingService.setRequirement(
+                manager.getLoggedInUserId(), date, type, role, count
+        );
+
+        if (response.isError())
+            System.out.println("Requirement was not set: " + response.getErrorMessage());
+        else
+            System.out.println("Requirement set successfully!");
     }
 }
