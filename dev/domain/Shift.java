@@ -112,6 +112,28 @@ public class Shift {
         return false;
     }
 
+    public boolean isAssignedAsRole(Certification role, int empId) {
+        List<Integer> employeesInRole = assignments.get(role);
+
+        if (employeesInRole == null) {
+            return false;
+        }
+
+        return employeesInRole.contains(empId);
+    }
+
+    public int countRoles(int empId) {
+        int count = 0;
+
+        for (List<Integer> employees : assignments.values()) {
+            if (employees.contains(empId)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
     // --- Getters ---
     public String getID() { return ID; }
     public LocalDate getDate() { return date; }

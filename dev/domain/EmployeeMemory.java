@@ -53,6 +53,16 @@ public class EmployeeMemory {
         return res;
     }
 
+    public List<Employee> getByrole(Certification role) {
+        List<Employee> result = new ArrayList<>();
+        for (Employee emp : employees.values()) {
+            if (emp.getStatus() == Status.ACTIVE && emp.isCertified(role)) {
+                result.add(emp);
+            }
+        }
+        return result;
+    }
+
     public void update(Employee employee) {
         int id = employee.getID();
         if (employees.containsKey(id)) {
