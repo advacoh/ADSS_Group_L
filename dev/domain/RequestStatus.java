@@ -1,7 +1,18 @@
 package dev.domain;
 
 public enum RequestStatus {
-    PENDING,
-    APPROVED,
-    REJECTED
+
+    PENDING("Pending"),
+    APPROVED("Approved"),
+    REJECTED("Rejected");
+
+    private final String value;
+
+    RequestStatus(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }
