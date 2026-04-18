@@ -119,6 +119,19 @@ public class Shift {
     public boolean canAcceptOvertime() {
         return this.type == ShiftType.MORNING;
     }
+    public Map<Certification, Integer> getRequiredRoles() {
+        return Collections.unmodifiableMap(requiredRoles);
+    }
+    public Map<Certification, List<Integer>> getAssignments() {
+        Map<Certification, List<Integer>> unmodifiableAssignments = new HashMap<>();
+        assignments.forEach((role, list) ->
+                unmodifiableAssignments.put(role, Collections.unmodifiableList(list))
+        );
+        return Collections.unmodifiableMap(unmodifiableAssignments);
+    }
+    public List<Integer> getOvertimeEmployees() {
+        return Collections.unmodifiableList(overtimeEmployees);
+    }
 //    public List<Integer> getOvertimeEmployees() { return Collections.unmodifiableList(overtimeEmployees); }
 //
 //    public Map<Certification, List<Integer>> getAssignments() {

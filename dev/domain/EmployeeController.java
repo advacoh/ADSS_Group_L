@@ -106,6 +106,11 @@ public class EmployeeController {
         }     
     }
 
+    public boolean isHR(int empId) {
+        Employee emp = getEmployeeOrThrow(empId);
+        return emp.isHR();
+    }
+
     // Update Methods
     public void updateFinancialDetails(int userID, int empId, int newBankAccount, SalType newSalaryType, int newSalary) {
         try{
