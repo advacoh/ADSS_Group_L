@@ -5,8 +5,19 @@ import java.util.*;
 import java.time.format.DateTimeFormatter;
 
 public class ShiftMemory {
-    private final Map<String, Shift> activeShifts = new HashMap<>();
-    private final Map<String, Shift> pastShifts = new HashMap<>();
+    private final Map<String, Shift> activeShifts;
+    private final Map<String, Shift> pastShifts;
+
+    public ShiftMemory(){
+        this.activeShifts = new HashMap<>();
+        this.pastShifts = new HashMap<>();
+    }
+
+    public ShiftMemory(Map<String, Shift> activeShifts, Map<String, Shift> pastShifts){
+        this.activeShifts = activeShifts;
+        this.pastShifts = pastShifts;
+    }
+
 
     private String getShiftKey(LocalDate date, ShiftType type) {
         return date.format(DateTimeFormatter.ISO_LOCAL_DATE) + "_" + type.name();

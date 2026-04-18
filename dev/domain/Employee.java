@@ -1,7 +1,8 @@
 package dev.domain;
 
-import java.util.List;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.*;
 import dev.domain.Status;
 
@@ -9,7 +10,7 @@ public class Employee {
     private int ID;
     private String name;
     private int bankAccount;
-    private Date startDate;
+    private LocalDate startDate;
     private EmpType employementType;
     private SalType salaryType;
     private int salary;
@@ -19,7 +20,7 @@ public class Employee {
     private boolean willOvertime;
     private List<Certification> certifications;
 
-    public Employee(int ID, String name, int bankAccount, Date startDate, 
+    public Employee(int ID, String name, int bankAccount, LocalDate startDate, 
                     EmpType employementType, SalType salaryType, int salary, 
                     int vacation, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, List<Certification> certifications) {
         this.ID = ID;
@@ -40,60 +41,35 @@ public class Employee {
     public int getID() { return ID; }
     public String getName() { return name; }
     public int getBankAccount() { return bankAccount; } 
-    public Date getStartDate() { return startDate; } 
+    public LocalDate getStartDate() { return startDate; } 
     public EmpType getEmployementType() { return employementType; }
     public SalType getSalaryType() { return salaryType; }
     public int getSalary() { return salary; }
     public int getVacation() { return vacation; } 
     public Status getStatus() { return status; }
     public boolean willOvertime(){ return willOvertime; }
+    public String getDayOff(){
+        int dayOff = this.weeklySubmission.getDayOff();
+        DayOfWeek day = DayOfWeek.of(dayOff);
+        return day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+    }
+    public List<Certification> getCertifications(){ return certifications;}
 
 
     // Setters
     public void setName(String name) { this.name = name; } 
     public void setBankAccount(int bankAccount) { this.bankAccount = bankAccount; }
-    public void setStartDate(Date startDate) { this.startDate = startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
     public void setEmployementType(EmpType employementType) { this.employementType = employementType; } 
     public void setSalaryType(SalType salaryType) { this.salaryType = salaryType; }
     public void setSalary(int salary) { this.salary = salary; } 
     public void setVacation(int vacation) { this.vacation = vacation; } 
     public void setStatus(Status status) { this.status = status; }
     public void setWillOverTime(boolean val){ this.willOvertime = val;}
+    public void setDayOff(int dayOff){ this.weeklySubmission.setDayOff(dayOff); }
 
     
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        
-        sb.append("Employee Profile:\n");
-        
-        sb.append(String.format("%-18s %d\n", "ID:", ID));
-        sb.append(String.format("%-18s %s\n", "Name:", name));
-        sb.append(String.format("%-18s %s\n", "Status:", status));
-        sb.append(String.format("%-18s %d\n", "Bank Account:", bankAccount));
-        
-        String dateStr = (startDate != null) ? startDate.toString() : "N/A";
-        sb.append(String.format("%-18s %s\n", "Start Date:", dateStr));
-        
-        sb.append(String.format("%-18s %s\n", "Employment Type:", employementType));
-        sb.append(String.format("%-18s %s\n", "Salary Type:", salaryType));
-        sb.append(String.format("%-18s %d\n", "Salary:", salary));
-        sb.append(String.format("%-18s %d\n", "Vacation Days:", vacation));
-        sb.append(String.format("%-18s %d\n", "Day Off:", this.weeklySubmission.getDayOff()));
-        
-        sb.append(String.format("%-18s ", "Certifications:"));
-        if (certifications == null || certifications.isEmpty()) {
-            sb.append("None\n");
-        } else {
-            for (Certification c : certifications) {
-                sb.append(c.name()).append(" ");
-            }
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
-    public boolean isAvailable(Date date, ShiftType type) { 
+    public boolean isAvailable(LocalDate date, ShiftType type) { 
         try {
             return this.weeklySubmission.isAvailable(date, type);
         } catch (IllegalArgumentException e) {
@@ -101,7 +77,7 @@ public class Employee {
         }
     }
 
-    public boolean isPrefered(Date date, ShiftType type) { 
+    public boolean isPrefered(LocalDate date, ShiftType type) { 
         try {
             return this.weeklySubmission.isPrefered(date, type);
         } catch (IllegalArgumentException e) {
@@ -141,10 +117,10 @@ public class Employee {
         return this.certifications.contains(cert);
     }
 
-    public Map<Date, Map<ShiftType, Boolean>> getWeeklyConstraints() {
-        Map<Date, Map<ShiftType, SlotSubmission>> slots = this.weeklySubmission.getSlots();
-        Map<Date, Map<ShiftType, Boolean>> res = new HashMap<>();
-        for (Date date : slots.keySet()) {
+    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyConstraints() {
+        Map<LocalDate, Map<ShiftType, SlotSubmission>> slots = this.weeklySubmission.getSlots();
+        Map<LocalDate, Map<ShiftType, Boolean>> res = new HashMap<>();
+        for (LocalDate date : slots.keySet()) {
             Map<ShiftType, Boolean> dailyAvailability = new HashMap<>();
             for (ShiftType type : ShiftType.values()) {
                 boolean status = isAvailable(date, type);
@@ -156,10 +132,10 @@ public class Employee {
     }
 
 
-    public Map<Date, Map<ShiftType, Boolean>> getWeeklyPreferences() {
-        Map<Date, Map<ShiftType, SlotSubmission>> slots = this.weeklySubmission.getSlots();
-        Map<Date, Map<ShiftType, Boolean>> res = new HashMap<>();
-        for (Date date : slots.keySet()) {
+    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyPreferences() {
+        Map<LocalDate, Map<ShiftType, SlotSubmission>> slots = this.weeklySubmission.getSlots();
+        Map<LocalDate, Map<ShiftType, Boolean>> res = new HashMap<>();
+        for (LocalDate date : slots.keySet()) {
             Map<ShiftType, Boolean> dailyPreferences = new HashMap<>();
             for (ShiftType type : ShiftType.values()) {
                 boolean prefStatus = isPrefered(date, type);
@@ -171,21 +147,19 @@ public class Employee {
     }
 
 
-    public void setWeeklyConstraints(Map<Date, Set<ShiftType>> cons) {
+    public void setWeeklyConstraints(Map<LocalDate, Set<ShiftType>> cons) {
         if (cons == null) {
             throw new IllegalArgumentException("Constraints map cannot be null.");
         }
         boolean submittedOnDayOff = false;        
         this.weeklySubmission.setAllConstraintsFalse();
         this.weeklySubmission.setAllPreferencesFalse();
-        Calendar cal = Calendar.getInstance();
         int employeeDayOff = this.weeklySubmission.getDayOff(); 
-        for (Map.Entry<Date, Set<ShiftType>> entry : cons.entrySet()) {
-            Date date = entry.getKey();
+
+        for (Map.Entry<LocalDate, Set<ShiftType>> entry : cons.entrySet()) {
+            LocalDate date = entry.getKey();
             Set<ShiftType> shiftsForDay = entry.getValue();
-            cal.setTime(date);
-            int currentDayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
-            if (currentDayOfWeek == employeeDayOff) {
+            if (date.getDayOfWeek().getValue() == employeeDayOff) {
                 submittedOnDayOff = true;
                 continue; 
             }
@@ -200,21 +174,18 @@ public class Employee {
         }
     }
 
-    public void setWeeklyPreferences(Map<Date, Set<ShiftType>> prefs) {
+    public void setWeeklyPreferences(Map<LocalDate, Set<ShiftType>> prefs) {
         if (prefs == null) {
             throw new IllegalArgumentException("Preferences map cannot be null.");
         }
         boolean submittedOnDayOff = false;
         boolean prefWithoutConstraint = false;
         this.weeklySubmission.setAllPreferencesFalse();
-        Calendar cal = Calendar.getInstance();
         int employeeDayOff = this.weeklySubmission.getDayOff();
-
-        for (Map.Entry<Date, Set<ShiftType>> entry : prefs.entrySet()) {
-            Date date = entry.getKey();
+        for (Map.Entry<LocalDate, Set<ShiftType>> entry : prefs.entrySet()) {
+            LocalDate date = entry.getKey();
             Set<ShiftType> shiftsForDay = entry.getValue();
-            cal.setTime(date);
-            if (cal.get(Calendar.DAY_OF_WEEK) == employeeDayOff) {
+            if (date.getDayOfWeek().getValue() == employeeDayOff) {
                 submittedOnDayOff = true;
                 continue; 
             }

@@ -8,8 +8,18 @@ import java.util.Set;
 
 public class UserMemory {
 
-    private Map<Integer, User> users = new HashMap<>();
-    private Set<Integer> loggedUsers = new HashSet<>();
+    private Map<Integer, User> users;
+    private Set<Integer> loggedUsers;
+
+    public UserMemory(){
+        this.users = new HashMap<>();
+        this.loggedUsers = new HashSet<>();
+    }
+
+    public UserMemory(Map<Integer, User> users, Set<Integer> loggedUsers){
+        this.users = users;
+        this.loggedUsers = loggedUsers;
+    }
 
     public void save(User user) {
         if (users.containsKey(user.getId())) {
