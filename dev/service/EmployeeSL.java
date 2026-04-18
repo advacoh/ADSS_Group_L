@@ -1,10 +1,8 @@
 package dev.service;
 import java.util.List;
-import dev.domain.Certification;
-import dev.domain.EmpType;
-import dev.domain.SalType;
-import dev.domain.WeeklySubmission;
-import dev.domain.Status;
+
+import dev.domain.*;
+
 import java.time.LocalDate;
 
 public class EmployeeSL {
@@ -40,6 +38,21 @@ public class EmployeeSL {
         this.dayOff = dayOff;
     }
 
+    public EmployeeSL(Employee emp) {
+        this.ID = emp.getID();
+        this.name = emp.getName();
+        this.bankAccount = emp.getBankAccount();
+        this.startDate = emp.getStartDate();
+        this.employementType = emp.getEmployementType();
+        this.salaryType = emp.getSalaryType();
+        this.salary = emp.getSalary();
+        this.vacation = emp.getVacation();
+        this.status = emp.getStatus();
+        this.willOvertime = emp.willOvertime();
+        this.certifications = emp.getCertifications();
+        this.dayOff = emp.getDayOff();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -72,5 +85,7 @@ public class EmployeeSL {
         return sb.toString();
     }
 
-    
+    public int getID() {
+        return ID;
+    }
 }

@@ -80,7 +80,7 @@ public class ShiftFillingMenu {
             if (selected == null) return;
 
             Response<Void> assignResponse = schedulingService.assignEmployee(
-                    userId, selected.getId(), date, type, role, false
+                    userId, selected.getID(), date, type, role, false
             );
             if (assignResponse.isError()) {
                 System.out.println("Assignment failed: " + assignResponse.getErrorMessage());
@@ -99,7 +99,7 @@ public class ShiftFillingMenu {
     private EmployeeSL selectEmployee(List<EmployeeSL> employees) {
         System.out.println("\nAvailable employees:");
         for (int i = 0; i < employees.size(); i++) {
-            System.out.println((i + 1) + ") " + employees.get(i).getId());
+            System.out.println((i + 1) + ") " + employees.get(i).getID());
         }
         System.out.print("Select employee (0 to cancel): ");
         while (true) {
@@ -128,7 +128,7 @@ public class ShiftFillingMenu {
         if (selected == null) return;
 
         Response<String> requestResponse = schedulingService.createOverrideRequest(
-                userId, selected.getId(), date, type, role
+                userId, selected.getID(), date, type, role
         );
         if (requestResponse.isError())
             System.out.println("Request failed: " + requestResponse.getErrorMessage());
