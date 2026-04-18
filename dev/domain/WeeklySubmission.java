@@ -1,48 +1,39 @@
 package dev.domain;
-
-import java.util.Date;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.DayOfWeek;
 
 
 public class WeeklySubmission {
-    private Date weekOf;
+    private LocalDate weekOf;
     private int dayOff;
     private boolean doubleShiftAllowed;
-    private Map<Date, Map<ShiftType, SlotSubmission>> slots; 
+    private Map<LocalDate, Map<ShiftType, SlotSubmission>> slots; 
 
-    // Constructor
     public WeeklySubmission(int dayOff, boolean doubleShiftAllowed) {
         this.dayOff = dayOff;
         this.doubleShiftAllowed = doubleShiftAllowed;
         this.slots = new HashMap<>();
-        Calendar calendar = Calendar.getInstance();
 
-        while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        LocalDate current = LocalDate.now();
+        while (current.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            current = current.plusDays(1);
         }
-
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        this.weekOf = calendar.getTime();
+        this.weekOf = current;
 
         for (int i = 0; i < 7; i++) {
-            Date currentDay = calendar.getTime();
             Map<ShiftType, SlotSubmission> dailyShifts = new HashMap<>();
             for (ShiftType shift : ShiftType.values()) {
                 dailyShifts.put(shift, new SlotSubmission());
             }
-            this.slots.put(currentDay, dailyShifts);
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            this.slots.put(current, dailyShifts);
+            current = current.plusDays(1);
         }
     }
 
     // Getters
-    public Date getWeekOf() {
+    public LocalDate getWeekOf() {
         return weekOf;
     }
 
@@ -54,26 +45,26 @@ public class WeeklySubmission {
         return this.doubleShiftAllowed;
     }
 
-    public Map<Date, Map<ShiftType, SlotSubmission>> getSlots() {
+    public Map<LocalDate, Map<ShiftType, SlotSubmission>> getSlots() {
         return slots;
     }
 
-    public boolean isAvailable(Date date, ShiftType shiftType){
-        return getSlot(date,shiftType) != null;
+    public boolean isAvailable(LocalDate date, ShiftType shiftType){
+        return getSlot(date, shiftType).isConstraint(); 
     }
 
-    public boolean isPrefered(Date date, ShiftType shiftType){
+    public boolean isPrefered(LocalDate date, ShiftType shiftType){
         return getSlot(date,shiftType).isPreference();
     }
 
     // Setters
 
-    public void setConstraint(Date date, ShiftType shiftType, boolean value) {
+    public void setConstraint(LocalDate date, ShiftType shiftType, boolean value) {
         SlotSubmission slot = getSlot(date, shiftType);
         slot.setConstraint(value);
     }
 
-    public void setPreference(Date date, ShiftType shiftType, boolean value) {
+    public void setPreference(LocalDate date, ShiftType shiftType, boolean value) {
         SlotSubmission slot = getSlot(date, shiftType);
         slot.setPreference(value);
     }
@@ -98,10 +89,17 @@ public class WeeklySubmission {
         }
     }
 
+    public void setDayOff(int dayOff){
+        if(dayOff < 1 || dayOff > 7){
+            throw new IllegalArgumentException("The day off value that was submitted " + dayOff + " is invalid (1-7).");
+        }
+        this.dayOff = dayOff;
+    }
+
 
 // Helpers
 
-private Map<ShiftType, SlotSubmission> getDailyShifts(Date date){
+private Map<ShiftType, SlotSubmission> getDailyShifts(LocalDate date){
     Map<ShiftType, SlotSubmission> dailyShifts = slots.get(date);
     if (dailyShifts == null) {
         throw new IllegalArgumentException("Date " + date + " is not within the current weekly submission range.");
@@ -109,7 +107,7 @@ private Map<ShiftType, SlotSubmission> getDailyShifts(Date date){
     return dailyShifts;
 }
 
-private SlotSubmission getSlot(Date date, ShiftType shiftType){
+private SlotSubmission getSlot(LocalDate date, ShiftType shiftType){
     Map<ShiftType, SlotSubmission> dailyShifts = getDailyShifts(date);
     SlotSubmission slot = dailyShifts.get(shiftType);
     if (slot == null) {

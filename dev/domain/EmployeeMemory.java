@@ -1,10 +1,9 @@
 package dev.domain;
-
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Date;
 
 
 public class EmployeeMemory {
@@ -12,6 +11,10 @@ public class EmployeeMemory {
 
     public EmployeeMemory() {
         this.employees = new HashMap<>();
+    }
+
+    public EmployeeMemory(Map<Integer, Employee> employees) {
+        this.employees = employees;
     }
 
     public boolean save(Employee employee) { 
@@ -40,7 +43,7 @@ public class EmployeeMemory {
         return activeList;
     }
     
-    public List<Employee> getAllAvailableAndCertified(Date date, ShiftType shiftType, Certification role){
+    public List<Employee> getAllAvailableAndCertified(LocalDate date, ShiftType shiftType, Certification role){
         List<Employee> allActive = getAllActiveEmployees();
         List<Employee> res = new ArrayList<>();
         for(Employee emp: allActive){
@@ -71,5 +74,13 @@ public class EmployeeMemory {
         if (employees.containsKey(employeeID)) {
             employees.remove(employeeID);
         }
+    }
+
+    public boolean doesHRExist() {
+        for (Employee e : this.employees.values()) {
+            if (e.isHR())
+                return true;
+        }
+        return false;
     }
 }
