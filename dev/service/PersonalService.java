@@ -192,7 +192,6 @@ public class PersonalService {
             }
     }
 
-
     public String getEmployeeDetails(int activeUserId, int targetEmpId) { 
         try{
             Employee emp = this.employeeController.getEmployeeDetails(activeUserId,targetEmpId);
@@ -203,6 +202,6 @@ public class PersonalService {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(e.getMessage());
         }
-     }
+    }
 }
 

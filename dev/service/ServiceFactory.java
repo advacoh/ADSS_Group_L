@@ -29,32 +29,16 @@ public class ServiceFactory {
    
     private final AuthService authService;
     private final SchedulingService schedulingService; 
-    private final PersonalService personnelService; 
+    private final PersonalService personalService; 
 
-    // Default Constructor
-    public ServiceFactory() {
+   
+    public ServiceFactory(boolean noNeedForData) {
         UserMemory userMemory = new UserMemory();
         EmployeeMemory employeeMemory = new EmployeeMemory();
         ShiftMemory shiftMemory = new ShiftMemory();
         RequestMemory requestMemory = new RequestMemory();
 
-        UserController userController = new UserController(userMemory);
-        EmployeeController employeeController = new EmployeeController(userController, employeeMemory);
-        ShiftController shiftController = new ShiftController(shiftMemory, employeeMemory, userController, requestMemory);
-
-        this.authService = new AuthService(userController);
-        this.personnelService = new PersonalService(userController, employeeController);
-        this.schedulingService = new SchedulingService(shiftController, employeeController);
-    }
-
-    // if withTestData variable is true - it will act as a simulated data constructor, if it's false - it will act as a default contractor.
-    public ServiceFactory(boolean withTestData) {
-        UserMemory userMemory = new UserMemory();
-        EmployeeMemory employeeMemory = new EmployeeMemory();
-        ShiftMemory shiftMemory = new ShiftMemory();
-        RequestMemory requestMemory = new RequestMemory();
-
-        if (withTestData) {
+        if (!noNeedForData) {
             populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory);
         }
 
@@ -63,7 +47,7 @@ public class ServiceFactory {
         ShiftController shiftController = new ShiftController(shiftMemory, employeeMemory, userController, requestMemory);
 
         this.authService = new AuthService(userController);
-        this.personnelService = new PersonalService(userController, employeeController);
+        this.personalService = new PersonalService(userController, employeeController);
         this.schedulingService = new SchedulingService(shiftController, employeeController);
     }
 
@@ -210,6 +194,18 @@ public class ServiceFactory {
         populateEmployeeMemory(e);
         populateShiftMemory(s);
         populateRequestMemory(r);
+    }
+
+    public AuthService getAuthService(){
+        return this.authService;
+    }
+
+    public PersonalService getPersonalService(){
+        return this.personalService;
+    }
+
+    public SchedulingService getSchedulingService(){
+        return this.schedulingService;
     }
 
 }
