@@ -45,6 +45,15 @@ public class PersonnelService {
         }
     }
 
+    public Response<Void> activateEmployee(int userID, int empId, String password){
+        try{
+            employeeController.activateEmployee(userID, empId, password);
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
     public Response<Void> addCertification(int activeUserId, int targetEmpId, Certification role) { 
         try{
             this.employeeController.addCertification(activeUserId, targetEmpId, role);
