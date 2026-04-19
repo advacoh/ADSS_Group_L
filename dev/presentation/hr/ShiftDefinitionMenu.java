@@ -7,6 +7,9 @@ import dev.service.SchedulingService;
 import dev.domain.ShiftType;
 import dev.domain.Certification;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ShiftDefinitionMenu {
 
@@ -51,7 +54,9 @@ public class ShiftDefinitionMenu {
     private void setRequirements() {
         LocalDate date = InputUtil.readDayOfWeek();
         ShiftType type = InputUtil.readShiftType();
-        Certification role = InputUtil.readRole();
+        List<Certification> eligibleRoles = new ArrayList<>(Arrays.asList(Certification.values()));
+        eligibleRoles.remove(Certification.HR_MANAGER);
+        Certification role = InputUtil.readRole(eligibleRoles);
 
         int count = InputUtil.readInt("Select amount: ");
 

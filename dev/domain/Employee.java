@@ -18,23 +18,39 @@ public class Employee {
     private int vacation;
     private Status status;
     private boolean willOvertime;
-    private List<Certification> certifications;
+    private Set<Certification> certifications;
 
     public Employee(int ID, String name, int bankAccount, LocalDate startDate, 
                     EmpType employementType, SalType salaryType, int salary, 
-                    int vacation, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, List<Certification> certifications) {
+                    int vacation, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certifications) {
+        this.name = Objects.requireNonNull(name, "Name cannot be null");
+        this.startDate = Objects.requireNonNull(startDate, "Start date cannot be null");
+        this.employementType = Objects.requireNonNull(employementType, "Employment type cannot be null");
+        this.salaryType = Objects.requireNonNull(salaryType, "Salary type cannot be null");
+        this.certifications = Objects.requireNonNull(certifications, "Certifications list cannot be null");
+
+        if (ID < 100000000 || ID > 999999999) {
+            throw new IllegalArgumentException("ID must be a 9-digit positive number.");
+        }
         this.ID = ID;
-        this.name = name;
+        if (salary <= 0) {
+            throw new IllegalArgumentException("Salary must be positive.");
+        }
+        if (vacation <= 0) {
+            throw new IllegalArgumentException("Vacation days must be positive.");
+        }
+        if (bankAccount <= 0) {
+            throw new IllegalArgumentException("Bank account number must be positive.");
+        }
+        if (dayOff < 1 || dayOff > 7) {
+            throw new IllegalArgumentException("Day off must be between 1 (Sunday) and 7 (Saturday).");
+        }
         this.bankAccount = bankAccount;
-        this.startDate = startDate;
-        this.employementType = employementType;
-        this.salaryType = salaryType;
         this.salary = salary;
         this.vacation = vacation;
         this.status = Status.ACTIVE;
         this.willOvertime = willOvertime;
-        this.certifications = certifications;
-        this.weeklySubmission = new WeeklySubmission(dayOff, doubleShiftAllowed); 
+        this.weeklySubmission = new WeeklySubmission(dayOff, doubleShiftAllowed);
     }
 
     // Getters 
@@ -53,7 +69,7 @@ public class Employee {
         DayOfWeek day = DayOfWeek.of(dayOff);
         return day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
     }
-    public List<Certification> getCertifications(){ return certifications;}
+    public Set<Certification> getCertifications(){ return certifications;}
 
 
     // Setters
@@ -99,11 +115,9 @@ public class Employee {
 
     public void addCertification(Certification newCert) {
         if (this.certifications == null) {
-            this.certifications = new ArrayList<>();
+            this.certifications = new HashSet<>();
         }
-        if (!this.certifications.contains(newCert)) {
-            this.certifications.add(newCert);
-        }
+        this.certifications.add(newCert);
     }
 
     public boolean removeCertification(Certification certToRemove) {

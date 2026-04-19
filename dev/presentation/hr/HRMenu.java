@@ -4,10 +4,7 @@ import dev.domain.ShiftType;
 import dev.presentation.InputUtil;
 import dev.presentation.MenuManager;
 import dev.presentation.MenuManager;
-import dev.service.PersonnelService;
-import dev.service.Response;
-import dev.service.SchedulingService;
-import dev.service.ShiftSL;
+import dev.service.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,20 +12,22 @@ import java.time.format.DateTimeFormatter;
 public class HRMenu {
 
     private final MenuManager manager;
+    private final SchedulingService schedulingService;
+    private final AuthService authService;
 
     private final ShiftDefinitionMenu shiftDefinitionMenu;
     private final ShiftFillingMenu shiftFillingMenu;
     private final EmployeeManagementMenu employeeMenu;
     private final HRRequestMenu requestMenu;
-    private final SchedulingService schedulingService;
 
-    public HRMenu(MenuManager manager, SchedulingService schedulingService, PersonnelService personnelService) {
+    public HRMenu(MenuManager manager, SchedulingService schedulingService, PersonnelService personnelService, AuthService authService) {
         this.manager = manager;
+        this.schedulingService = schedulingService;
+        this.authService = authService;
         shiftDefinitionMenu = new ShiftDefinitionMenu(manager, schedulingService);
         shiftFillingMenu = new ShiftFillingMenu(manager, schedulingService);
         employeeMenu = new EmployeeManagementMenu(manager, personnelService);
         requestMenu = new HRRequestMenu(manager, schedulingService);
-        this.schedulingService = schedulingService;
     }
 
     public void show() {
@@ -62,8 +61,11 @@ public class HRMenu {
 
                 case 5 -> viewHistory();
                 case 6 -> {
-                    //TODO LOGOUT
-                    System.out.println("Logging out...");
+                    Response<Void> response = authService.logout(manager.getLoggedInUserId());
+                    if (response.isError())
+                        System.out.println("Logout failed: " + response.getErrorMessage());
+                    else
+                        System.out.println("Logging out...");
                     return;
                 }
 

@@ -15,8 +15,8 @@ public class MenuManager {
 
     public MenuManager(AuthService authService, SchedulingService schedulingService, PersonnelService personnelService) {
         this.authService = authService;
-        this.hrMenu = new HRMenu(this, schedulingService, personnelService);
-        this.employeeMenu = new EmployeeMenu(this, schedulingService, personnelService);
+        this.hrMenu = new HRMenu(this, schedulingService, personnelService, authService);
+        this.employeeMenu = new EmployeeMenu(this, schedulingService, personnelService, authService);
     }
 
     public void start() {

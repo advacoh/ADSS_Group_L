@@ -4,6 +4,7 @@ import java.util.List;
 import dev.domain.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 public class EmployeeSL {
     private int ID;
@@ -17,13 +18,13 @@ public class EmployeeSL {
     private int vacation;
     private Status status;
     private boolean willOvertime;
-    private List<Certification> certifications;
+    private Set<Certification> certifications;
     private String dayOff;
 
     public EmployeeSL(int ID, String name, int bankAccount, LocalDate startDate, 
                     EmpType employementType, SalType salaryType, int salary, 
                     int vacation, boolean willOvertime, String dayOff, boolean doubleShiftAllowed, 
-                    List<Certification> certifications) {
+                    Set<Certification> certifications, Status status) {
         this.ID = ID;
         this.name = name;
         this.bankAccount = bankAccount;
@@ -32,7 +33,7 @@ public class EmployeeSL {
         this.salaryType = salaryType;
         this.salary = salary;
         this.vacation = vacation;
-        this.status = Status.ACTIVE;
+        this.status = status;
         this.willOvertime = willOvertime;
         this.certifications = certifications;
         this.dayOff = dayOff;
@@ -88,4 +89,5 @@ public class EmployeeSL {
     public int getID() {
         return ID;
     }
+    public Set<Certification> getCertifications() {return certifications;}
 }

@@ -1,8 +1,9 @@
 package dev.presentation.hr;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import dev.domain.EmpType;
 import dev.domain.SalType;
 import dev.domain.Certification;
@@ -70,17 +71,30 @@ public class EmployeeManagementMenu {
         System.out.println("Allow double shifts? 1) Yes  2) No");
         boolean doubleShift = InputUtil.readInt("Choice: ") == 1;
 
-        List<Certification> certifications = new ArrayList<>();
-        while (true) {
-            certifications.add(InputUtil.readRole());
+        List<Certification> eligibleRoles = new ArrayList<>(Arrays.asList(Certification.values()));
+        eligibleRoles.remove(Certification.HR_MANAGER);
+
+        Set<Certification> selectedCertifications = new HashSet<>();
+
+
+        while (!eligibleRoles.isEmpty()) {
+            Certification picked = InputUtil.readRole(eligibleRoles);
+            selectedCertifications.add(picked);
+            eligibleRoles.remove(picked);
+            if (eligibleRoles.isEmpty()) {
+                System.out.println("All available certifications have been assigned.");
+                break;
+            }
             System.out.println("Add another certification? 1) Yes  2) No");
-            if (InputUtil.readInt("Choice: ") != 1) break;
+            if (InputUtil.readInt("Choice: ") != 1) {
+                break;
+            }
         }
 
         Response<Void> response = personnelService.addEmployee(
             manager.getLoggedInUserId(), empID, password, name, bankAccount, startDate,
             empType, salType, salary, vacationDays, willOvertime,
-            dayOff, doubleShift, certifications);
+            dayOff, doubleShift, selectedCertifications);
 
         if (!response.isError()) {
             System.out.println("Employee hired successfully.");
@@ -143,15 +157,39 @@ public class EmployeeManagementMenu {
         System.out.println("1) Financial Details");
         System.out.println("2) Employment Details");
         System.out.println("3) Name");
-        System.out.println("4) Back");
+        System.out.println("4) Certifications");
+        System.out.println("5) Settings");
+        System.out.println("6) Back");
 
         switch (InputUtil.readInt("Choice: ")) {
             case 1 -> editFinancialDetails(empID);
             case 2 -> editEmploymentDetails(empID);
             case 3 -> editName(empID);
-            case 4 -> { return; }
+            case 4 -> editCertifications(empID);
+            case 5 -> editSettings(empID);
+            case 6 -> { return; }
             default -> System.out.println("Invalid option.");
         }
+    }
+
+    private void editSettings(int empID) {
+        System.out.println("\n--- Edit Employee Settings ---");
+
+        int dayOff = InputUtil.readInt("Day Off (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=Sat): ");
+
+        System.out.println("Allow double shifts? 1) Yes  2) No");
+        boolean willDouble = InputUtil.readInt("Choice: ") == 1;
+
+        System.out.println("Will do overtime? 1) Yes  2) No");
+        boolean willOvertime = InputUtil.readInt("Choice: ") == 1;
+
+        Response<Void> response = personnelService.updateEmployeeSettings(
+                manager.getLoggedInUserId(), empID, dayOff, willDouble, willOvertime);
+
+        if (!response.isError())
+            System.out.println("Settings updated successfully.");
+        else
+            System.out.println("Failed: " + response.getErrorMessage());
     }
 
     private void editFinancialDetails(int empID) {
@@ -203,5 +241,77 @@ public class EmployeeManagementMenu {
         } else {
             System.out.println("Failed: " + response.getErrorMessage());
         }
+    }
+
+    private void editCertifications(int empID) {
+        System.out.println("\n--- Edit Certifications ---");
+        System.out.println("1) Add certification");
+        System.out.println("2) Remove certification");
+        System.out.println("3) Back");
+
+        switch (InputUtil.readInt("Choice: ")) {
+            case 1 -> addCertification(empID);
+            case 2 -> removeCertification(empID);
+            case 3 -> { return; }
+            default -> System.out.println("Invalid option.");
+        }
+    }
+
+    private void addCertification(int empID) {
+        Response<EmployeeSL> details = personnelService.getEmployeeDetails(
+                manager.getLoggedInUserId(), empID
+        );
+        if (details.isError()) {
+            System.out.println("Failed to fetch employee: " + details.getErrorMessage());
+            return;
+        }
+        List<Certification> eligible = Arrays.stream(Certification.values())
+                .filter(c -> c != Certification.HR_MANAGER)
+                .filter(c -> !details.getValue().getCertifications().contains(c))
+                .collect(Collectors.toList());
+
+        if (eligible.isEmpty()) {
+            System.out.println("Employee already has all certifications.");
+            return;
+        }
+
+        Certification role = InputUtil.readRole(eligible);
+
+        Response<Void> response = personnelService.addCertification(
+                manager.getLoggedInUserId(), empID, role
+        );
+
+        if (!response.isError())
+            System.out.println("Certification added successfully.");
+        else
+            System.out.println("Failed: " + response.getErrorMessage());
+    }
+
+    private void removeCertification(int empID) {
+        Response<EmployeeSL> details = personnelService.getEmployeeDetails(
+                manager.getLoggedInUserId(), empID
+        );
+        if (details.isError()) {
+            System.out.println("Failed to fetch employee: " + details.getErrorMessage());
+            return;
+        }
+
+        List<Certification> current = details.getValue().getCertifications().stream()
+                .filter(c -> c != Certification.HR_MANAGER)
+                .collect(Collectors.toList());
+
+        if (current.isEmpty()) {
+            System.out.println("Employee has no certifications to remove.");
+            return;
+        }
+        Certification role = InputUtil.readRole(current);
+
+        Response<Void> response = personnelService.removeCertification(
+                manager.getLoggedInUserId(), empID, role
+        );
+        if (!response.isError())
+            System.out.println("Certification removed successfully.");
+        else
+            System.out.println("Failed: " + response.getErrorMessage());
     }
 }

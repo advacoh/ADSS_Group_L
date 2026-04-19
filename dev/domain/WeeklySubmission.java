@@ -1,4 +1,5 @@
 package dev.domain;
+import java.time.temporal.TemporalAdjusters;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDate;
@@ -16,11 +17,9 @@ public class WeeklySubmission {
         this.doubleShiftAllowed = doubleShiftAllowed;
         this.slots = new HashMap<>();
 
-        LocalDate current = LocalDate.now();
-        while (current.getDayOfWeek() != DayOfWeek.SUNDAY) {
-            current = current.plusDays(1);
-        }
-        this.weekOf = current;
+        LocalDate today = LocalDate.now();
+        this.weekOf = today.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+        LocalDate current = weekOf;
 
         for (int i = 0; i < 7; i++) {
             Map<ShiftType, SlotSubmission> dailyShifts = new HashMap<>();

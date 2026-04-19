@@ -1,8 +1,5 @@
 package dev.domain;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.time.LocalDate;
 
 public class EmployeeController {
@@ -44,7 +41,7 @@ public class EmployeeController {
 
 
     public void addEmployee(int userID, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType employementType, SalType salaryType, int salary,
-    int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, List<Certification> certificationsList) {
+    int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certificationsList) {
         try{
             verifyLogged(userID);
             verifyHR(userID);
@@ -93,11 +90,11 @@ public class EmployeeController {
     public void registerHR(int userID, String password){
         try{
             if(!this.employeeMemory.doesHRExist()){
-                List<Certification> cert = new ArrayList<>();
+                Set<Certification> cert = new HashSet<>();
                 cert.add(Certification.HR_MANAGER);
-                Employee HREmp = new Employee(userID, "name", 0, LocalDate.now(), EmpType.FULL_TIME, SalType.GLOBAL, 0, 0, false, 7, false, cert);
+                Employee HREmp = new Employee(userID, "name", 100, LocalDate.now(), EmpType.FULL_TIME, SalType.GLOBAL, 100, 1, false, 7, false, cert);
+                this.userController.register(userID, password);
                 this.employeeMemory.save(HREmp);
-                this.userController.register(userID, password); 
             } else{
                 throw new IllegalArgumentException("HR manager employee already exists in the system.");
             } 
@@ -169,7 +166,7 @@ public class EmployeeController {
     public void updateEmployeeSettings(int userID, int empId, int dayOff, boolean willDouble, boolean willOverTime){
         try{
             verifyLogged(userID);
-            verifyHR(userID);
+            verifyCanAccessEmployee(userID, empId);
             Employee emp = getEmployeeOrThrow(empId);
             emp.setDayOff(dayOff);
             emp.setWillDouble(willDouble);

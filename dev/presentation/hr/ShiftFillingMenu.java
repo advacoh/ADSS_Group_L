@@ -6,6 +6,8 @@ import dev.service.*;
 import dev.domain.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ShiftFillingMenu {
@@ -67,7 +69,9 @@ public class ShiftFillingMenu {
         }
         ShiftSL shift = shiftResponse.getValue();
         System.out.println(shift);
-        Certification role = InputUtil.readRole();
+        List<Certification> eligibleRoles = new ArrayList<>(Arrays.asList(Certification.values()));
+        eligibleRoles.remove(Certification.HR_MANAGER);
+        Certification role = InputUtil.readRole(eligibleRoles);
         Response<List<EmployeeSL>> availableResponse = schedulingService.getAvailableForRole(userId, date, type, role);
         if (availableResponse.isError()) {
             System.out.println("Could not fetch employees: " + availableResponse.getErrorMessage());
@@ -126,7 +130,9 @@ public class ShiftFillingMenu {
         int userId = manager.getLoggedInUserId();
         LocalDate date = InputUtil.readDayOfWeek();
         ShiftType type = InputUtil.readShiftType();
-        Certification role = InputUtil.readRole();
+        List<Certification> eligibleRoles = new ArrayList<>(Arrays.asList(Certification.values()));
+        eligibleRoles.remove(Certification.HR_MANAGER);
+        Certification role = InputUtil.readRole(eligibleRoles);
 
         Response<ShiftSL> shiftResponse = schedulingService.getShift(userId, date, type);
         if (shiftResponse.isError()) {

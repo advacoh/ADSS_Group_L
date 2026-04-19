@@ -1,6 +1,7 @@
 package dev.service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +33,13 @@ public class ServiceFactory {
     private final PersonnelService PersonnelService; 
 
    
-    public ServiceFactory(boolean noNeedForData) {
+    public ServiceFactory(boolean withData) {
         UserMemory userMemory = new UserMemory();
         EmployeeMemory employeeMemory = new EmployeeMemory();
         ShiftMemory shiftMemory = new ShiftMemory();
         RequestMemory requestMemory = new RequestMemory();
 
-        if (!noNeedForData) {
+        if (withData) {
             populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory);
         }
 
@@ -62,7 +63,7 @@ public class ServiceFactory {
                 startDate1,
                 EmpType.FULL_TIME, SalType.GLOBAL, 12000,
                 20, true, 1, false,
-                new ArrayList<>(List.of(Certification.HR_MANAGER, Certification.SHIFT_MANAGER))
+                new HashSet<>(List.of(Certification.HR_MANAGER, Certification.SHIFT_MANAGER))
         );
 
         Employee emp2 = new Employee(
@@ -70,11 +71,12 @@ public class ServiceFactory {
                 startDate2,
                 EmpType.PART_TIME, SalType.HOURLY, 45,
                 10, false, 7, false,
-                new ArrayList<>(List.of(Certification.CASHIER))
+                new HashSet<>(List.of(Certification.CASHIER))
         );
 
         // Submitting emp2 constraints for the following week
-        LocalDate sunday = LocalDate.now();
+        LocalDate today = LocalDate.now();
+        LocalDate sunday = today.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
         while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
             sunday = sunday.plusDays(1);
         }
@@ -96,7 +98,7 @@ public class ServiceFactory {
                 startDate3,
                 EmpType.FULL_TIME, SalType.HOURLY, 55,
                 15, true, 6, true,
-                new ArrayList<>(List.of(Certification.WAREHOUSE, Certification.CASHIER))
+                new HashSet<>(List.of(Certification.WAREHOUSE, Certification.CASHIER))
         );
 
         Employee emp4 = new Employee(
@@ -104,7 +106,7 @@ public class ServiceFactory {
                 startDate4,
                 EmpType.FULL_TIME, SalType.GLOBAL, 10000,
                 18, true, 2, true,
-                new ArrayList<>(List.of(Certification.SHIFT_MANAGER, Certification.CASHIER))
+                new HashSet<>(List.of(Certification.SHIFT_MANAGER, Certification.CASHIER))
         );
 
         employeeMemory.save(emp1);

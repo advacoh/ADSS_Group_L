@@ -95,15 +95,19 @@ public class InputUtil {
         }
     }
 
-    public static Certification readRole() {
-        Certification[] roles = Certification.values();
+    public static Certification readRole(List<Certification> availableRoles) {
+        if (availableRoles.isEmpty()) return null;
+
         System.out.println("Select role:");
-        for (int i = 0; i < roles.length; i++) {
-            System.out.println((i + 1) + ") " + roles[i].getValue());
+        for (int i = 0; i < availableRoles.size(); i++) {
+            System.out.println((i + 1) + ") " + availableRoles.get(i).getValue());
         }
+
         while (true) {
             int choice = readInt() - 1;
-            if (choice >= 0 && choice < roles.length) return roles[choice];
+            if (choice >= 0 && choice < availableRoles.size()) {
+                return availableRoles.get(choice);
+            }
             System.out.println("Invalid option.");
         }
     }
@@ -147,6 +151,17 @@ public class InputUtil {
             if (choice == 1) return EmpType.FULL_TIME;
             if (choice == 2) return EmpType.PART_TIME;
             System.out.println("Invalid option. Please enter 1 or 2.");
+        }
+    }
+
+    public static boolean readYesNo(String prompt) {
+        System.out.print(prompt + " (y/n): ");
+        while (true) {
+            switch (readRaw().toLowerCase()) {
+                case "y" -> { return true; }
+                case "n" -> { return false; }
+                default -> System.out.print("Please enter y or n: ");
+            }
         }
     }
 }

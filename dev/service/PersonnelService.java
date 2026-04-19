@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Set;
 
 
 public class PersonnelService {
@@ -24,7 +25,7 @@ public class PersonnelService {
     }
 
     public Response<Void> addEmployee(int activeUserId, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType empType,
-        SalType salaryType, int salary, int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, List<Certification> certificationsList) {
+        SalType salaryType, int salary, int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certificationsList) {
         try{
             employeeController.addEmployee(
                 activeUserId, newEmpID, password, name, bankAccount, startDate,
@@ -115,7 +116,7 @@ public class PersonnelService {
             Employee emp = this.employeeController.getEmployeeDetails(activeUserId,targetEmpId);
             EmployeeSL empSL = new EmployeeSL(targetEmpId, emp.getName(), emp.getBankAccount(), emp.getStartDate(), 
             emp.getEmployementType(), emp.getSalaryType(), emp.getSalary(), emp.getVacation(), emp.willOvertime(), emp.getDayOff(),
-            emp.willDouble(), emp.getCertifications());
+            emp.willDouble(), emp.getCertifications(), emp.getStatus());
             return Response.success(empSL);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());

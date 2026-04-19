@@ -58,12 +58,11 @@ public class AvailabilityMenu {
 
     private void setConstraints() {
         System.out.println("\n--- Set Weekly Constraints ---");
-        System.out.println("For each day and shift, indicate if you are AVAILABLE.");
+        System.out.println("For each shift, indicate if you are available.");
 
         Map<LocalDate, Set<ShiftType>> constraints = new HashMap<>();
 
-        // Get the current week's Sunday
-        LocalDate sunday = LocalDate.now();
+        LocalDate sunday = LocalDate.now().plusDays(1);
         while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
             sunday = sunday.plusDays(1);
         }
@@ -77,8 +76,7 @@ public class AvailabilityMenu {
             System.out.println("\n" + dayNames[i] + " (" + day + "):");
 
             for (ShiftType shift : ShiftType.values()) {
-                System.out.println("Available for " + shift + " shift? 1) Yes  2) No");
-                if (InputUtil.readInt("Choice: ") == 1) {
+                if (InputUtil.readYesNo("Available for " + shift.getValue() + "?")) {
                     availableShifts.add(shift);
                 }
             }
@@ -88,14 +86,14 @@ public class AvailabilityMenu {
             }
         }
 
-        int userId = manager.getLoggedInUserId();
-        Response<Void> response = schedulingService.setWeeklyConstraints(userId, constraints);
+        Response<Void> response = schedulingService.setWeeklyConstraints(
+                manager.getLoggedInUserId(), constraints
+        );
 
-        if (!response.isError()) {
-            System.out.println("Constraints submitted successfully.");
-        } else {
+        if (!response.isError())
+            System.out.println("Constraints set successfully.");
+        else
             System.out.println("Failed: " + response.getErrorMessage());
-        }
     }
 
     private void viewPreferences() {
@@ -110,12 +108,12 @@ public class AvailabilityMenu {
 
     private void setPreferences() {
         System.out.println("\n--- Set Weekly Preferences ---");
-        System.out.println("For each day and shift, indicate if you PREFER to work.");
+        System.out.println("For each shift, indicate if you prefer to work.");
         System.out.println("Note: You can only prefer shifts you are already available for.");
 
         Map<LocalDate, Set<ShiftType>> preferences = new HashMap<>();
 
-        LocalDate sunday = LocalDate.now();
+        LocalDate sunday = LocalDate.now().plusDays(1);
         while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
             sunday = sunday.plusDays(1);
         }
@@ -129,8 +127,7 @@ public class AvailabilityMenu {
             System.out.println("\n" + dayNames[i] + " (" + day + "):");
 
             for (ShiftType shift : ShiftType.values()) {
-                System.out.println("Prefer " + shift + " shift? 1) Yes  2) No");
-                if (InputUtil.readInt("Choice: ") == 1) {
+                if (InputUtil.readYesNo("Prefer " + shift.getValue() + "?")) {
                     preferredShifts.add(shift);
                 }
             }
@@ -140,13 +137,13 @@ public class AvailabilityMenu {
             }
         }
 
-        int userId = manager.getLoggedInUserId();
-        Response<Void> response = schedulingService.setWeeklyPreferences(userId, preferences);
+        Response<Void> response = schedulingService.setWeeklyPreferences(
+                manager.getLoggedInUserId(), preferences
+        );
 
-        if (!response.isError()) {
+        if (!response.isError())
             System.out.println("Preferences submitted successfully.");
-        } else {
+        else
             System.out.println("Failed: " + response.getErrorMessage());
-        }
     }
 }
