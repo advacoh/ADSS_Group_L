@@ -66,7 +66,7 @@ public class HRRequestMenu {
 
         return requests;
     }
-    
+
     private void promptAssignWithOverride(OverrideRequestSL request) {
         if (request.getStatus() != RequestStatus.APPROVED) {
             System.out.println("Request has not been approved yet, cannot assign.");
