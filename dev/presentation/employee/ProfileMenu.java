@@ -2,7 +2,9 @@ package dev.presentation.employee;
 
 import dev.presentation.InputUtil;
 import dev.presentation.MenuManager;
+import dev.service.EmployeeSL;
 import dev.service.PersonnelService;
+import dev.service.Response;
 
 public class ProfileMenu {
 
@@ -31,10 +33,36 @@ public class ProfileMenu {
     }
 
     private void viewDetails() {
-        // TODO
+        System.out.println("\n--- View Details ---");
+
+        Response<EmployeeSL> response = personnelService.getEmployeeDetails(
+            manager.getLoggedInUserId(), manager.getLoggedInUserId());
+
+        if (!response.isError()) {
+            System.out.println(response.getValue().toString());
+        } else {
+            System.out.println("Failed: " + response.getErrorMessage());
+        }
     }
 
     private void editSettings() {
-        // TODO
+        System.out.println("\n--- Edit Your Settings ---");
+        
+        int dayOff = InputUtil.readInt("Day Off (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=Sat): ");
+
+        System.out.println("Allow double shifts? 1) Yes  2) No");
+        boolean willDouble = InputUtil.readInt("Choice: ") == 1;
+
+        System.out.println("Will do overtime? 1) Yes  2) No");
+        boolean willOvertime = InputUtil.readInt("Choice: ") == 1;
+
+        Response<Void> response = personnelService.updateEmployeeSettings(
+            manager.getLoggedInUserId(), manager.getLoggedInUserId(), dayOff, willDouble, willOvertime);
+
+        if (!response.isError()) {
+            System.out.println("Settings updated successfully.");
+        } else {
+            System.out.println("Failed: " + response.getErrorMessage());
+        }
     }
 }

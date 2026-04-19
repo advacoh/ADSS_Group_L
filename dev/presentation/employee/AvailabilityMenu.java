@@ -1,8 +1,20 @@
 package dev.presentation.employee;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import dev.domain.ShiftType;
 import dev.presentation.InputUtil;
 import dev.presentation.MenuManager;
+import dev.service.Response;
 import dev.service.SchedulingService;
+import dev.service.WeeklyConstraintsSL;
+import dev.service.WeeklyPreferenceSL;
+
 
 public class AvailabilityMenu {
 
@@ -35,18 +47,106 @@ public class AvailabilityMenu {
     }
 
     private void viewConstraints() {
-        // TODO
+        int userId = manager.getLoggedInUserId();
+
+        Response<WeeklyConstraintsSL> response = schedulingService.getWeeklyConstraints(userId, userId);
+        if (response.isError())
+            System.out.println("Could not fetch constraints: " + response.getErrorMessage());
+        else
+            System.out.println(response.getValue());
     }
 
     private void setConstraints() {
-        // TODO
+        System.out.println("\n--- Set Weekly Constraints ---");
+        System.out.println("For each day and shift, indicate if you are AVAILABLE.");
+
+        Map<LocalDate, Set<ShiftType>> constraints = new HashMap<>();
+
+        // Get the current week's Sunday
+        LocalDate sunday = LocalDate.now();
+        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            sunday = sunday.plusDays(1);
+        }
+
+        String[] dayNames = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+        for (int i = 0; i < 7; i++) {
+            LocalDate day = sunday.plusDays(i);
+            Set<ShiftType> availableShifts = new HashSet<>();
+
+            System.out.println("\n" + dayNames[i] + " (" + day + "):");
+
+            for (ShiftType shift : ShiftType.values()) {
+                System.out.println("Available for " + shift + " shift? 1) Yes  2) No");
+                if (InputUtil.readInt("Choice: ") == 1) {
+                    availableShifts.add(shift);
+                }
+            }
+
+            if (!availableShifts.isEmpty()) {
+                constraints.put(day, availableShifts);
+            }
+        }
+
+        int userId = manager.getLoggedInUserId();
+        Response<Void> response = schedulingService.setWeeklyConstraints(userId, constraints);
+
+        if (!response.isError()) {
+            System.out.println("Constraints submitted successfully.");
+        } else {
+            System.out.println("Failed: " + response.getErrorMessage());
+        }
     }
 
     private void viewPreferences() {
-        // TODO
+        int userId = manager.getLoggedInUserId();
+
+        Response<WeeklyPreferenceSL> response = schedulingService.getWeeklyPreferences(userId, userId);
+        if (response.isError())
+            System.out.println("Could not fetch preferences: " + response.getErrorMessage());
+        else
+            System.out.println(response.getValue());
     }
 
     private void setPreferences() {
-        // TODO
+        System.out.println("\n--- Set Weekly Preferences ---");
+        System.out.println("For each day and shift, indicate if you PREFER to work.");
+        System.out.println("Note: You can only prefer shifts you are already available for.");
+
+        Map<LocalDate, Set<ShiftType>> preferences = new HashMap<>();
+
+        LocalDate sunday = LocalDate.now();
+        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            sunday = sunday.plusDays(1);
+        }
+
+        String[] dayNames = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+        for (int i = 0; i < 7; i++) {
+            LocalDate day = sunday.plusDays(i);
+            Set<ShiftType> preferredShifts = new HashSet<>();
+
+            System.out.println("\n" + dayNames[i] + " (" + day + "):");
+
+            for (ShiftType shift : ShiftType.values()) {
+                System.out.println("Prefer " + shift + " shift? 1) Yes  2) No");
+                if (InputUtil.readInt("Choice: ") == 1) {
+                    preferredShifts.add(shift);
+                }
+            }
+
+            if (!preferredShifts.isEmpty()) {
+                preferences.put(day, preferredShifts);
+            }
+        }
+
+        int userId = manager.getLoggedInUserId();
+        Response<Void> response = schedulingService.setWeeklyPreferences(userId, preferences);
+
+        if (!response.isError()) {
+            System.out.println("Preferences submitted successfully.");
+        } else {
+            System.out.println("Failed: " + response.getErrorMessage());
+        }
     }
 }
