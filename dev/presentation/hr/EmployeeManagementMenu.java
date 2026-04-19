@@ -56,15 +56,8 @@ public class EmployeeManagementMenu {
         System.out.println("Enter Start Date:");
         LocalDate startDate = InputUtil.readDate();
 
-        System.out.println("Employment Type:");
-        System.out.println("1) Full Time");
-        System.out.println("2) Part Time");
-        EmpType empType = InputUtil.readInt("Choice: ") == 1 ? EmpType.FULL_TIME : EmpType.PART_TIME;
-
-        System.out.println("Salary Type:");
-        System.out.println("1) Global");
-        System.out.println("2) Hourly");
-        SalType salType = InputUtil.readInt("Choice: ") == 1 ? SalType.GLOBAL : SalType.HOURLY;
+        EmpType empType = InputUtil.readEmpType();
+        SalType salType = InputUtil.readSalType();
 
         int salary = InputUtil.readInt("Enter Salary: ");
         int vacationDays = InputUtil.readInt("Enter Vacation Days: ");
@@ -96,19 +89,10 @@ public class EmployeeManagementMenu {
         }
     }
 
-    
-
     private void dismissEmployee() {
         System.out.println("\n--- Dismiss Employee ---");
 
         int empID = InputUtil.readInt("Enter Employee ID to dismiss: ");
-
-        System.out.println("Are you sure you want to dismiss employee " + empID + "?");
-        System.out.println("1) Yes  2) No");
-        if (InputUtil.readInt("Choice: ") != 1) {
-            System.out.println("Dismissal cancelled.");
-            return;
-        }
 
         Response<Void> response = personnelService.deactivateEmployee(manager.getLoggedInUserId(), empID);
 
@@ -119,18 +103,11 @@ public class EmployeeManagementMenu {
         }
     }
 
-
     private void rehireEmployee() {
         System.out.println("\n--- Rehire Employee ---");
 
         int empID = InputUtil.readInt("Enter Employee ID to rehire: ");
 
-        System.out.println("Are you sure you want to rehire employee " + empID + "?");
-        System.out.println("1) Yes  2) No");
-        if (InputUtil.readInt("Choice: ") != 1) {
-            System.out.println("rehiring cancelled.");
-            return;
-        } 
         String password = InputUtil.readString("Enter the Employee's new Password (at least 6 digits):");
 
         Response<Void> response = personnelService.activateEmployee(manager.getLoggedInUserId(), empID, password);
@@ -181,11 +158,7 @@ public class EmployeeManagementMenu {
         System.out.println("\n--- Edit Financial Details ---");
 
         int bankAccount = InputUtil.readInt("Enter new Bank Account Number: ");
-
-        System.out.println("Salary Type:");
-        System.out.println("1) Global  2) Hourly");
-        SalType salType = InputUtil.readInt("Choice: ") == 1 ? SalType.GLOBAL : SalType.HOURLY;
-
+        SalType salType = InputUtil.readSalType();
         int salary = InputUtil.readInt("Enter new Salary: ");
 
         Response<Void> response = personnelService.updateFinancialDetails(
@@ -201,10 +174,7 @@ public class EmployeeManagementMenu {
     private void editEmploymentDetails(int empID) {
         System.out.println("\n--- Edit Employment Details ---");
 
-        System.out.println("Employment Type:");
-        System.out.println("1) Full Time  2) Part Time");
-        EmpType empType = InputUtil.readInt("Choice: ") == 1 ? EmpType.FULL_TIME : EmpType.PART_TIME;
-
+        EmpType empType = InputUtil.readEmpType();
         int vacationDays = InputUtil.readInt("Enter new Vacation Days: ");
 
         System.out.println("Enter new Start Date:");

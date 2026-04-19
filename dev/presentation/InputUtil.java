@@ -1,6 +1,8 @@
 package dev.presentation;
 
 import dev.domain.Certification;
+import dev.domain.EmpType;
+import dev.domain.SalType;
 import dev.domain.ShiftType;
 
 import java.time.DayOfWeek;
@@ -122,5 +124,29 @@ public class InputUtil {
     public static int readEmployeeId() {
         System.out.print("Enter employee ID: ");
         return readInt();
+    }
+
+    public static SalType readSalType() {
+        System.out.println("Salary Type:");
+        System.out.println("1) Global");
+        System.out.println("2) Hourly");
+        while (true) {
+            int choice = readInt("Choice: ");
+            if (choice == 1) return SalType.GLOBAL;
+            if (choice == 2) return SalType.HOURLY;
+            System.out.println("Invalid option. Please enter 1 or 2.");
+        }
+    }
+
+    public static EmpType readEmpType() {
+        System.out.println("Employment Type:");
+        System.out.println("1) Full Time");
+        System.out.println("2) Part Time");
+        while (true) {
+            int choice = readInt("Choice: ");
+            if (choice == 1) return EmpType.FULL_TIME;
+            if (choice == 2) return EmpType.PART_TIME;
+            System.out.println("Invalid option. Please enter 1 or 2.");
+        }
     }
 }

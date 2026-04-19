@@ -35,10 +35,8 @@ public class ProfileMenu {
     private void viewDetails() {
         System.out.println("\n--- View Details ---");
 
-        int empID = InputUtil.readInt("Enter Your ID: ");
-
         Response<EmployeeSL> response = personnelService.getEmployeeDetails(
-            manager.getLoggedInUserId(), empID);
+            manager.getLoggedInUserId(), manager.getLoggedInUserId());
 
         if (!response.isError()) {
             System.out.println(response.getValue().toString());
@@ -49,8 +47,6 @@ public class ProfileMenu {
 
     private void editSettings() {
         System.out.println("\n--- Edit Your Settings ---");
-
-        int empID = InputUtil.readInt("Enter Your ID: ");
         
         int dayOff = InputUtil.readInt("Day Off (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=Sat): ");
 
@@ -61,7 +57,7 @@ public class ProfileMenu {
         boolean willOvertime = InputUtil.readInt("Choice: ") == 1;
 
         Response<Void> response = personnelService.updateEmployeeSettings(
-            manager.getLoggedInUserId(), empID, dayOff, willDouble, willOvertime);
+            manager.getLoggedInUserId(), manager.getLoggedInUserId(), dayOff, willDouble, willOvertime);
 
         if (!response.isError()) {
             System.out.println("Settings updated successfully.");
