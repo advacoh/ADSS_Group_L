@@ -6,6 +6,7 @@ import dev.domain.ShiftType;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Scanner;
 
 public class InputUtil {
@@ -103,5 +104,23 @@ public class InputUtil {
             if (choice >= 0 && choice < roles.length) return roles[choice];
             System.out.println("Invalid option.");
         }
+    }
+
+    public static <T> T selectItem(List<T> items) {
+        for (int i = 0; i < items.size(); i++) {
+            System.out.println((i + 1) + ") " + items.get(i));
+        }
+        System.out.print("Select (0 to cancel): ");
+        while (true) {
+            int choice = readInt();
+            if (choice == 0) return null;
+            if (choice >= 1 && choice <= items.size()) return items.get(choice - 1);
+            System.out.println("Invalid option.");
+        }
+    }
+
+    public static int readEmployeeId() {
+        System.out.print("Enter employee ID: ");
+        return readInt();
     }
 }
