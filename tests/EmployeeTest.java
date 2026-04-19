@@ -30,7 +30,7 @@ public class EmployeeTest {
             LocalDate.of(2024, 1, 1),
             EmpType.FULL_TIME, SalType.GLOBAL, 10000,
             15, true, 6, false,
-            new ArrayList<>(List.of(Certification.CASHIER))
+            new HashSet<>(List.of(Certification.CASHIER))
         );
     }
 
