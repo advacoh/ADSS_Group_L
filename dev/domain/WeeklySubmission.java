@@ -56,6 +56,11 @@ public class WeeklySubmission {
         return getSlot(date,shiftType).isPreference();
     }
 
+    public LocalDate getDayOffDate() {
+        LocalDate sunday = this.weekOf; // weekOf is already the Sunday of the week
+        return sunday.plusDays(this.dayOff - 1);
+    }
+
     // Setters
 
     public void setConstraint(LocalDate date, ShiftType shiftType, boolean value) {

@@ -173,7 +173,7 @@ public class Employee {
         for (Map.Entry<LocalDate, Set<ShiftType>> entry : cons.entrySet()) {
             LocalDate date = entry.getKey();
             Set<ShiftType> shiftsForDay = entry.getValue();
-            if (date.getDayOfWeek().getValue() == employeeDayOff) {
+            if (date.equals(this.weeklySubmission.getDayOffDate())) {
                 submittedOnDayOff = true;
                 continue; 
             }
@@ -199,7 +199,7 @@ public class Employee {
         for (Map.Entry<LocalDate, Set<ShiftType>> entry : prefs.entrySet()) {
             LocalDate date = entry.getKey();
             Set<ShiftType> shiftsForDay = entry.getValue();
-            if (date.getDayOfWeek().getValue() == employeeDayOff) {
+            if (date.equals(this.weeklySubmission.getDayOffDate())) {
                 submittedOnDayOff = true;
                 continue; 
             }

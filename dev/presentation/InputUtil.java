@@ -75,7 +75,8 @@ public class InputUtil {
                 case 7 -> DayOfWeek.SATURDAY;
                 default -> null;
             };
-            if (day != null) return nextOccurrence(day);
+            if (day != null) 
+                return nextOccurrence(day);
             System.out.println("Invalid option.");
         }
     }
