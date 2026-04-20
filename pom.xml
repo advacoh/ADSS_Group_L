@@ -23,7 +23,7 @@
                 <version>3.13.0</version>
                 <configuration>
                     <excludes>
-                        <exclude>tests/**</exclude>
+                        <exclude>dev/tests/**</exclude>
                         <exclude>target/**</exclude>
                     </excludes>
                 </configuration>
