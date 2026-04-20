@@ -166,6 +166,16 @@ public class ServiceFactory {
         shift3.assignEmployee(Certification.CASHIER, 100000002);       
         shift3.assignEmployee(Certification.WAREHOUSE, 100000003);     
         shiftMemory.save(shift3);
+
+        // Shift 4 - archived past shift for testing viewHistory
+        Shift shift4 = new Shift("SHIFT_004", LocalDate.of(2026, 1, 15), ShiftType.MORNING);
+        shift4.setRequirement(Certification.CASHIER, 1);
+        shift4.setRequirement(Certification.WAREHOUSE, 1);
+        shift4.assignEmployee(Certification.SHIFT_MANAGER, 100000004);
+        shift4.assignEmployee(Certification.CASHIER, 100000002);
+        shift4.assignEmployee(Certification.WAREHOUSE, 100000003);
+        shiftMemory.save(shift4);
+        shiftMemory.archiveShift(LocalDate.of(2026, 1, 15), ShiftType.MORNING);
     }
 
   
@@ -189,6 +199,7 @@ public class ServiceFactory {
         Certification.CASHIER                                // role - Yossi is certified as cashier
         );
         requestMemory.save(request);
+        
     }
     
     private void populateTestData(UserMemory u, EmployeeMemory e, ShiftMemory s, RequestMemory r) {

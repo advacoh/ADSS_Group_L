@@ -101,6 +101,138 @@ public class EmployeeTest {
         assertTrue(result);
     }
 
+    // Constructor Validation Tests
+
+    @Test
+    void testNullNameThrows() {
+        assertThrows(NullPointerException.class, () ->
+            new Employee(100000001, null, 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testNullStartDateThrows() {
+        assertThrows(NullPointerException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                null,
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testNullEmploymentTypeThrows() {
+        assertThrows(NullPointerException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                null, SalType.GLOBAL, 10000,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testNullSalaryTypeThrows() {
+        assertThrows(NullPointerException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, null, 10000,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testNullCertificationsThrows() {
+        assertThrows(NullPointerException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                15, true, 6, false,
+                null));
+    }
+
+    @Test
+    void testIDTooShortThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Employee(12345678, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testIDTooLongThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Employee(1000000000, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testNegativeSalaryThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, -1,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testZeroSalaryThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 0,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testNegativeVacationThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                -1, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testNegativeBankAccountThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Employee(100000001, "Test User", -1,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                15, true, 6, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testDayOffZeroThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                15, true, 0, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
+    @Test
+    void testDayOffEightThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new Employee(100000001, "Test User", 123456,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                15, true, 8, false,
+                new HashSet<>(List.of(Certification.CASHIER))));
+    }
+
     // HR Tests 
 
     @Test

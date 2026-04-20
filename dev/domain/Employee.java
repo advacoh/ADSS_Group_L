@@ -64,10 +64,11 @@ public class Employee {
     public int getVacation() { return vacation; } 
     public Status getStatus() { return status; }
     public boolean willOvertime(){ return willOvertime; }
-    public String getDayOff(){
+    
+    public String getDayOff() {
         int dayOff = this.weeklySubmission.getDayOff();
-        DayOfWeek day = DayOfWeek.of(dayOff);
-        return day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+        String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        return days[dayOff - 1];
     }
     public Set<Certification> getCertifications(){ return certifications;}
 

@@ -177,11 +177,10 @@ public class EmployeeManagementMenu {
 
         int dayOff = InputUtil.readInt("Day Off (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=Sat): ");
 
-        System.out.println("Allow double shifts? 1) Yes  2) No");
-        boolean willDouble = InputUtil.readInt("Choice: ") == 1;
+        boolean willDouble = InputUtil.readYesNo("Allow double shifts?");
 
         System.out.println("Will do overtime? 1) Yes  2) No");
-        boolean willOvertime = InputUtil.readInt("Choice: ") == 1;
+        boolean willOvertime = InputUtil.readYesNo("Will do overtime?");
 
         Response<Void> response = personnelService.updateEmployeeSettings(
                 manager.getLoggedInUserId(), empID, dayOff, willDouble, willOvertime);

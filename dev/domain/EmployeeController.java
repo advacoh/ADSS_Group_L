@@ -50,6 +50,7 @@ public class EmployeeController {
                 throw new IllegalArgumentException("Employee ID " + newEmpID + " already exists. Use activateEmployee if they are returning.");
             }
             verifyDayOff(dayOff);
+            this.userController.validatePassword(password);
             Employee newEmp = new Employee(newEmpID, name, bankAccount, startDate, employementType, salaryType, salary, vacationDay, willOvertime, dayOff, doubleShiftAllowed, certificationsList);
             this.employeeMemory.save(newEmp);
             this.userController.register(newEmpID, password);
