@@ -80,7 +80,6 @@ public class HRMenu {
     private void viewHistory() {
         while (true) {
             System.out.println("\n=== View History ===");
-            System.out.println("Enter 'q' to go back.");
 
             LocalDate date = InputUtil.readDate();
             if (date == null) return;

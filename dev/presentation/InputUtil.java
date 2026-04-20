@@ -8,6 +8,7 @@ import dev.domain.ShiftType;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Scanner;
 
@@ -37,8 +38,14 @@ public class InputUtil {
 
     public static LocalDate readDate() {
         while (true) {
-            System.out.print("Enter date (dd/MM/yyyy): ");
+            System.out.print("Enter date (dd/MM/yyyy) or 'q' to go back: ");
             String input = scanner.nextLine().trim();
+
+            // Check for quit option first
+            if (input.equalsIgnoreCase("q")) {
+                return null;
+            }
+
             try {
                 return LocalDate.parse(input, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             } catch (Exception e) {
@@ -54,7 +61,7 @@ public class InputUtil {
     // Add to InputUtil
 
     public static LocalDate readDayOfWeek() {
-        System.out.println("Select a day of the week:");
+        System.out.println("Select a day ");
         System.out.println("1) Sunday");
         System.out.println("2) Monday");
         System.out.println("3) Tuesday");
@@ -65,26 +72,13 @@ public class InputUtil {
 
         while (true) {
             int choice = readInt();
-            DayOfWeek day = switch (choice) {
-                case 1 -> DayOfWeek.SUNDAY;
-                case 2 -> DayOfWeek.MONDAY;
-                case 3 -> DayOfWeek.TUESDAY;
-                case 4 -> DayOfWeek.WEDNESDAY;
-                case 5 -> DayOfWeek.THURSDAY;
-                case 6 -> DayOfWeek.FRIDAY;
-                case 7 -> DayOfWeek.SATURDAY;
-                default -> null;
-            };
-            if (day != null) 
-                return nextOccurrence(day);
-            System.out.println("Invalid option.");
+            if (choice >= 1 && choice <= 7) {
+                return LocalDate.now()
+                        .with(TemporalAdjusters.next(DayOfWeek.SUNDAY))
+                        .plusDays(choice - 1);
+            }
+            System.out.println("Invalid option. Please enter a number between 1 and 7.");
         }
-    }
-
-    private static LocalDate nextOccurrence(DayOfWeek day) {
-        LocalDate today = LocalDate.now();
-        int daysUntil = (day.getValue() - today.getDayOfWeek().getValue() + 7) % 7;
-        return today.plusDays(daysUntil == 0 ? 7 : daysUntil);
     }
 
     public static ShiftType readShiftType() {
