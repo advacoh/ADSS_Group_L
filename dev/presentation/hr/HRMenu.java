@@ -78,17 +78,12 @@ public class HRMenu {
     }
 
     private void viewHistory() {
-        while (true) {
-            System.out.println("\n=== View History ===");
+        System.out.println("\n=== View History ===");
 
-            LocalDate date = InputUtil.readDate();
-            if (date == null) return;
+        LocalDate date = InputUtil.readDate();
+        ShiftType type = InputUtil.readShiftType();
 
-            ShiftType type = InputUtil.readShiftType();
-            if (type == null) return;
-
-            displayPastShift(date, type);
-        }
+        displayPastShift(date, type);
     }
 
     private void displayPastShift(LocalDate date, ShiftType type) {

@@ -56,4 +56,10 @@ public class UserController {
             throw new IllegalStateException("Logout failed: " + e.getMessage());
         }
     }
+
+    public void validatePassword(String password) {
+        if (password == null || password.length() < 6) {
+            throw new IllegalArgumentException("Invalid password: must be at least 6 characters");
+        }
+    }
 }
