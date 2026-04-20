@@ -82,9 +82,12 @@ public class ShiftFillingMenu {
             System.out.println("\nAvailable employees:");
             EmployeeSL selected = InputUtil.selectItem(available);
             if (selected == null) return;
+            boolean isOvertime = false;
 
-            boolean isOvertime = InputUtil.readYesNo("Is this an overtime assignment?");
-
+            if (shift.getType() == ShiftType.MORNING) {
+                isOvertime = InputUtil.readYesNo("Is this an overtime assignment?");
+            }
+            
             Response<Void> assignResponse = schedulingService.assignEmployee(
                     userId, selected.getID(), date, type, role, isOvertime
             );
