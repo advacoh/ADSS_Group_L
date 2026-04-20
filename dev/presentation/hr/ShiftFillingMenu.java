@@ -87,7 +87,7 @@ public class ShiftFillingMenu {
             if (shift.getType() == ShiftType.MORNING) {
                 isOvertime = InputUtil.readYesNo("Is this an overtime assignment?");
             }
-            
+
             Response<Void> assignResponse = schedulingService.assignEmployee(
                     userId, selected.getID(), date, type, role, isOvertime
             );
