@@ -1,5 +1,6 @@
 package dev.presentation.hr;
 
+import java.util.Comparator;
 import dev.presentation.InputUtil;
 import dev.presentation.MenuManager;
 import dev.service.*;
@@ -50,8 +51,12 @@ public class ShiftFillingMenu {
             System.out.println("Could not fetch schedule: " + response.getErrorMessage());
             return;
         }
+         List<ShiftSL> shifts = response.getValue();
+        shifts.sort(Comparator.comparing(ShiftSL::getDate)
+                            .thenComparing(ShiftSL::getType));
+
         System.out.println("\n=== Next Week's Schedule ===");
-        for (ShiftSL shift : response.getValue()) {
+        for (ShiftSL shift : shifts) {
             System.out.println(shift);
         }
     }
