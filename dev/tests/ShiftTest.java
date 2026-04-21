@@ -134,7 +134,7 @@ public class ShiftTest {
             shift.removeEmployee(Certification.SHIFT_MANAGER, 999999999));
     }
 
-    // --- isFullyStaffed Tests ---
+    // isFullyStaffed Tests 
 
     @Test
     void testShiftIsFullyStaffedWhenAllRolesFilled() {
