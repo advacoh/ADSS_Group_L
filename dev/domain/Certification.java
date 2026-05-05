@@ -1,9 +1,10 @@
-package dev.domain;
+package domain;
 public enum Certification {
     HR_MANAGER("HR manager"),
     CASHIER("Cashier"),
     WAREHOUSE("Warehouse"),
-    SHIFT_MANAGER("shift manager");
+    SHIFT_MANAGER("shift manager"),
+    DRIVER("Driver");
 
 
     private final String value;

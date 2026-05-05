@@ -1,7 +1,8 @@
-package dev.domain;
+package domain;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
@@ -431,5 +432,7 @@ public class ShiftController {
             throw new IllegalStateException("Access denied: User " + userId + " can only access their own data");
         }
     }
+
+    public void verifyDelivery(LocalDate date, LocalTime time) {}
 
 }

@@ -13,13 +13,14 @@ public class TransportController {
     private TruckRepository truckRepository;
     private DriverRepository driverRepository;
     private SiteRepository siteRepository;
+    private ShiftController shiftController;
 
-    public TransportController() {
+    public TransportController(ShiftController shiftController) {
         this.deliveryRepository = new DeliveryRepository();
         this.truckRepository = new TruckRepository();
         this.driverRepository = new DriverRepository();
         this.siteRepository = new SiteRepository();
-    }
+        this.shiftController = shiftController;    }
 
     public void addTruck(Truck truck) {
         truckRepository.addTruck(truck);
@@ -87,6 +88,13 @@ public class TransportController {
 
         if (!areAllDocumentsValid(delivery)) {
             return false;
+        }
+        
+        try{
+            shiftController.verifyDelivery(delivery.getDate(), delivery.getDepartureTime());
+        } catch (Exception e) {
+            System.out.println("Failed to create delivery: " + e.getMessage());
+            return false;        
         }
 
         delivery.setStatus(DeliveryStatus.READY);

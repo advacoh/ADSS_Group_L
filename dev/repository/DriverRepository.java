@@ -19,9 +19,9 @@ public class DriverRepository {
     public List<Driver> getAllDrivers() {
         return drivers;
     }
-    public Driver getDriverById(String id) {
+    public Driver getDriverById(int id) {
         for (Driver driver : drivers) {
-            if (driver.getId().equals(id)) {
+            if (driver.getID()==id) {
                 return driver;
             }
         }
