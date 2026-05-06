@@ -39,6 +39,8 @@ public class ServiceFactory {
         EmployeeMemory employeeMemory = new EmployeeMemory();
         ShiftMemory shiftMemory = new ShiftMemory();
         RequestMemory requestMemory = new RequestMemory();
+        TransportController transportController = new TransportController();
+        this.transportService = new TransportService(transportController);
 
         if (withData) {
             populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory);
@@ -222,5 +224,8 @@ public class ServiceFactory {
         return this.schedulingService;
     }
 
+    public TransportService getTransportService() {
+        return this.transportService;
+    }
 }
 
