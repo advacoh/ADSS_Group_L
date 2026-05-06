@@ -1,4 +1,4 @@
-package dev.domain;
+package domain;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.ArrayList;

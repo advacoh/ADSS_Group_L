@@ -1,7 +1,7 @@
-package dev.service;
+package service;
 import java.util.List;
 
-import dev.domain.*;
+import domain.*;
 
 import java.time.LocalDate;
 import java.util.Set;

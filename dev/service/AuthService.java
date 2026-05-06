@@ -1,8 +1,8 @@
-package dev.service;
+package service;
 
-import dev.domain.Certification;
-import dev.domain.EmployeeController;
-import dev.domain.UserController;
+import domain.Certification;
+import domain.EmployeeController;
+import domain.UserController;
 
 public class AuthService {
 

@@ -1,14 +1,8 @@
 package service;
 
-import domain.TransportController;
-import domain.Delivery;
-import domain.Driver;
-import domain.Truck;
-import domain.Site;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
+import domain.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TransportService {
 
@@ -34,19 +28,47 @@ public class TransportService {
         transportController.addSite(site);
     }
 
-    public List<Delivery> getAllDeliveries() {
-        return transportController.getAllDeliveries();
+    public List<DeliverySL> getAllDeliveries() {
+        return transportController.getAllDeliveries()
+                .stream()
+                .map(DeliverySL::new)
+                .collect(Collectors.toList());
     }
 
-    public List<Truck> getAllTrucks() {
-        return transportController.getAllTrucks();
+    public List<TruckSL> getAllTrucks() {
+        return transportController.getAllTrucks()
+                .stream()
+                .map(TruckSL::new)
+                .collect(Collectors.toList());
     }
 
-    public List<Driver> getAllDrivers() {
-        return transportController.getAllDrivers();
+    public List<DriverSL> getAllDrivers() {
+        return transportController.getAllDrivers()
+                .stream()
+                .map(DriverSL::new)
+                .collect(Collectors.toList());
     }
 
-    public List<Site> getAllSites() {
-        return transportController.getAllSites();
+    public List<SiteSL> getAllSites() {
+        return transportController.getAllSites()
+                .stream()
+                .map(SiteSL::new)
+                .collect(Collectors.toList());
+    }
+
+    public boolean isDriverCompatibleWithTruck(Driver driver, Truck truck) {
+        return transportController.isDriverCompatibleWithTruck(driver, truck);
+    }
+
+    public boolean isOverweight(double recordedWeight, Truck truck) {
+        return transportController.isOverweight(recordedWeight, truck);
+    }
+
+    public boolean hasDocuments(Delivery delivery) {
+        return transportController.hasDocuments(delivery);
+    }
+
+    public boolean areAllDocumentsValid(Delivery delivery) {
+        return transportController.areAllDocumentsValid(delivery);
     }
 }

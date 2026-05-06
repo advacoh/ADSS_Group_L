@@ -1,10 +1,10 @@
-package dev.domain;
+package domain;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
-import dev.domain.Status;
+import domain.Status;
 
 public class Employee {
     private int ID;
