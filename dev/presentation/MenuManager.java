@@ -57,6 +57,8 @@ public class MenuManager {
 
         if (result.isHR())
             hrMenu.show();
+        else if(result.isDeliveryManager())
+            transportMenu.start();
         else
             employeeMenu.show();
 

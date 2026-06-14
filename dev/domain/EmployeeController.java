@@ -109,6 +109,11 @@ public class EmployeeController {
         return emp.isHR();
     }
 
+    public boolean isDeliveryManager(int empId) {
+        Employee emp = getEmployeeOrThrow(empId);
+        return emp.isDeliveryManager();
+    }
+
     // Update Methods
     public void updateFinancialDetails(int userID, int empId, int newBankAccount, SalType newSalaryType, int newSalary) {
         try{

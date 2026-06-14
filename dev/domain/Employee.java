@@ -114,6 +114,10 @@ public class Employee {
         return this.certifications.contains(Certification.HR_MANAGER);
     }
 
+    public boolean isDeliveryManager() {
+        return this.certifications.contains(Certification.DELIVERY_MANAGER);
+    }
+
     public void addCertification(Certification newCert) {
         if (this.certifications == null) {
             this.certifications = new HashSet<>();

@@ -18,7 +18,8 @@ public class AuthService {
         try {
             userController.login(id, pass);
             boolean isHR = employeeController.isHR(id);
-            return Response.success(new UserSL(id, isHR));
+            boolean isDeliveryManager = employeeController.isDeliveryManager(id);
+            return Response.success(new UserSL(id, isHR, isDeliveryManager));
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }

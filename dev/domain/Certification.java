@@ -4,8 +4,8 @@ public enum Certification {
     CASHIER("Cashier"),
     WAREHOUSE("Warehouse"),
     SHIFT_MANAGER("shift manager"),
-    DRIVER("Driver");
-
+    DRIVER("Driver"),
+    DELIVERY_MANAGER("Delivery manager");
 
     private final String value;
 
