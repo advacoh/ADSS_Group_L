@@ -1,6 +1,6 @@
 package presentation.hr;
 
-import domain.ShiftType;
+import domain.hr.ShiftType;
 import presentation.InputUtil;
 import presentation.MenuManager;
 import presentation.MenuManager;

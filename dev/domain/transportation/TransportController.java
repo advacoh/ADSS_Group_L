@@ -1,4 +1,4 @@
-package domain;
+package domain.transportation;
 
 import enums.DeliveryStatus;
 import java.util.List;
@@ -6,6 +6,7 @@ import repository.DeliveryRepository;
 import repository.DriverRepository;
 import repository.SiteRepository;
 import repository.TruckRepository;
+import domain.hr.ShiftController;
 
 public class TransportController {
 

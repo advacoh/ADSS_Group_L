@@ -1,4 +1,5 @@
-import domain.*;
+import domain.hr.*;
+import domain.transportation.*;
 import enums.*;
 
 import java.time.LocalDate;

@@ -1,4 +1,4 @@
-package domain;
+package domain.transportation;
 
 public class DeliveryZone {
 

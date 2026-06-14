@@ -1,6 +1,6 @@
 package service;
 
-import domain.Delivery;
+import domain.transportation.Delivery;
 import enums.DeliveryStatus;
 
 import java.time.LocalDate;

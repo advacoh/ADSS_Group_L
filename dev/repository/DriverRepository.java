@@ -1,6 +1,6 @@
 package repository;
 
-import domain.Driver;
+import domain.transportation.Driver;
 import java.util.ArrayList;
 import java.util.List;
 

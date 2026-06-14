@@ -1,6 +1,6 @@
 package repository;
 
-import domain.Truck;
+import domain.transportation.Truck;
 import java.util.ArrayList;
 import java.util.List;
 

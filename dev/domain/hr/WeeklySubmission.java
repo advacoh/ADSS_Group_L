@@ -1,4 +1,4 @@
-package domain;
+package domain.hr;
 import java.time.temporal.TemporalAdjusters;
 import java.util.HashMap;
 import java.util.Map;

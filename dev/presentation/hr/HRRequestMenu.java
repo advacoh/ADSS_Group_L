@@ -1,6 +1,6 @@
 package presentation.hr;
 
-import domain.RequestStatus;
+import domain.hr.RequestStatus;
 import presentation.InputUtil;
 import presentation.MenuManager;
 import service.OverrideRequestSL;

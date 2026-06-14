@@ -1,6 +1,6 @@
 package service;
 
-import domain.DeliveryZone;
+import domain.transportation.DeliveryZone;
 
 public class DeliveryZoneSL {
     private final int zoneId;

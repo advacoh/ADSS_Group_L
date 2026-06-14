@@ -1,6 +1,6 @@
 package service;
 
-import domain.Site;
+import domain.transportation.Site;
 import enums.SiteType;
 
 public class SiteSL {

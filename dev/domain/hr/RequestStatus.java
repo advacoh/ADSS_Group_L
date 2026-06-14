@@ -1,4 +1,4 @@
-package domain;
+package domain.hr;
 
 public enum RequestStatus {
 

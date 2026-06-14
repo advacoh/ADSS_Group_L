@@ -1,6 +1,7 @@
 package service;
 
-import domain.*;
+import domain.hr.*;
+import domain.transportation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 

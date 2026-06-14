@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import domain.ShiftType;
+import domain.hr.ShiftType;
 
 public class WeeklyPreferenceSL {
         private Map<LocalDate, Map<ShiftType, Boolean>> shifts;

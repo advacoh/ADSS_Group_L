@@ -4,7 +4,8 @@ import java.util.Comparator;
 import presentation.InputUtil;
 import presentation.MenuManager;
 import service.*;
-import domain.*;
+import domain.hr.*;
+import domain.transportation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

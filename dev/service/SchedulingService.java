@@ -1,6 +1,7 @@
 package service;
 
-import domain.*;
+import domain.hr.*;
+import domain.transportation.*;
 
 import java.time.LocalDate;
 import java.util.List;

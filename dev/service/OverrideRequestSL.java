@@ -1,9 +1,9 @@
 package service;
 
-import domain.Certification;
-import domain.OverrideRequest;
-import domain.RequestStatus;
-import domain.ShiftType;
+import domain.hr.Certification;
+import domain.hr.OverrideRequest;
+import domain.hr.RequestStatus;
+import domain.hr.ShiftType;
 
 import java.time.LocalDate;
 

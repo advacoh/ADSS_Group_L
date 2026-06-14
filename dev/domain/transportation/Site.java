@@ -1,4 +1,4 @@
-package domain;
+package domain.transportation;
 
 import enums.SiteType;
 

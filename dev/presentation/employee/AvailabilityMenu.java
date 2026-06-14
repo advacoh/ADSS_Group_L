@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import domain.ShiftType;
+import domain.hr.ShiftType;
 import presentation.InputUtil;
 import presentation.MenuManager;
 import service.Response;

@@ -1,8 +1,12 @@
-package domain;
+package domain.transportation;
 
 import enums.LicenseType;
 import java.time.LocalDate;
 import java.util.*;
+import domain.hr.Certification;
+import domain.hr.Employee;
+import domain.hr.EmpType;
+import domain.hr.SalType;
 
 
 public class Driver extends Employee {

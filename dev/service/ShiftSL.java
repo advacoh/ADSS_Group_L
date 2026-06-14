@@ -1,8 +1,8 @@
 package service;
 
-import domain.Certification;
-import domain.Shift;
-import domain.ShiftType;
+import domain.hr.Certification;
+import domain.hr.Shift;
+import domain.hr.ShiftType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

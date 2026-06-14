@@ -1,4 +1,4 @@
-package domain;
+package domain.hr;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;

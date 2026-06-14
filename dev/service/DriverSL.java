@@ -1,6 +1,6 @@
 package service;
 
-import domain.Driver;
+import domain.transportation.Driver;
 import enums.LicenseType;
 
 public class DriverSL {

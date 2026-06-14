@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import domain.EmpType;
-import domain.SalType;
-import domain.Certification;
+import domain.hr.EmpType;
+import domain.hr.SalType;
+import domain.hr.Certification;
 import service.Response;
 import presentation.InputUtil;
 import presentation.MenuManager;

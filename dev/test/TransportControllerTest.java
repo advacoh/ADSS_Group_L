@@ -1,6 +1,7 @@
 package test;
 
-import domain.*;
+import domain.hr.*;
+import domain.transportation.*;
 import enums.DeliveryStatus;
 import enums.LicenseType;
 import enums.SiteType;

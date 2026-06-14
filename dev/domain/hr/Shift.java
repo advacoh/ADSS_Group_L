@@ -1,4 +1,4 @@
-package domain;
+package domain.hr;
 
 import java.time.LocalDate;
 import java.util.*;

@@ -1,6 +1,6 @@
 package service;
 
-import domain.Truck;
+import domain.transportation.Truck;
 import enums.LicenseType;
 
 public class TruckSL {

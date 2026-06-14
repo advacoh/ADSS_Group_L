@@ -1,10 +1,10 @@
 package service;
-import domain.UserController;
-import domain.EmployeeController;
-import domain.Certification;
-import domain.EmpType;
-import domain.Employee;
-import domain.SalType;
+import domain.hr.UserController;
+import domain.hr.EmployeeController;
+import domain.hr.Certification;
+import domain.hr.EmpType;
+import domain.hr.Employee;
+import domain.hr.SalType;
 import java.util.List;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

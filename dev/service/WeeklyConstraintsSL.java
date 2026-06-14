@@ -1,11 +1,11 @@
 package service;
-import domain.UserController;
-import domain.EmployeeController;
-import domain.Certification;
-import domain.EmpType;
-import domain.Employee;
-import domain.SalType;
-import domain.ShiftType;
+import domain.hr.UserController;
+import domain.hr.EmployeeController;
+import domain.hr.Certification;
+import domain.hr.EmpType;
+import domain.hr.Employee;
+import domain.hr.SalType;
+import domain.hr.ShiftType;
 import java.time.LocalDate;
 import java.util.*;
 
