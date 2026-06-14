@@ -4,7 +4,8 @@ import domain.hr.Certification;
 import domain.hr.EmpType;
 import domain.hr.SalType;
 import domain.hr.ShiftType;
-
+import enums.LicenseType;
+import enums.SiteType;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -57,6 +58,28 @@ public class InputUtil {
     public static String readRaw() {
         return scanner.nextLine().trim();
     }
+    public static double readDouble(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                return Double.parseDouble(scanner.nextLine().trim());
+            } catch (Exception e) {
+                System.out.println("Invalid number. Please try again.");
+            }
+        }
+    }
+    public static java.time.LocalTime readTime() {
+        while (true) {
+            System.out.print("Enter time (HH:mm): ");
+            String input = scanner.nextLine().trim();
+
+            try {
+                return java.time.LocalTime.parse(input);
+            } catch (Exception e) {
+                System.out.println("Invalid time format. Please use HH:mm.");
+            }
+        }
+    }
 
     // Add to InputUtil
 
@@ -87,6 +110,23 @@ public class InputUtil {
             ShiftType type = ShiftType.fromValue(readRaw());
             if (type != null) return type;
             System.out.println("Please enter M or E.");
+        }
+    }
+
+    public static LicenseType readLicenseType() {
+        LicenseType[] values = LicenseType.values();
+
+        System.out.println("Select license type:");
+        for (int i = 0; i < values.length; i++) {
+            System.out.println((i + 1) + ") " + values[i]);
+        }
+
+        while (true) {
+            int choice = readInt("Choice: ");
+            if (choice >= 1 && choice <= values.length) {
+                return values[choice - 1];
+            }
+            System.out.println("Invalid option.");
         }
     }
 
@@ -123,6 +163,22 @@ public class InputUtil {
     public static int readEmployeeId() {
         System.out.print("Enter employee ID: ");
         return readInt();
+    }
+    public static SiteType readSiteType() {
+        SiteType[] values = SiteType.values();
+
+        System.out.println("Select site type:");
+        for (int i = 0; i < values.length; i++) {
+            System.out.println((i + 1) + ") " + values[i]);
+        }
+
+        while (true) {
+            int choice = readInt("Choice: ");
+            if (choice >= 1 && choice <= values.length) {
+                return values[choice - 1];
+            }
+            System.out.println("Invalid option.");
+        }
     }
 
     public static SalType readSalType() {
