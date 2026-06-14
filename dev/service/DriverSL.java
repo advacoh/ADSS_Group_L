@@ -9,7 +9,7 @@ public class DriverSL {
     private final LicenseType licenseType;
 
     public DriverSL(Driver driver) {
-        this.id = driver.getID(); // אם אצלכן ב-Employee זה getId ולא getID, תשני כאן
+        this.id = driver.getID(); 
         this.name = driver.getName();
         this.licenseType = driver.getLicenseType();
     }

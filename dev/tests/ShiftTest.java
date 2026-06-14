@@ -1,6 +1,6 @@
-import dev.domain.Shift;
-import dev.domain.Certification;
-import dev.domain.ShiftType;
+import domain.Shift;
+import domain.Certification;
+import domain.ShiftType;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDate;

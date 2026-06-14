@@ -1,3 +1,3 @@
-package dev.domain;
+package domain;
 
 public enum SalType { HOURLY, GLOBAL }

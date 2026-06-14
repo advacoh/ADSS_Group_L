@@ -91,7 +91,7 @@ public class TransportController {
         }
         
         try{
-            shiftController.verifyDelivery(delivery.getDate(), delivery.getDepartureTime());
+            shiftController.verifyDelivery(delivery.getDate(), delivery.getDepartureTime(), delivery.getDriver().getId());
         } catch (Exception e) {
             System.out.println("Failed to create delivery: " + e.getMessage());
             return false;        

@@ -1,4 +1,4 @@
-package dev.domain;
+package domain;
 
 public enum RequestStatus {
 

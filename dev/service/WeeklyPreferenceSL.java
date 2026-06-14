@@ -1,4 +1,4 @@
-package dev.service;
+package service;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import dev.domain.ShiftType;
+import domain.ShiftType;
 
 public class WeeklyPreferenceSL {
         private Map<LocalDate, Map<ShiftType, Boolean>> shifts;

@@ -1,11 +1,11 @@
-package dev.presentation.hr;
+package presentation.hr;
 
-import dev.presentation.InputUtil;
-import dev.presentation.MenuManager;
-import dev.service.Response;
-import dev.service.SchedulingService;
-import dev.domain.ShiftType;
-import dev.domain.Certification;
+import presentation.InputUtil;
+import presentation.MenuManager;
+import service.Response;
+import service.SchedulingService;
+import domain.ShiftType;
+import domain.Certification;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;

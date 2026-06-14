@@ -1,10 +1,10 @@
-package dev.presentation.employee;
+package presentation.employee;
 
-import dev.presentation.InputUtil;
-import dev.presentation.MenuManager;
-import dev.service.EmployeeSL;
-import dev.service.PersonnelService;
-import dev.service.Response;
+import presentation.InputUtil;
+import presentation.MenuManager;
+import service.EmployeeSL;
+import service.PersonnelService;
+import service.Response;
 
 public class ProfileMenu {
 

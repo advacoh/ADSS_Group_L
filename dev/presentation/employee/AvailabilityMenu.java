@@ -1,4 +1,4 @@
-package dev.presentation.employee;
+package presentation.employee;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -7,13 +7,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import dev.domain.ShiftType;
-import dev.presentation.InputUtil;
-import dev.presentation.MenuManager;
-import dev.service.Response;
-import dev.service.SchedulingService;
-import dev.service.WeeklyConstraintsSL;
-import dev.service.WeeklyPreferenceSL;
+import domain.ShiftType;
+import presentation.InputUtil;
+import presentation.MenuManager;
+import service.Response;
+import service.SchedulingService;
+import service.WeeklyConstraintsSL;
+import service.WeeklyPreferenceSL;
 
 
 public class AvailabilityMenu {

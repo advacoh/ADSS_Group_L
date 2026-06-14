@@ -1,4 +1,4 @@
-package dev.domain;
+package domain;
 
 public class SlotSubmission {
     private boolean constraint; // hard block — HR must respect

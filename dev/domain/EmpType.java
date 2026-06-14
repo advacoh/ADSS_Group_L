@@ -1,2 +1,2 @@
-package dev.domain;
+package domain;
 public enum EmpType { FULL_TIME, PART_TIME }

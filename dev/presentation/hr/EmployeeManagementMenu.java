@@ -1,18 +1,18 @@
-package dev.presentation.hr;
+package presentation.hr;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import dev.domain.EmpType;
-import dev.domain.SalType;
-import dev.domain.Certification;
-import dev.service.Response;
-import dev.presentation.InputUtil;
-import dev.presentation.MenuManager;
-import dev.service.EmployeeSL;
-import dev.service.PersonnelService;
-import dev.service.SchedulingService;
+import domain.EmpType;
+import domain.SalType;
+import domain.Certification;
+import service.Response;
+import presentation.InputUtil;
+import presentation.MenuManager;
+import service.EmployeeSL;
+import service.PersonnelService;
+import service.SchedulingService;
 
 public class EmployeeManagementMenu {
 

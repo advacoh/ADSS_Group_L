@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import domain.TransportController;
 import domain.Certification;
 import domain.EmpType;
 import domain.Employee;
@@ -39,8 +40,7 @@ public class ServiceFactory {
         EmployeeMemory employeeMemory = new EmployeeMemory();
         ShiftMemory shiftMemory = new ShiftMemory();
         RequestMemory requestMemory = new RequestMemory();
-        TransportController transportController = new TransportController();
-        this.transportService = new TransportService(transportController);
+      
 
         if (withData) {
             populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory);
@@ -53,6 +53,8 @@ public class ServiceFactory {
         this.authService = new AuthService(userController, employeeController);
         this.PersonnelService = new PersonnelService(userController, employeeController);
         this.schedulingService = new SchedulingService(shiftController);
+          TransportController transportController = new TransportController(shiftController);
+        this.transportService = new TransportService(transportController);
     }
 
     public void populateEmployeeMemory(EmployeeMemory employeeMemory) {

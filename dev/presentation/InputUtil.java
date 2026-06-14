@@ -1,9 +1,9 @@
-package dev.presentation;
+package presentation;
 
-import dev.domain.Certification;
-import dev.domain.EmpType;
-import dev.domain.SalType;
-import dev.domain.ShiftType;
+import domain.Certification;
+import domain.EmpType;
+import domain.SalType;
+import domain.ShiftType;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;

@@ -1,10 +1,10 @@
-package dev.presentation.hr;
+package presentation.hr;
 
-import dev.domain.ShiftType;
-import dev.presentation.InputUtil;
-import dev.presentation.MenuManager;
-import dev.presentation.MenuManager;
-import dev.service.*;
+import domain.ShiftType;
+import presentation.InputUtil;
+import presentation.MenuManager;
+import presentation.MenuManager;
+import service.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

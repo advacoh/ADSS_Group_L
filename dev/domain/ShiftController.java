@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class ShiftController {
@@ -433,6 +434,26 @@ public class ShiftController {
         }
     }
 
-    public void verifyDelivery(LocalDate date, LocalTime time) {}
-
+    public void verifyDelivery(LocalDate date, LocalTime time, int driverId) {
+        ShiftType expectedShiftType;
+        try {
+            expectedShiftType = ShiftType.fromTime(time);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Delivery time is outside of operating shift hours.", e);
+        }
+        Shift shift = shiftMemory.get(date, expectedShiftType); 
+        if (shift == null) {
+            throw new IllegalStateException("No shift scheduled for " + date + " during " + expectedShiftType);
+        }
+        if (!shift.isAssignedAsRole(Certification.DRIVER, driverId)) {
+        throw new IllegalStateException("Driver ID " + driverId + " is not assigned as a driver for this shift.");
+        }
+       
+        List<Integer> warehouseStaff = shift.getAssignments().getOrDefault(Certification.WAREHOUSE, Collections.emptyList());
+        if (warehouseStaff.isEmpty()) {
+        throw new IllegalStateException("Delivery rejected: No warehouse employee is assigned to handle the receiving end for this shift.");
+        }
+    }
+  
 }
+

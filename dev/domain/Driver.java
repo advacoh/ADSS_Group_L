@@ -24,4 +24,8 @@ public class Driver extends Employee {
     public LicenseType getLicenseType() {
         return licenseType;
     }
+
+    public int getId() {
+        return super.getID();
+    }
 }

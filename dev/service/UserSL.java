@@ -1,4 +1,4 @@
-package dev.service;
+package service;
 
 public class UserSL {
     private final int userId;
