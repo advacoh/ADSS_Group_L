@@ -1,9 +1,9 @@
-import domain.Employee;
-import domain.EmpType;
-import domain.SalType;
-import domain.Certification;
-import domain.Status;
-import domain.ShiftType;
+import domain.hr.Employee;
+import domain.hr.EmpType;
+import domain.hr.SalType;
+import domain.hr.Certification;
+import domain.hr.Status;
+import domain.hr.ShiftType;
 
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
