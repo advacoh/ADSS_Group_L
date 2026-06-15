@@ -1,7 +1,11 @@
 package service;
 
-import domain.hr.*;
 import domain.transportation.*;
+import enums.DeliveryStatus;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,6 +15,61 @@ public class TransportService {
 
     public TransportService(TransportController transportController) {
         this.transportController = transportController;
+    }
+
+    public record DeliveryDocumentInput(
+            int documentId,
+            int destinationSiteId,
+            List<TransportedItem> items
+    ) {}
+
+    public boolean createDelivery(
+            int id,
+            LocalDate date,
+            LocalTime departureTime,
+            double recordedWeight,
+            int sourceSiteId,
+            String truckLicenseNumber,
+            int driverId,
+            List<DeliveryDocumentInput> documentInputs
+    ) {
+        Site source = findSiteById(sourceSiteId);
+        Truck truck = findTruckByLicenseNumber(truckLicenseNumber);
+        Driver driver = findDriverById(driverId);
+
+        if (source == null || truck == null || driver == null) {
+            return false;
+        }
+
+        List<DeliveryDocument> documents = new ArrayList<>();
+
+        for (DeliveryDocumentInput input : documentInputs) {
+            Site destination = findSiteById(input.destinationSiteId());
+
+            if (destination == null || input.items() == null || input.items().isEmpty()) {
+                return false;
+            }
+
+            documents.add(new DeliveryDocument(
+                    input.documentId(),
+                    destination,
+                    input.items()
+            ));
+        }
+
+        Delivery delivery = new Delivery(
+                id,
+                date,
+                departureTime,
+                recordedWeight,
+                DeliveryStatus.READY,
+                source,
+                truck,
+                driver,
+                documents
+        );
+
+        return transportController.createDelivery(delivery);
     }
 
     public boolean createDelivery(Delivery delivery) {
@@ -71,5 +130,29 @@ public class TransportService {
 
     public boolean areAllDocumentsValid(Delivery delivery) {
         return transportController.areAllDocumentsValid(delivery);
+    }
+
+    private Site findSiteById(int siteId) {
+        return transportController.getAllSites()
+                .stream()
+                .filter(site -> site.getId() == siteId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Truck findTruckByLicenseNumber(String licenseNumber) {
+        return transportController.getAllTrucks()
+                .stream()
+                .filter(truck -> truck.getLicenseNumber().equals(licenseNumber))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Driver findDriverById(int driverId) {
+        return transportController.getAllDrivers()
+                .stream()
+                .filter(driver -> driver.getID() == driverId)
+                .findFirst()
+                .orElse(null);
     }
 }

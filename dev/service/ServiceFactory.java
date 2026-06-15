@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import domain.transportation.Driver;
+import enums.LicenseType;
 import domain.transportation.TransportController;
 import domain.hr.Certification;
 import domain.hr.EmpType;
@@ -55,6 +56,8 @@ public class ServiceFactory {
         this.schedulingService = new SchedulingService(shiftController);
           TransportController transportController = new TransportController(shiftController);
         this.transportService = new TransportService(transportController);
+
+        populateTransportData(transportController);
     }
 
     public void populateEmployeeMemory(EmployeeMemory employeeMemory) {
@@ -78,6 +81,7 @@ public class ServiceFactory {
                 10, false, 7, false,
                 new HashSet<>(List.of(Certification.CASHIER))
         );
+        
 
         // Submitting emp2 constraints for the following week
         LocalDate today = LocalDate.now();
@@ -114,10 +118,36 @@ public class ServiceFactory {
                 new HashSet<>(List.of(Certification.SHIFT_MANAGER, Certification.CASHIER))
         );
 
+        Employee emp5 = new Employee(
+            100000005, "Avi Transport", 100005,
+            LocalDate.of(2024, 1, 1),
+            EmpType.FULL_TIME, SalType.GLOBAL, 12000,
+            18, true, 1, false,
+            new HashSet<>(List.of(Certification.DELIVERY_MANAGER))
+        );
+
+        Driver driverEmp = new Driver(
+            100000006,
+            "David Driver",
+            100006,
+            LocalDate.of(2024, 1, 1),
+            EmpType.FULL_TIME,
+            SalType.GLOBAL,
+            11000,
+            18,
+            true,
+            1,
+            false,
+            new HashSet<>(List.of(Certification.DRIVER)),
+            LicenseType.B
+    );
+
         employeeMemory.save(emp1);
         employeeMemory.save(emp2);
         employeeMemory.save(emp3);
         employeeMemory.save(emp4);
+        employeeMemory.save(emp5);
+        employeeMemory.save(driverEmp);
         }
 
     public void populateUserMmemory(UserMemory userMemory){
@@ -125,11 +155,13 @@ public class ServiceFactory {
         User user2 = new User(100000002, "yossi123");   // Yossi Levi - Cashier
         User user3 = new User(100000003, "dana1234");   // Dana Mizrahi - Warehouse
         User user4 = new User(100000004, "ron12345");   // Ron Shapiro - Shift Manager
-
+        User user5 = new User(100000005, "transport123");
+ 
         userMemory.save(user1);
         userMemory.save(user2);
         userMemory.save(user3);
         userMemory.save(user4);
+        userMemory.save(user5);
     }
 
 
@@ -150,10 +182,14 @@ public class ServiceFactory {
         Shift shift1 = new Shift("SHIFT_001",tuesday , ShiftType.MORNING);
         shift1.setRequirement(Certification.CASHIER, 2);
         shift1.setRequirement(Certification.WAREHOUSE, 1);
+        shift1.setRequirement(Certification.DRIVER, 1);
+
         shift1.assignEmployee(Certification.SHIFT_MANAGER, 100000004); 
         shift1.assignEmployee(Certification.CASHIER, 100000002);       
         shift1.assignEmployee(Certification.CASHIER, 100000004);       
-        shift1.assignEmployee(Certification.WAREHOUSE, 100000003);     
+        shift1.assignEmployee(Certification.WAREHOUSE, 100000003); 
+        shift1.assignEmployee(Certification.DRIVER, 100000006); 
+          
         shiftMemory.save(shift1);
 
         // Shift 2 
@@ -228,6 +264,25 @@ public class ServiceFactory {
 
     public TransportService getTransportService() {
         return this.transportService;
+    }
+    private void populateTransportData(TransportController transportController) {
+        Driver driver = new Driver(
+                100000006,
+                "David Driver",
+                100006,
+                LocalDate.of(2024, 1, 1),
+                EmpType.FULL_TIME,
+                SalType.GLOBAL,
+                11000,
+                18,
+                true,
+                1,
+                false,
+                new HashSet<>(List.of(Certification.DRIVER)),
+                LicenseType.B
+        );
+
+        transportController.addDriver(driver);
     }
 }
 
