@@ -15,6 +15,7 @@ public class Delivery {
     private Truck truck;
     private Driver driver;
     private List<DeliveryDocument> documents;
+    private int currentStep = 0; // Default starts at 0
 
     public Delivery(
             int id,
@@ -83,4 +84,13 @@ public class Delivery {
     public void setRecordedWeight(double recordedWeight) {
         this.recordedWeight = recordedWeight;
     }
+
+    public int getCurrentStep() { 
+        return currentStep; 
+    }
+
+    public void incrementStep() { 
+        this.currentStep++; 
+    }
+
 }

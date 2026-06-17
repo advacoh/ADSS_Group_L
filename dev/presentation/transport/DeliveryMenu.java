@@ -220,31 +220,38 @@ public class DeliveryMenu {
     private void executeDelivery() {
         System.out.println("\n--- Execute Delivery ---");
         
-        // Fetch all deliveries and filter for READY status
         List<DeliverySL> deliveries = transportService.getAllDeliveries();
-        List<DeliverySL> readyDeliveries = new ArrayList<>();
+        List<DeliverySL> executableDeliveries = new ArrayList<>();
+        
         for (DeliverySL d : deliveries) {
-            if (d.getStatus() == enums.DeliveryStatus.READY) {
-                readyDeliveries.add(d);
+            if (d.getStatus() == enums.DeliveryStatus.READY || d.getStatus() == enums.DeliveryStatus.EXECUTING) {
+                executableDeliveries.add(d);
             }
         }
 
-        if (readyDeliveries.isEmpty()) {
-            System.out.println("No deliveries are currently in 'READY' status to execute.");
+        if (executableDeliveries.isEmpty()) {
+            System.out.println("No deliveries are currently available to execute or resume.");
             return;
         }
 
-        System.out.println("Select a delivery to begin execution:");
-        DeliverySL selectedDelivery = InputUtil.selectItem(readyDeliveries);
+        System.out.println("Select a delivery to begin/resume execution:");
+        DeliverySL selectedDelivery = InputUtil.selectItem(executableDeliveries);
         if (selectedDelivery == null) return;
 
-        System.out.println("\nStarting execution for Delivery ID: " + selectedDelivery.getId());
+        if (selectedDelivery.getStatus() == enums.DeliveryStatus.READY) {
+            transportService.updateDeliveryStatus(selectedDelivery.getId(), enums.DeliveryStatus.EXECUTING);
+            System.out.println("\nStarting fresh execution for Delivery ID: " + selectedDelivery.getId());
+        } else {
+            System.out.println("\nResuming execution for Delivery ID: " + selectedDelivery.getId());
+        }
+        
         System.out.println("Source Origin: " + selectedDelivery.getSource().getName());
 
         boolean ongoing = true;
-        int currentStep = 0;
         
         while (ongoing) {
+            int currentStep = transportService.getDeliveryCurrentStep(selectedDelivery.getId());
+            
             String nextSiteName = transportService.getNextDestinationName(selectedDelivery.getId(), currentStep);
             if (nextSiteName == null) {
                 transportService.completeDelivery(selectedDelivery.getId());
@@ -254,76 +261,71 @@ public class DeliveryMenu {
             }
 
             System.out.println("\n--- Next Stop: " + nextSiteName + " ---");
+            System.out.println("1) Record site arrival & weight check");
+            System.out.println("2) Pause delivery here (Save progress and return to menu)");
+        
+            int action = -1;
+            while (action != 1 && action != 2) {
+                action = InputUtil.readInt("Choose option: ");
+                if (action != 1 && action != 2) {
+                    System.out.println("Invalid option. Please choose 1 or 2.");
+                }
+            }
+            
+            if (action == 2) {
+                System.out.println("Delivery paused. Progress saved at step " + currentStep + ".");
+                ongoing = false;
+                break; 
+            }
+
             double newWeight = InputUtil.readDouble("Enter the current truck weight recorded at this site: ");
 
-            // Process the stop event via the service layer
             boolean weightOk = transportService.processDeliveryStop(selectedDelivery.getId(), currentStep, newWeight);
 
             if (!weightOk) {
-            System.out.println("\nError: The truck is OVERWEIGHT for its maximum legal capacity.");
-            System.out.println("1) Reduce supply and re-weigh.");
-            System.out.println("2) Replace current destination with a new destination.");
-            System.out.println("3) Replace current truck with a new truck that has a higher max capacity weight.");
-            
-            int emergencyChoice = InputUtil.readInt("Choose option: ");
-            
-            switch (emergencyChoice) {
-                case 1 -> {
-                    System.out.println("Please unload items or fix the load balance.");
-                }
-                case 2 -> {
-                    List<SiteSL> allSites = transportService.getAllSites();
-
-                    System.out.println("\nSelect a replacement destination site:");
-                    SiteSL replacementSite = InputUtil.selectItem(allSites);
-                    if (replacementSite != null) {
-                        transportService.changeDocumentDestination(selectedDelivery.getId(), currentStep, replacementSite.getId());
-                        System.out.println("Destination updated successfully to: " + replacementSite.getName());
-                    }
-                }
-                case 3 -> {
-                    List<TruckSL> allTrucks = transportService.getAllTrucks();
-
-                    List<TruckSL> availableTrucks = new ArrayList<>();
-                    for (TruckSL truck : allTrucks) {
-                        if (!truck.getLicenseNumber().equals(selectedDelivery.getTruck().getLicenseNumber())) {
-                            availableTrucks.add(truck);
+                System.out.println("\nError: The truck is OVERWEIGHT for its maximum legal capacity.");
+                System.out.println("1) Reduce supply and re-weigh.");
+                System.out.println("2) Replace current destination with a new destination.");
+                System.out.println("3) Replace current truck with a new truck.");
+                
+                int emergencyChoice = InputUtil.readInt("Choose option: ");
+                switch (emergencyChoice) {
+                    case 1 -> System.out.println("Please unload items or fix the load balance.");
+                    case 2 -> {
+                        List<SiteSL> allSites = transportService.getAllSites();
+                        System.out.println("\nSelect a replacement destination site:");
+                        SiteSL replacementSite = InputUtil.selectItem(allSites);
+                        if (replacementSite != null) {
+                            transportService.changeDocumentDestination(selectedDelivery.getId(), currentStep, replacementSite.getId());
+                            System.out.println("Destination updated successfully.");
                         }
                     }
-
-                    System.out.println("\nSelect a new replacement truck:");
-                    TruckSL replacementTruck = InputUtil.selectItem(allTrucks);
-                    if (replacementTruck != null) {
-                        boolean truckSwapped = transportService.changeDeliveryTruck(selectedDelivery.getId(), replacementTruck.getLicenseNumber());
-                        if (truckSwapped) {
-                            System.out.println("Truck swapped successfully to: " + replacementTruck.getModel());
-                            final int currentDeliveryId = selectedDelivery.getId();
-                            selectedDelivery = transportService.getAllDeliveries().stream()
-                                    .filter(d -> d.getId() == currentDeliveryId).findFirst().orElse(selectedDelivery);
-                        } else {
-                            System.out.println("Failed to swap truck. Ensure driver license matches the new truck requirements.");
+                    case 3 -> {
+                        List<TruckSL> allTrucks = transportService.getAllTrucks();
+                        System.out.println("\nSelect a replacement truck:");
+                        TruckSL replacementTruck = InputUtil.selectItem(allTrucks);
+                        if (replacementTruck != null) {
+                            boolean truckSwapped = transportService.changeDeliveryTruck(selectedDelivery.getId(), replacementTruck.getLicenseNumber());
+                            if (truckSwapped) {
+                                System.out.println("Truck swapped successfully.");
+                            } else {
+                                System.out.println("Failed to swap truck.");
+                            }
                         }
                     }
+                    default -> System.out.println("Staying at checkpoint.");
                 }
-                default -> System.out.println("Invalid emergency choice. Staying at checkpoint.");
+            } else {
+                System.out.println("Weight verified. Items handled successfully.");
+                transportService.incrementDeliveryStep(selectedDelivery.getId()); 
             }
-            continue;
-        } else {
-            System.out.println("Weight verified within legal limits. Items loaded/unloaded successfully.");
-            currentStep++; 
-        }
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
 }
+
+
+
+
+
+
+

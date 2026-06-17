@@ -179,4 +179,31 @@ public class TransportService {
     public boolean changeDeliveryTruck(int deliveryId, String newLicenseNumber) {
         return transportController.changeDeliveryTruck(deliveryId, newLicenseNumber);
     }
+
+    public int getDeliveryCurrentStep(int deliveryId) {
+        domain.transportation.Delivery delivery = transportController.getAllDeliveries()
+                .stream()
+                .filter(d -> d.getId() == deliveryId)
+                .findFirst()
+                .orElse(null);
+                
+        return (delivery != null) ? delivery.getCurrentStep() : 0;
+    }
+
+    public void incrementDeliveryStep(int deliveryId) {
+        domain.transportation.Delivery delivery = transportController.getAllDeliveries()
+                .stream()
+                .filter(d -> d.getId() == deliveryId)
+                .findFirst()
+                .orElse(null);
+                
+        if (delivery != null) {
+            delivery.incrementStep();
+        }
+    }
+
+    public void updateDeliveryStatus(int deliveryId, enums.DeliveryStatus status) {
+        transportController.updateDeliveryStatus(deliveryId, status);
+    }
+
 }
