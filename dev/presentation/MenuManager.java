@@ -1,6 +1,6 @@
 package presentation;
 
-import presentation.hr.HRMenu;
+import presentation.hr.HRDashboardMenu; // Swapped HRMenu import for HRDashboardMenu
 import presentation.employee.EmployeeMenu;
 import presentation.transport.TransportMenu;
 import service.*;
@@ -9,14 +9,15 @@ public class MenuManager {
 
     private static final int NO_USER = -1;
     private final AuthService authService;
-    private final HRMenu hrMenu;
+    private final HRDashboardMenu hrDashboardMenu; // Changed from hrMenu
     private final EmployeeMenu employeeMenu;
     private final TransportMenu transportMenu;
     private int loggedInUserId = NO_USER;
 
     public MenuManager(AuthService authService, SchedulingService schedulingService, PersonnelService personnelService, TransportService transportService) {
         this.authService = authService;
-        this.hrMenu = new HRMenu(this, schedulingService, personnelService, authService);
+        // Instantiate the global dashboard instead of a specific branch menu
+        this.hrDashboardMenu = new HRDashboardMenu(this, schedulingService, personnelService, authService);
         this.employeeMenu = new EmployeeMenu(this, schedulingService, personnelService, authService);
         this.transportMenu = new TransportMenu(transportService);
     }
@@ -45,7 +46,7 @@ public class MenuManager {
 
     private void login() {
         int id = InputUtil.readInt("Enter ID: ");
-        String password = InputUtil.readString("Enter password: ");;
+        String password = InputUtil.readString("Enter password: ");
         Response<UserSL> response = authService.login(id, password);
         if (response.isError()) {
             System.out.println("Login failed: " + response.getErrorMessage());
@@ -55,8 +56,9 @@ public class MenuManager {
         UserSL result = response.getValue();
         loggedInUserId = result.getUserId();
 
+        // Router adjustments
         if (result.isHR())
-            hrMenu.show();
+            hrDashboardMenu.show(); // Diverts the HR Manager to the global tier first
         else if(result.isDeliveryManager())
             transportMenu.start();
         else

@@ -5,44 +5,73 @@ import java.util.*;
 import java.time.format.DateTimeFormatter;
 
 public class ShiftMemory {
-    private final Map<String, Shift> activeShifts;
-    private final Map<String, Shift> pastShifts;
+    // Nested Structure: Map<BranchId, Map<Date_Type_Key, Shift>>
+    private final Map<Integer, Map<String, Shift>> activeShifts;
+    private final Map<Integer, Map<String, Shift>> pastShifts;
 
-    public ShiftMemory(){
+    public ShiftMemory() {
         this.activeShifts = new HashMap<>();
         this.pastShifts = new HashMap<>();
     }
 
-    public ShiftMemory(Map<String, Shift> activeShifts, Map<String, Shift> pastShifts){
+    public ShiftMemory(Map<Integer, Map<String, Shift>> activeShifts, Map<Integer, Map<String, Shift>> pastShifts) {
         this.activeShifts = activeShifts;
         this.pastShifts = pastShifts;
     }
-
 
     private String getShiftKey(LocalDate date, ShiftType type) {
         return date.format(DateTimeFormatter.ISO_LOCAL_DATE) + "_" + type.name();
     }
 
     public void save(Shift shift) {
+        int branchId = shift.getBranchId();
         String key = getShiftKey(shift.getDate(), shift.getType());
-        if (activeShifts.containsKey(key)) {
-            throw new IllegalArgumentException("Shift already exists for " + shift.getDate() + " " + shift.getType());
+        
+        activeShifts.computeIfAbsent(branchId, k -> new HashMap<>());
+        
+        if (activeShifts.get(branchId).containsKey(key)) {
+            throw new IllegalArgumentException("Shift already exists for branch " + branchId + " on " + shift.getDate() + " (" + shift.getType() + ")");
         }
-        activeShifts.put(key, shift);
+        activeShifts.get(branchId).put(key, shift);
     }
 
-    public Shift get(LocalDate date, ShiftType type) {
+    public void archiveShift(int branchId, LocalDate day, ShiftType type) {
+        String key = getShiftKey(day, type);
+        Map<String, Shift> branchActive = activeShifts.get(branchId);
+        
+        if (branchActive == null || !branchActive.containsKey(key)) {
+            throw new IllegalArgumentException("Cannot archive: Shift not found for branch " + branchId + " on " + day + " " + type);
+        }
+        
+        Shift shift = branchActive.remove(key);
+        pastShifts.computeIfAbsent(branchId, k -> new HashMap<>()).put(key, shift);
+    }
+
+
+    public Shift get(int branchId, LocalDate date, ShiftType type) {
         String key = getShiftKey(date, type);
-        Shift shift = activeShifts.get(key);
+        Shift shift = activeShifts.getOrDefault(branchId, Collections.emptyMap()).get(key);
         if (shift == null) {
-            throw new IllegalArgumentException("Shift not found for " + date + " " + type);
+            throw new IllegalArgumentException("Shift not found for branch " + branchId + " on " + date + " " + type);
         }
         return shift;
     }
 
-    public List<Shift> getByDate(LocalDate date) {
+    public Shift getPast(int branchId, LocalDate date, ShiftType type) {
+        String key = getShiftKey(date, type);
+        Shift shift = pastShifts.getOrDefault(branchId, Collections.emptyMap()).get(key);
+        if (shift == null) {
+            throw new IllegalArgumentException("No archived shift found for branch " + branchId + " on " + date + " " + type);
+        }
+        return shift;
+    }
+
+
+    // Localized check for canAssign 
+    public List<Shift> getByBranchAndDate(int branchId, LocalDate date) {
         List<Shift> result = new ArrayList<>();
-        for (Shift s : activeShifts.values()) {
+        Map<String, Shift> branchShifts = activeShifts.getOrDefault(branchId, Collections.emptyMap());
+        for (Shift s : branchShifts.values()) {
             if (s.getDate().equals(date)) {
                 result.add(s);
             }
@@ -50,25 +79,29 @@ public class ShiftMemory {
         return result;
     }
 
-    public void archiveShift(LocalDate day, ShiftType type) {
-        String key = getShiftKey(day, type);
-        Shift shift = activeShifts.remove(key);
-        if (shift == null) {
-            throw new IllegalArgumentException("Cannot archive: Shift not found for " + day + " " + type);
-        }
-        pastShifts.put(key, shift);
+    // For branch weekly schedules
+    public List<Shift> getAllActiveShifts(int branchId) {
+        return new ArrayList<>(activeShifts.getOrDefault(branchId, Collections.emptyMap()).values());
     }
 
+    // Used by updateHistory loop to check across all system branches
     public List<Shift> getAllActiveShifts() {
-        return new ArrayList<>(activeShifts.values());
+        List<Shift> allActive = new ArrayList<>();
+        for (Map<String, Shift> branchMap : activeShifts.values()) {
+            allActive.addAll(branchMap.values());
+        }
+        return allActive;
     }
 
-    public Shift getPast(LocalDate date, ShiftType type) {
+    // Used by verifyDelivery to match a slot globally across destination branches
+    public List<Shift> getShiftsByDateAndType(LocalDate date, ShiftType type) {
+        List<Shift> result = new ArrayList<>();
         String key = getShiftKey(date, type);
-        Shift shift = pastShifts.get(key);
-        if (shift == null) {
-            throw new IllegalArgumentException("No archived shift found for " + date + " " + type);
+        for (Map<String, Shift> branchMap : activeShifts.values()) {
+            if (branchMap.containsKey(key)) {
+                result.add(branchMap.get(key));
+            }
         }
-        return shift;
+        return result;
     }
 }

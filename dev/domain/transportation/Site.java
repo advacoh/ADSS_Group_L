@@ -57,4 +57,8 @@ public class Site {
     public DeliveryZone getDeliveryZone() {
         return deliveryZone;
     }
+
+    public boolean isBranch() {
+        return this.siteType == SiteType.BRANCH;
+    }
 }

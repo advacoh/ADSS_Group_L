@@ -5,6 +5,7 @@ import java.util.*;
 
 public class Shift {
     private final String ID;
+    private final int branchId;
     private final LocalDate date;
     private final ShiftType type;
 
@@ -12,8 +13,9 @@ public class Shift {
     private final Map<Certification, List<Integer>> assignments;
     private final List<Integer> overtimeEmployees;
 
-    public Shift(String id, LocalDate date, ShiftType type) {
+    public Shift(String id, int branchId, LocalDate date, ShiftType type) {
         this.ID = id;
+        this.branchId = branchId;
         this.date = date;
         this.type = type;
         this.requiredRoles = new HashMap<>();
@@ -32,34 +34,48 @@ public class Shift {
         if (role == Certification.SHIFT_MANAGER && newCount < 1) {
             throw new IllegalArgumentException("There must be at least one SHIFT_MANAGER");
         }
+        
         if (newCount == 0) {
             requiredRoles.remove(role);
-            assignments.remove(role);
+            List<Integer> evicted = assignments.remove(role);
+            if (evicted != null) {
+                for (int empId : evicted) {
+                    if (!isEmployeeAssigned(empId)) {
+                        overtimeEmployees.remove(Integer.valueOf(empId));
+                    }
+                }
+            }
             return;
         }
+        
         requiredRoles.put(role, newCount);
         List<Integer> currentAssignments = assignments.get(role);
         if (currentAssignments != null) {
             while (currentAssignments.size() > newCount) {
-                currentAssignments.removeLast();
+                int removedId = currentAssignments.removeLast();
+                if (!isEmployeeAssigned(removedId)) {
+                    overtimeEmployees.remove(Integer.valueOf(removedId));
+                }
             }
         }
     }
 
     public boolean assignEmployee(Certification role, int employeeId) {
         if (isEmployeeAssigned(employeeId)) {
-            boolean isShiftManager = assignments
+            boolean currentlyShiftManager = assignments
                     .getOrDefault(Certification.SHIFT_MANAGER, Collections.emptyList())
                     .contains(employeeId);
-            if (!isShiftManager) {
-                throw new IllegalStateException("Employee " + employeeId + " is already assigned in this shift and is not the shift manager");
+            boolean becomingShiftManager = (role == Certification.SHIFT_MANAGER);
+
+            if (!currentlyShiftManager && !becomingShiftManager) {
+                throw new IllegalStateException("Employee " + employeeId + " is already assigned in this shift and is not a shift manager");
             }
-            // Count how many roles they already hold
+            
             long rolesHeld = assignments.values().stream()
                     .filter(list -> list.contains(employeeId))
                     .count();
             if (rolesHeld >= 2) {
-                throw new IllegalStateException("Shift manager " + employeeId + " already holds 2 roles in this shift");
+                throw new IllegalStateException("Employee " + employeeId + " already holds 2 roles in this shift");
             }
         }
 
@@ -138,6 +154,7 @@ public class Shift {
     public String getID() { return ID; }
     public LocalDate getDate() { return date; }
     public ShiftType getType() { return type; }
+    public int getBranchId() { return branchId; }
     public boolean canAcceptOvertime() {
         return this.type == ShiftType.MORNING;
     }
@@ -154,9 +171,5 @@ public class Shift {
     public List<Integer> getOvertimeEmployees() {
         return Collections.unmodifiableList(overtimeEmployees);
     }
-//    public List<Integer> getOvertimeEmployees() { return Collections.unmodifiableList(overtimeEmployees); }
-//
-//    public Map<Certification, List<Integer>> getAssignments() {
-//        return assignments;
-//    }
+
 }

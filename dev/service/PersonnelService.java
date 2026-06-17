@@ -1,5 +1,6 @@
 package service;
 import domain.hr.UserController;
+import domain.transportation.TransportController;
 import domain.hr.EmployeeController;
 import domain.hr.Certification;
 import domain.hr.EmpType;
@@ -18,73 +19,75 @@ import java.util.Set;
 public class PersonnelService {
     private UserController userController;
     private EmployeeController employeeController;
+    private final TransportController transportController;
 
-    public PersonnelService(UserController userController, EmployeeController employeeController){
+    public PersonnelService(UserController userController, EmployeeController employeeController, TransportController transportController){
         this.userController = userController;
         this.employeeController = employeeController;
+        this.transportController = transportController;
     }
 
-    public Response<Void> addEmployee(int activeUserId, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType empType,
-        SalType salaryType, int salary, int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certificationsList) {
-        try{
-            employeeController.addEmployee(
-                activeUserId, newEmpID, password, name, bankAccount, startDate,
-                empType, salaryType, salary, vacationDay, willOvertime,
-                dayOff, doubleShiftAllowed, certificationsList);
-                return Response.success(null);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return Response.failure(e.getMessage());
-        }
-    }
-
-    public Response<Void> deactivateEmployee(int activeUserId, int targetEmpId) {
+    public Response<Void> addEmployee(int activeUserId, int branchId, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType empType,
+                                      SalType salaryType, int salary, int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certificationsList) {
         try {
-            employeeController.dismissEmployee(activeUserId, targetEmpId);
+            employeeController.addEmployee(
+                    activeUserId, branchId, newEmpID, password, name, bankAccount, startDate,
+                    empType, salaryType, salary, vacationDay, willOvertime,
+                    dayOff, doubleShiftAllowed, certificationsList);
             return Response.success(null);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
     }
 
-    public Response<Void> activateEmployee(int userID, int empId, String password){
-        try{
-            employeeController.activateEmployee(userID, empId, password);
+    public Response<Void> deactivateEmployee(int activeUserId, int branchId, int targetEmpId) {
+        try {
+            employeeController.dismissEmployee(activeUserId, branchId, targetEmpId);
             return Response.success(null);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
     }
 
-    public Response<Void> addCertification(int activeUserId, int targetEmpId, Certification role) { 
-        try{
-            this.employeeController.addCertification(activeUserId, targetEmpId, role);
-            return Response.success(null);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return Response.failure(e.getMessage());
-        }
-     }
-
-    public Response<Void> removeCertification(int activeUserId, int targetEmpId, Certification role){
-        try{
-            this.employeeController.removeCertification(activeUserId, targetEmpId, role);
+    public Response<Void> activateEmployee(int userID, int branchId, int empId, String password) {
+        try {
+            employeeController.activateEmployee(userID, branchId, empId, password);
             return Response.success(null);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
     }
 
-    public Response<Void> updateFinancialDetails(int userID, int empId, int newBankAccount, SalType newSalaryType, int newSalary){
-        try{  
-            this.employeeController.updateFinancialDetails(userID, empId, newBankAccount, newSalaryType, newSalary);
+    public Response<Void> addCertification(int activeUserId, int branchId, int targetEmpId, Certification role) { 
+        try {
+            this.employeeController.addCertification(activeUserId, branchId, targetEmpId, role);
             return Response.success(null);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
     }
 
-    public Response<Void> updateEmploymentDetails(int userID, int empId, EmpType empType, int vacationDay, LocalDate startDate){
-        try{
-            this.employeeController.updateEmploymentDetails(userID, empId, empType, vacationDay, startDate);
+    public Response<Void> removeCertification(int activeUserId, int branchId, int targetEmpId, Certification role) {
+        try {
+            this.employeeController.removeCertification(activeUserId, branchId, targetEmpId, role);
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+    public Response<Void> updateFinancialDetails(int userID, int branchId, int empId, int newBankAccount, SalType newSalaryType, int newSalary) {
+        try {  
+            this.employeeController.updateFinancialDetails(userID, branchId, empId, newBankAccount, newSalaryType, newSalary);
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+    public Response<Void> updateEmploymentDetails(int userID, int branchId, int empId, EmpType empType, int vacationDay, LocalDate startDate) {
+        try {
+            this.employeeController.updateEmploymentDetails(userID, branchId, empId, empType, vacationDay, startDate);
             return Response.success(null);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
@@ -92,35 +95,100 @@ public class PersonnelService {
     }
     
 
-    public Response<Void> updateEmployeeName(int userID, int empId, String newName){
-        try{
-            this.employeeController.updateEmployeeName(userID, empId, newName);
-            return Response.success(null);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return Response.failure(e.getMessage());
-        }
-    }
-
-
-    public Response<Void> updateEmployeeSettings(int userID, int empId, int dayOff, boolean willDouble, boolean willOverTime) {
+    public Response<Void> updateEmployeeName(int userID, int branchId, int empId, String newName) {
         try {
-            this.employeeController.updateEmployeeSettings(userID, empId, dayOff, willDouble, willOverTime);
+            this.employeeController.updateEmployeeName(userID, branchId, empId, newName);
             return Response.success(null);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
     }
 
-    public Response<EmployeeSL> getEmployeeDetails(int activeUserId, int targetEmpId) { 
-        try{
-            Employee emp = this.employeeController.getEmployeeDetails(activeUserId,targetEmpId);
-            EmployeeSL empSL = new EmployeeSL(targetEmpId, emp.getName(), emp.getBankAccount(), emp.getStartDate(), 
-            emp.getEmployementType(), emp.getSalaryType(), emp.getSalary(), emp.getVacation(), emp.willOvertime(), emp.getDayOff(),
-            emp.willDouble(), emp.getCertifications(), emp.getStatus());
-            return Response.success(empSL);
+
+    // emp sets for themselves
+    public Response<Void> updateEmployeeSettings(int employeeId, int dayOff, boolean willDouble, boolean willOverTime) {
+        try {
+            this.employeeController.updateEmployeeSettings(employeeId, dayOff, willDouble, willOverTime);
+            return Response.success(null);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
         }
+    }
+
+    // HR sets for employee
+    public Response<Void> updateEmployeeSettings(int hrUserId, int branchId, int targetEmpId, int dayOff, boolean willDouble, boolean willOverTime) {
+        try {
+            this.employeeController.updateEmployeeSettings(hrUserId, branchId, targetEmpId, dayOff, willDouble, willOverTime);
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+    // emp sets for themselves
+    public Response<EmployeeSL> getEmployeeDetails(int employeeId) { 
+        try {
+            Employee emp = this.employeeController.getEmployeeDetails(employeeId);
+            return Response.success(mapToSL(employeeId, emp));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+        // HR sets for employee
+    public Response<EmployeeSL> getEmployeeDetails(int hrUserId, int branchId, int targetEmpId) { 
+        try {
+            Employee emp = this.employeeController.getEmployeeDetails(hrUserId, branchId, targetEmpId);
+            return Response.success(mapToSL(targetEmpId, emp));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+   public Response<Boolean> branchExists(int branchId) {
+        try {
+            boolean exists = this.transportController.siteExists(branchId); 
+            return Response.success(exists);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+    public Response<Void> registerBranch(int branchId, String branchName) {
+        try {
+           
+            // this.transportController.addSite(branchId, branchName, "BRANCH");
+            return Response.success(null);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Response.failure(e.getMessage());
+        }
+    }
+
+    public Response<Void> addTransportManager(int empId, String empName, String password) {
+    try {
+        this.employeeController.registerTransportManager(empId, empName, password);
+        return Response.success(null);
+    } catch (IllegalArgumentException | IllegalStateException e) {
+        return Response.failure(e.getMessage());
+    }
+}
+
+    private EmployeeSL mapToSL(int empId, Employee emp) {
+        return new EmployeeSL(
+            empId, 
+            emp.getName(), 
+            emp.getBankAccount(), 
+            emp.getStartDate(), 
+            emp.getEmployementType(), 
+            emp.getSalaryType(), 
+            emp.getSalary(), 
+            emp.getVacation(), 
+            emp.willOvertime(), 
+            emp.getDayOff(),
+            emp.willDouble(), 
+            emp.getCertifications(), 
+            emp.getStatus()
+        );
     }
 }
 

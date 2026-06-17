@@ -92,14 +92,18 @@ public class TransportController {
         }
         
         try{
-            shiftController.verifyDelivery(delivery.getDate(), delivery.getDepartureTime(), delivery.getDriver().getId());
+            shiftController.verifyDelivery(delivery.getBranches(),delivery.getDate(), delivery.getDepartureTime(), delivery.getDriver().getId());
         } catch (Exception e) {
             System.out.println("Failed to create delivery: " + e.getMessage());
             return false;        
         }
 
         delivery.setStatus(DeliveryStatus.READY);
-        deliveryRepository.addDelivery(delivery);
+        deliveryRepository.addDelivery(delivery);   
         return true;
+    }
+
+    public boolean siteExists(int siteId) {
+        return siteRepository.siteExists(siteId);
     }
 }

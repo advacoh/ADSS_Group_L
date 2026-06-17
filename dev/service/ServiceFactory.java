@@ -50,11 +50,11 @@ public class ServiceFactory {
         UserController userController = new UserController(userMemory);
         EmployeeController employeeController = new EmployeeController(userController, employeeMemory);
         ShiftController shiftController = new ShiftController(shiftMemory, employeeMemory, userController, requestMemory);
+        TransportController transportController = new TransportController(shiftController);
 
         this.authService = new AuthService(userController, employeeController);
-        this.PersonnelService = new PersonnelService(userController, employeeController);
+        this.PersonnelService = new PersonnelService(userController, employeeController, transportController);
         this.schedulingService = new SchedulingService(shiftController);
-          TransportController transportController = new TransportController(shiftController);
         this.transportService = new TransportService(transportController);
 
         populateTransportData(transportController);
@@ -179,7 +179,7 @@ public class ServiceFactory {
 
 
         // Shift 1 
-        Shift shift1 = new Shift("SHIFT_001",tuesday , ShiftType.MORNING);
+        Shift shift1 = new Shift("SHIFT_001",1,tuesday , ShiftType.MORNING);
         shift1.setRequirement(Certification.CASHIER, 2);
         shift1.setRequirement(Certification.WAREHOUSE, 1);
         shift1.setRequirement(Certification.DRIVER, 1);
@@ -193,14 +193,14 @@ public class ServiceFactory {
         shiftMemory.save(shift1);
 
         // Shift 2 
-        Shift shift2 = new Shift("SHIFT_002", wednesday , ShiftType.MORNING);
+        Shift shift2 = new Shift("SHIFT_002", 1, wednesday , ShiftType.MORNING);
         shift2.setRequirement(Certification.CASHIER, 2);
         shift2.assignEmployee(Certification.SHIFT_MANAGER, 100000001); 
         shift2.assignEmployee(Certification.CASHIER, 100000003);
         shiftMemory.save(shift2);       
 
         // Shift 3 
-        Shift shift3 = new Shift("SHIFT_003", thursday , ShiftType.MORNING);
+        Shift shift3 = new Shift("SHIFT_003", 1, thursday , ShiftType.MORNING);
         shift3.setRequirement(Certification.CASHIER, 1);
         shift3.setRequirement(Certification.WAREHOUSE, 1);
         shift3.assignEmployee(Certification.SHIFT_MANAGER, 100000004); 
@@ -209,14 +209,14 @@ public class ServiceFactory {
         shiftMemory.save(shift3);
 
         // Shift 4 - archived past shift for testing viewHistory
-        Shift shift4 = new Shift("SHIFT_004", LocalDate.of(2026, 1, 15), ShiftType.MORNING);
+        Shift shift4 = new Shift("SHIFT_004", 1, LocalDate.of(2026, 1, 15), ShiftType.MORNING);
         shift4.setRequirement(Certification.CASHIER, 1);
         shift4.setRequirement(Certification.WAREHOUSE, 1);
         shift4.assignEmployee(Certification.SHIFT_MANAGER, 100000004);
         shift4.assignEmployee(Certification.CASHIER, 100000002);
         shift4.assignEmployee(Certification.WAREHOUSE, 100000003);
         shiftMemory.save(shift4);
-        shiftMemory.archiveShift(LocalDate.of(2026, 1, 15), ShiftType.MORNING);
+        shiftMemory.archiveShift(1,LocalDate.of(2026, 1, 15), ShiftType.MORNING);
     }
 
   

@@ -12,21 +12,23 @@ import presentation.InputUtil;
 import presentation.MenuManager;
 import service.EmployeeSL;
 import service.PersonnelService;
-import service.SchedulingService;
 
 public class EmployeeManagementMenu {
 
     private final MenuManager manager;
     private final PersonnelService personnelService;
+    private final int branchId; // The active branch context
 
-    public EmployeeManagementMenu(MenuManager manager, PersonnelService personnelService) {
+    // Updated constructor to accept branchId from HRMenu
+    public EmployeeManagementMenu(MenuManager manager, PersonnelService personnelService, int branchId) {
         this.manager = manager;
         this.personnelService = personnelService;
+        this.branchId = branchId;
     }
 
     public void show() {
         while (true) {
-            System.out.println("\n=== Employee Management ===");
+            System.out.println("\n=== Employee Management (Branch ID: " + branchId + ") ===");
             System.out.println("1) Hire employee");
             System.out.println("2) Dismiss employee");
             System.out.println("3) Rehire employee");
@@ -76,7 +78,6 @@ public class EmployeeManagementMenu {
 
         Set<Certification> selectedCertifications = new HashSet<>();
 
-
         while (!eligibleRoles.isEmpty()) {
             Certification picked = InputUtil.readRole(eligibleRoles);
             selectedCertifications.add(picked);
@@ -91,8 +92,9 @@ public class EmployeeManagementMenu {
             }
         }
 
+        // Passed branchId as a parameter here
         Response<Void> response = personnelService.addEmployee(
-            manager.getLoggedInUserId(), empID, password, name, bankAccount, startDate,
+            manager.getLoggedInUserId(), branchId, empID, password, name, bankAccount, startDate,
             empType, salType, salary, vacationDays, willOvertime,
             dayOff, doubleShift, selectedCertifications);
 
@@ -108,7 +110,8 @@ public class EmployeeManagementMenu {
 
         int empID = InputUtil.readInt("Enter Employee ID to dismiss: ");
 
-        Response<Void> response = personnelService.deactivateEmployee(manager.getLoggedInUserId(), empID);
+        // Passed branchId to cross-verify the employee belongs to this branch before dismissing
+        Response<Void> response = personnelService.deactivateEmployee(manager.getLoggedInUserId(), branchId, empID);
 
         if (!response.isError()) {
             System.out.println("Employee " + empID + " has been successfully dismissed.");
@@ -121,10 +124,10 @@ public class EmployeeManagementMenu {
         System.out.println("\n--- Rehire Employee ---");
 
         int empID = InputUtil.readInt("Enter Employee ID to rehire: ");
-
         String password = InputUtil.readString("Enter the Employee's new Password (at least 6 digits):");
 
-        Response<Void> response = personnelService.activateEmployee(manager.getLoggedInUserId(), empID, password);
+        // Passed branchId to ensure the target employee matches the active branch context
+        Response<Void> response = personnelService.activateEmployee(manager.getLoggedInUserId(), branchId, empID, password);
 
         if (!response.isError()) {
             System.out.println("Employee " + empID + " has been successfully rehired.");
@@ -138,8 +141,9 @@ public class EmployeeManagementMenu {
 
         int empID = InputUtil.readInt("Enter Employee ID: ");
 
+        // Passed branchId to scope the lookup parameters
         Response<EmployeeSL> response = personnelService.getEmployeeDetails(
-            manager.getLoggedInUserId(), empID);
+            manager.getLoggedInUserId(), branchId, empID);
 
         if (!response.isError()) {
             System.out.println(response.getValue().toString());
@@ -176,14 +180,14 @@ public class EmployeeManagementMenu {
         System.out.println("\n--- Edit Employee Settings ---");
 
         int dayOff = InputUtil.readInt("Day Off (1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=Sat): ");
-
         boolean willDouble = InputUtil.readYesNo("Allow double shifts?");
 
         System.out.println("Will do overtime? 1) Yes  2) No");
         boolean willOvertime = InputUtil.readYesNo("Will do overtime?");
 
+        // Passed branchId context
         Response<Void> response = personnelService.updateEmployeeSettings(
-                manager.getLoggedInUserId(), empID, dayOff, willDouble, willOvertime);
+                manager.getLoggedInUserId(), branchId, empID, dayOff, willDouble, willOvertime);
 
         if (!response.isError())
             System.out.println("Settings updated successfully.");
@@ -198,8 +202,9 @@ public class EmployeeManagementMenu {
         SalType salType = InputUtil.readSalType();
         int salary = InputUtil.readInt("Enter new Salary: ");
 
+        // Passed branchId context
         Response<Void> response = personnelService.updateFinancialDetails(
-            manager.getLoggedInUserId(), empID, bankAccount, salType, salary);
+            manager.getLoggedInUserId(), branchId, empID, bankAccount, salType, salary);
 
         if (!response.isError()) {
             System.out.println("Financial details updated successfully.");
@@ -217,8 +222,9 @@ public class EmployeeManagementMenu {
         System.out.println("Enter new Start Date:");
         LocalDate startDate = InputUtil.readDate();
 
+        // Passed branchId context
         Response<Void> response = personnelService.updateEmploymentDetails(
-            manager.getLoggedInUserId(), empID, empType, vacationDays, startDate);
+            manager.getLoggedInUserId(), branchId, empID, empType, vacationDays, startDate);
 
         if (!response.isError()) {
             System.out.println("Employment details updated successfully.");
@@ -232,8 +238,9 @@ public class EmployeeManagementMenu {
 
         String newName = InputUtil.readString("Enter new Name: ");
 
+        // Passed branchId context
         Response<Void> response = personnelService.updateEmployeeName(
-            manager.getLoggedInUserId(), empID, newName);
+            manager.getLoggedInUserId(), branchId, empID, newName);
 
         if (!response.isError()) {
             System.out.println("Name updated successfully.");
@@ -257,8 +264,9 @@ public class EmployeeManagementMenu {
     }
 
     private void addCertification(int empID) {
+        // Passed branchId context
         Response<EmployeeSL> details = personnelService.getEmployeeDetails(
-                manager.getLoggedInUserId(), empID
+                manager.getLoggedInUserId(), branchId, empID
         );
         if (details.isError()) {
             System.out.println("Failed to fetch employee: " + details.getErrorMessage());
@@ -276,8 +284,9 @@ public class EmployeeManagementMenu {
 
         Certification role = InputUtil.readRole(eligible);
 
+        // Passed branchId context
         Response<Void> response = personnelService.addCertification(
-                manager.getLoggedInUserId(), empID, role
+                manager.getLoggedInUserId(), branchId, empID, role
         );
 
         if (!response.isError())
@@ -287,8 +296,9 @@ public class EmployeeManagementMenu {
     }
 
     private void removeCertification(int empID) {
+        // Passed branchId context
         Response<EmployeeSL> details = personnelService.getEmployeeDetails(
-                manager.getLoggedInUserId(), empID
+                manager.getLoggedInUserId(), branchId, empID
         );
         if (details.isError()) {
             System.out.println("Failed to fetch employee: " + details.getErrorMessage());
@@ -305,8 +315,9 @@ public class EmployeeManagementMenu {
         }
         Certification role = InputUtil.readRole(current);
 
+        // Passed branchId context
         Response<Void> response = personnelService.removeCertification(
-                manager.getLoggedInUserId(), empID, role
+                manager.getLoggedInUserId(), branchId, empID, role
         );
         if (!response.isError())
             System.out.println("Certification removed successfully.");

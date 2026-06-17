@@ -49,7 +49,7 @@ public class AvailabilityMenu {
     private void viewConstraints() {
         int userId = manager.getLoggedInUserId();
 
-        Response<WeeklyConstraintsSL> response = schedulingService.getWeeklyConstraints(userId, userId);
+        Response<WeeklyConstraintsSL> response = schedulingService.getWeeklyConstraints(userId);
         if (response.isError())
             System.out.println("Could not fetch constraints: " + response.getErrorMessage());
         else
@@ -99,7 +99,7 @@ public class AvailabilityMenu {
     private void viewPreferences() {
         int userId = manager.getLoggedInUserId();
 
-        Response<WeeklyPreferenceSL> response = schedulingService.getWeeklyPreferences(userId, userId);
+        Response<WeeklyPreferenceSL> response = schedulingService.getWeeklyPreferences(userId);
         if (response.isError())
             System.out.println("Could not fetch preferences: " + response.getErrorMessage());
         else

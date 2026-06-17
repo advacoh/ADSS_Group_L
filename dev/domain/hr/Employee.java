@@ -19,6 +19,7 @@ public class Employee {
     private Status status;
     private boolean willOvertime;
     private Set<Certification> certifications;
+    private int branchID; // 0 for managers
 
     public Employee(int ID, String name, int bankAccount, LocalDate startDate, 
                     EmpType employementType, SalType salaryType, int salary, 
@@ -72,6 +73,8 @@ public class Employee {
     }
     public Set<Certification> getCertifications(){ return certifications;}
 
+    public int getBranchId() { return this.branchID;}
+
 
     // Setters
     public void setName(String name) { this.name = name; } 
@@ -84,8 +87,9 @@ public class Employee {
     public void setStatus(Status status) { this.status = status; }
     public void setWillOverTime(boolean val){ this.willOvertime = val;}
     public void setDayOff(int dayOff){ this.weeklySubmission.setDayOff(dayOff); }
-
+    public void setBranchId(int branchId) { this.branchID = branchId;}
     
+
     public boolean isAvailable(LocalDate date, ShiftType type) { 
         try {
             return this.weeklySubmission.isAvailable(date, type);

@@ -28,4 +28,8 @@ public class SiteRepository {
         }
         return null;
     }
+
+    public boolean siteExists(int id) {
+        return getSiteById(id) != null;
+    }
 }

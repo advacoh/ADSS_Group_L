@@ -4,6 +4,7 @@ import enums.DeliveryStatus;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 
 public class Delivery {
 
@@ -37,6 +38,16 @@ public class Delivery {
         this.truck = truck;
         this.driver = driver;
         this.documents = documents;
+    }
+
+    public List<Integer> getBranches() {
+        return documents.stream()
+                .map(DeliveryDocument::getDestination)   // 1. Extract destination site from each document
+                .filter(Objects::nonNull)
+                .filter(Site::isBranch)                  // 2. Only keep sites that are branches
+                .map(Site::getId)                        // 3. Extract the branch ID
+                .distinct()                              // 5. Deduplicate if multiple documents go to the same branch
+                .toList();
     }
 
     public int getId() {

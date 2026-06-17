@@ -13,15 +13,18 @@ public class HRRequestMenu {
 
     private final MenuManager manager;
     private final SchedulingService schedulingService;
+    private final int branchId; // The active branch context
 
-    public HRRequestMenu(MenuManager manager, SchedulingService schedulingService) {
+    // Updated constructor to capture the branch context passed from HRMenu
+    public HRRequestMenu(MenuManager manager, SchedulingService schedulingService, int branchId) {
         this.manager = manager;
         this.schedulingService = schedulingService;
+        this.branchId = branchId;
     }
 
     public void show() {
         while (true) {
-            System.out.println("\n=== Request Handling ===");
+            System.out.println("\n=== Request Handling (Branch ID: " + branchId + ") ===");
             System.out.println("1) View requests");
             System.out.println("2) Back");
 
@@ -45,8 +48,9 @@ public class HRRequestMenu {
     }
 
     private List<OverrideRequestSL> fetchAndDisplayRequests() {
+        // Passed branchId to scope and filter the override request lookups
         Response<List<OverrideRequestSL>> response = schedulingService.viewSentRequests(
-                manager.getLoggedInUserId()
+                manager.getLoggedInUserId(), branchId
         );
         if (response.isError()) {
             System.out.println("Could not fetch requests: " + response.getErrorMessage());
@@ -75,13 +79,14 @@ public class HRRequestMenu {
         System.out.print("Assign with override? (y/n): ");
 
         while (true) {
-
             switch (InputUtil.readRaw().toLowerCase()) {
                 case "y" -> {
+                    // Passed branchId to ensure the deep database assignment executes within the correct branch constraint
                     Response<Void> response = schedulingService.assignWithOverride(
-                                            manager.getLoggedInUserId(),
-                                            request.getId()
-                                    );
+                                    manager.getLoggedInUserId(),
+                                    branchId,
+                                    request.getId()
+                    );
                     if (response.isError())
                         System.out.println("Assignment failed: " + response.getErrorMessage());
                     else
@@ -94,5 +99,4 @@ public class HRRequestMenu {
             }
         }
     }
-
 }
