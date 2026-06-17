@@ -32,8 +32,8 @@ public class ShiftController {
         try {
             verifyHR(userId);
             updateHistory();
-            Shift shift = shiftMemory.get(date, type);
-            Employee emp = employeeMemory.get(empId);
+            Shift shift = shiftMemory.get(date, type); // get the archive shift
+            Employee emp = employeeMemory.get(empId); // get the employee
             if (emp == null) throw new IllegalArgumentException("Employee " + empId + " not found");
             if (!canAssign(emp, shift, role, date, type, isOvertime)) throw new IllegalStateException("Employee " + empId + " cannot be assigned to this shift");
             if (!shift.assignEmployee(role, empId)) throw new IllegalStateException("Assignment failed: role full or not required");

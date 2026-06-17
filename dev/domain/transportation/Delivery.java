@@ -6,7 +6,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 public class Delivery {
-
     private int id;
     private LocalDate date;
     private LocalTime departureTime;
@@ -75,5 +74,13 @@ public class Delivery {
     }
     public void setStatus(DeliveryStatus status) {
         this.status = status;
+    }
+
+    public void setTruck(Truck truck) { 
+        this.truck = truck; 
+    }
+
+    public void setRecordedWeight(double recordedWeight) {
+        this.recordedWeight = recordedWeight;
     }
 }

@@ -155,4 +155,28 @@ public class TransportService {
                 .findFirst()
                 .orElse(null);
     }
+
+    public String getNextDestinationName(int deliveryId, int step) {
+        return transportController.getNextDestinationName(deliveryId, step);
+    }
+
+    public boolean processDeliveryStop(int deliveryId, int step, double newWeight) {
+        return transportController.processDeliveryStop(deliveryId, step, newWeight);
+    }
+
+    public void completeDelivery(int deliveryId) {
+        transportController.updateDeliveryStatus(deliveryId, enums.DeliveryStatus.COMPLETED); 
+    }
+
+    public void abortDelivery(int deliveryId) {
+        transportController.updateDeliveryStatus(deliveryId, enums.DeliveryStatus.OVERWEIGHT);
+    }
+
+    public void changeDocumentDestination(int deliveryId, int step, int newSiteId) {
+        transportController.changeDocumentDestination(deliveryId, step, newSiteId);
+    }
+
+    public boolean changeDeliveryTruck(int deliveryId, String newLicenseNumber) {
+        return transportController.changeDeliveryTruck(deliveryId, newLicenseNumber);
+    }
 }

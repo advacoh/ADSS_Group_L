@@ -102,4 +102,62 @@ public class TransportController {
         deliveryRepository.addDelivery(delivery);
         return true;
     }
+
+    public String getNextDestinationName(int deliveryId, int step) {
+        Delivery delivery = deliveryRepository.getDeliveryById(deliveryId); 
+        if (delivery == null || delivery.getDocuments() == null || step >= delivery.getDocuments().size()) {
+            return null;
+        }
+        return delivery.getDocuments().get(step).getDestination().getName();
+    }
+
+    public boolean processDeliveryStop(int deliveryId, int step, double newWeight) {
+        Delivery delivery = deliveryRepository.getDeliveryById(deliveryId);
+        if (delivery == null) return false;
+
+        if (isOverweight(newWeight, delivery.getTruck())) {
+            return false; 
+        }
+
+        if (step == 0) {
+            delivery.setStatus(DeliveryStatus.EXECUTING); 
+        }
+        
+        delivery.setRecordedWeight(newWeight); 
+        return true;
+    }
+
+    public void updateDeliveryStatus(int deliveryId, DeliveryStatus status) {
+        Delivery delivery = deliveryRepository.getDeliveryById(deliveryId);
+        if (delivery != null) {
+            delivery.setStatus(status);
+        }
+    }
+
+    public void changeDocumentDestination(int deliveryId, int step, int newSiteId) {
+        Delivery delivery = deliveryRepository.getDeliveryById(deliveryId);
+        Site newSite = siteRepository.getSiteById(newSiteId); 
+        if (delivery != null && newSite != null) {
+            delivery.getDocuments().get(step).setDestination(newSite);
+        }
+    }
+
+    public boolean changeDeliveryTruck(int deliveryId, String newLicenseNumber) {
+        Delivery delivery = deliveryRepository.getDeliveryById(deliveryId);
+        Truck newTruck = null;
+        for (Truck t : getAllTrucks()) {
+            if (t.getLicenseNumber().equals(newLicenseNumber)) {
+                newTruck = t;
+                break;
+            }
+        }
+
+        if (delivery != null && newTruck != null) {
+            if (isDriverCompatibleWithTruck(delivery.getDriver(), newTruck)) {
+                delivery.setTruck(newTruck); 
+                return true;
+            }
+        }
+        return false;
+    }
 }
