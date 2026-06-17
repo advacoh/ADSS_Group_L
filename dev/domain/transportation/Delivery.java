@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class Delivery {
-
     private int id;
     private LocalDate date;
     private LocalTime departureTime;
@@ -17,6 +16,7 @@ public class Delivery {
     private Truck truck;
     private Driver driver;
     private List<DeliveryDocument> documents;
+    private int currentStep = 0; // Default starts at 0
 
     public Delivery(
             int id,
@@ -87,4 +87,21 @@ public class Delivery {
     public void setStatus(DeliveryStatus status) {
         this.status = status;
     }
+
+    public void setTruck(Truck truck) { 
+        this.truck = truck; 
+    }
+
+    public void setRecordedWeight(double recordedWeight) {
+        this.recordedWeight = recordedWeight;
+    }
+
+    public int getCurrentStep() { 
+        return currentStep; 
+    }
+
+    public void incrementStep() { 
+        this.currentStep++; 
+    }
+
 }

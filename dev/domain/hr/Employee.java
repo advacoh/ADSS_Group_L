@@ -30,9 +30,7 @@ public class Employee {
         this.salaryType = Objects.requireNonNull(salaryType, "Salary type cannot be null");
         this.certifications = Objects.requireNonNull(certifications, "Certifications list cannot be null");
 
-        if (ID < 100000000 || ID > 999999999) {
-            throw new IllegalArgumentException("ID must be a 9-digit positive number.");
-        }
+        
         this.ID = ID;
         if (salary <= 0) {
             throw new IllegalArgumentException("Salary must be positive.");

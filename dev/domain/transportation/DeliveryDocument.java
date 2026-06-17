@@ -25,4 +25,6 @@ public class DeliveryDocument {
     public List<TransportedItem> getItems() {
         return items;
     }
+
+    public void setDestination(Site destination) { this.destination = destination; }
 }

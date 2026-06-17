@@ -26,6 +26,15 @@ import domain.hr.UserController;
 import domain.hr.UserMemory;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.time.LocalTime;
+import domain.transportation.Site;
+import domain.transportation.DeliveryZone;
+import domain.transportation.Truck;
+import domain.transportation.TransportedItem;
+import domain.transportation.DeliveryDocument;
+import domain.transportation.Delivery;
+import enums.SiteType;
+import enums.DeliveryStatus;
 
 
 public class ServiceFactory { 
@@ -35,6 +44,10 @@ public class ServiceFactory {
     private final PersonnelService PersonnelService; 
     private final TransportService transportService;
 
+    private LocalDate targetTuesday;
+    private LocalDate targetWednesday;
+    private LocalDate targetThursday;
+
    
     public ServiceFactory(boolean withData) {
         UserMemory userMemory = new UserMemory();
@@ -42,6 +55,7 @@ public class ServiceFactory {
         ShiftMemory shiftMemory = new ShiftMemory();
         RequestMemory requestMemory = new RequestMemory();
       
+        calculateDynamicDates();
 
         if (withData) {
             populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory);
@@ -58,6 +72,17 @@ public class ServiceFactory {
         this.transportService = new TransportService(transportController);
 
         populateTransportData(transportController);
+    }
+
+    
+    private void calculateDynamicDates() {
+        LocalDate sunday = LocalDate.now();
+        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            sunday = sunday.plusDays(1);
+        }
+        this.targetTuesday = sunday.plusDays(2);  
+        this.targetWednesday = sunday.plusDays(3); 
+        this.targetThursday = sunday.plusDays(4); 
     }
 
     public void populateEmployeeMemory(EmployeeMemory employeeMemory) {
@@ -99,8 +124,8 @@ public class ServiceFactory {
         shifts1.add(ShiftType.MORNING);
         Set<ShiftType> shifts2 = new HashSet<>();
         shifts2.add(ShiftType.MORNING);
-        cons.put(tuesday, shifts1);
-        cons.put(thursday, shifts2);
+        cons.put(this.targetTuesday, shifts1);
+        cons.put(this.targetThursday, shifts2);
         emp2.setWeeklyConstraints(cons);
 
         Employee emp3 = new Employee(
@@ -186,7 +211,7 @@ public class ServiceFactory {
 
 
         // Shift 1 
-        Shift shift1 = new Shift("SHIFT_001",1,tuesday , ShiftType.MORNING);
+        Shift shift1 = new Shift("SHIFT_001",1,this.targetTuesday , ShiftType.MORNING);
         shift1.setRequirement(Certification.CASHIER, 2);
         shift1.setRequirement(Certification.WAREHOUSE, 1);
         shift1.setRequirement(Certification.DRIVER, 1);
@@ -200,14 +225,14 @@ public class ServiceFactory {
         shiftMemory.save(shift1);
 
         // Shift 2 
-        Shift shift2 = new Shift("SHIFT_002", 1, wednesday , ShiftType.MORNING);
+        Shift shift2 = new Shift("SHIFT_002", 1, this.targetWednesday , ShiftType.MORNING);
         shift2.setRequirement(Certification.CASHIER, 2);
         shift2.assignEmployee(Certification.SHIFT_MANAGER, 100000001); 
         shift2.assignEmployee(Certification.CASHIER, 100000003);
         shiftMemory.save(shift2);       
 
         // Shift 3 
-        Shift shift3 = new Shift("SHIFT_003", 1, thursday , ShiftType.MORNING);
+        Shift shift3 = new Shift("SHIFT_003", 1, this.targetThursday , ShiftType.MORNING);
         shift3.setRequirement(Certification.CASHIER, 1);
         shift3.setRequirement(Certification.WAREHOUSE, 1);
         shift3.assignEmployee(Certification.SHIFT_MANAGER, 100000004); 
@@ -229,20 +254,12 @@ public class ServiceFactory {
   
     public void populateRequestMemory(RequestMemory requestMemory){
 
-        // Creating alligned shift dates
-        LocalDate sunday = LocalDate.now();
-        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
-            sunday = sunday.plusDays(1);
-        }
-
-        LocalDate wendesday = sunday.plusDays(3);  // always a wednesday
-
         String requestId = requestMemory.generateId(); 
         OverrideRequest request = new OverrideRequest(
         requestId,
         100000001,                                      // hrId    - Sarah Cohen
         100000002,                                     // empId   - Yossi Levi
-        wendesday,        
+        this.targetWednesday,        
         ShiftType.MORNING,                                    // shift - matches shift2
         Certification.CASHIER                                // role - Yossi is certified as cashier
         );
@@ -288,8 +305,83 @@ public class ServiceFactory {
                 new HashSet<>(List.of(Certification.DRIVER)),
                 LicenseType.B
         );
-
         transportController.addDriver(driver);
+
+        Site site1 = new Site(
+                1,
+                "Beer Sheva Store Branch",
+                "Bar Nisan 6",
+                "0587243922",
+                "Alex Roso",
+                SiteType.BRANCH,
+                new DeliveryZone(1, "South Zone 101")
+        );
+
+        Site site2 = new Site(
+                2,
+                "Dimona Store Branch",
+                "Rager 6",
+                "0587243922",
+                "Bar Bussani",
+                SiteType.BRANCH,
+                new DeliveryZone(1, "South Zone 102")
+        );
+
+        Site site3 = new Site(
+                3,
+                "Tnuva Dairy Supplier",
+                "Avraham Avinu 10",
+                "0587243922",
+                "Omer Biton",
+                SiteType.SUPPLIER,
+                new DeliveryZone(1, "South Zone 103")
+        );
+
+        transportController.addSite(site1);
+        transportController.addSite(site2);
+        transportController.addSite(site3);
+
+        Truck truck = new Truck(
+                "123-45-678",
+                "Volvo FL Series", 
+                3000.0,
+                8000.0,
+                LicenseType.B
+        );
+        transportController.addTruck(truck);
+
+        List<TransportedItem> itemsForDoc1 = new ArrayList<>();
+        itemsForDoc1.add(new TransportedItem(501, "Milk 3%", 100));
+        itemsForDoc1.add(new TransportedItem(502, "White Bread", 50));
+
+        List<TransportedItem> itemsForDoc2 = new ArrayList<>();
+        itemsForDoc2.add(new TransportedItem(503, "Yellow Cheese", 30));
+
+        List<TransportedItem> itemsForDoc3 = new ArrayList<>();
+        itemsForDoc3.add(new TransportedItem(504, "Empty Crates", 80));
+
+        DeliveryDocument dd1 = new DeliveryDocument(1001, site1, itemsForDoc1);
+        DeliveryDocument dd2 = new DeliveryDocument(1002, site2, itemsForDoc2);
+        DeliveryDocument dd3 = new DeliveryDocument(1003, site3, itemsForDoc3);
+
+        List<DeliveryDocument> ddList = new ArrayList<>();
+        ddList.add(dd1);
+        ddList.add(dd2);
+        ddList.add(dd3);
+
+        Delivery delivery = new Delivery(
+                1,
+                this.targetTuesday,   
+                LocalTime.of(8, 30),        
+                4000.0,                     
+                DeliveryStatus.READY,
+                site3,                      
+                truck,
+                driver,
+                ddList
+        );
+
+        transportController.createDelivery(delivery);     
     }
 }
 

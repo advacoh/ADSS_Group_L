@@ -3,5 +3,8 @@ package enums;
 public enum DeliveryStatus {
     PLANNED,
     OVERWEIGHT,
-    READY
+    READY,
+    EXECUTING, 
+    COMPLETED, 
+    PENDING
 }
