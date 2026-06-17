@@ -81,6 +81,7 @@ public class ServiceFactory {
                 10, false, 7, false,
                 new HashSet<>(List.of(Certification.CASHIER))
         );
+        emp2.setBranchId(1); 
         
 
         // Submitting emp2 constraints for the following week
@@ -110,6 +111,8 @@ public class ServiceFactory {
                 new HashSet<>(List.of(Certification.WAREHOUSE, Certification.CASHIER))
         );
 
+        emp3.setBranchId(1); 
+
         Employee emp4 = new Employee(
                 100000004, "Ron Shapiro", 100004,
                 startDate4,
@@ -118,6 +121,8 @@ public class ServiceFactory {
                 new HashSet<>(List.of(Certification.SHIFT_MANAGER, Certification.CASHIER))
         );
 
+        emp4.setBranchId(1);
+
         Employee emp5 = new Employee(
             100000005, "Avi Transport", 100005,
             LocalDate.of(2024, 1, 1),
@@ -125,6 +130,7 @@ public class ServiceFactory {
             18, true, 1, false,
             new HashSet<>(List.of(Certification.DELIVERY_MANAGER))
         );
+        emp5.setBranchId(1); 
 
         Driver driverEmp = new Driver(
             100000006,
@@ -141,6 +147,7 @@ public class ServiceFactory {
             new HashSet<>(List.of(Certification.DRIVER)),
             LicenseType.B
     );
+    driverEmp.setBranchId(1); 
 
         employeeMemory.save(emp1);
         employeeMemory.save(emp2);
