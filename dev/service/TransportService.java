@@ -155,4 +155,55 @@ public class TransportService {
                 .findFirst()
                 .orElse(null);
     }
+
+    public String getNextDestinationName(int deliveryId, int step) {
+        return transportController.getNextDestinationName(deliveryId, step);
+    }
+
+    public boolean processDeliveryStop(int deliveryId, int step, double newWeight) {
+        return transportController.processDeliveryStop(deliveryId, step, newWeight);
+    }
+
+    public void completeDelivery(int deliveryId) {
+        transportController.updateDeliveryStatus(deliveryId, enums.DeliveryStatus.COMPLETED); 
+    }
+
+    public void abortDelivery(int deliveryId) {
+        transportController.updateDeliveryStatus(deliveryId, enums.DeliveryStatus.OVERWEIGHT);
+    }
+
+    public void changeDocumentDestination(int deliveryId, int step, int newSiteId) {
+        transportController.changeDocumentDestination(deliveryId, step, newSiteId);
+    }
+
+    public boolean changeDeliveryTruck(int deliveryId, String newLicenseNumber) {
+        return transportController.changeDeliveryTruck(deliveryId, newLicenseNumber);
+    }
+
+    public int getDeliveryCurrentStep(int deliveryId) {
+        domain.transportation.Delivery delivery = transportController.getAllDeliveries()
+                .stream()
+                .filter(d -> d.getId() == deliveryId)
+                .findFirst()
+                .orElse(null);
+                
+        return (delivery != null) ? delivery.getCurrentStep() : 0;
+    }
+
+    public void incrementDeliveryStep(int deliveryId) {
+        domain.transportation.Delivery delivery = transportController.getAllDeliveries()
+                .stream()
+                .filter(d -> d.getId() == deliveryId)
+                .findFirst()
+                .orElse(null);
+                
+        if (delivery != null) {
+            delivery.incrementStep();
+        }
+    }
+
+    public void updateDeliveryStatus(int deliveryId, enums.DeliveryStatus status) {
+        transportController.updateDeliveryStatus(deliveryId, status);
+    }
+
 }

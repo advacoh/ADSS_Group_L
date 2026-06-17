@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 
 public class ShiftController {
@@ -18,52 +19,60 @@ public class ShiftController {
     private RequestMemory requestMemory;
     private LocalDate deadline;
 
+
     public ShiftController(ShiftMemory shiftMemory, EmployeeMemory employeeMemory, UserController userController, RequestMemory requestMemory) {
         this.shiftMemory = shiftMemory;
         this.employeeMemory = employeeMemory;
         this.userController = userController;
         this.requestMemory = requestMemory;
-        this.deadline = LocalDate.now().plusYears(1);
     }
 
     // setters
 
-    public void assignEmployee(int userId, int empId, LocalDate date, ShiftType type, Certification role, boolean isOvertime) {
+   public void assignEmployee(int userId, int branchId, int empId, LocalDate date, ShiftType type, Certification role, boolean isOvertime) {
         try {
             verifyHR(userId);
             updateHistory();
-            Shift shift = shiftMemory.get(date, type);
+            
+            Shift shift = shiftMemory.get(branchId, date, type);
             Employee emp = employeeMemory.get(empId);
+            
             if (emp == null) throw new IllegalArgumentException("Employee " + empId + " not found");
-            if (!canAssign(emp, shift, role, date, type, isOvertime)) throw new IllegalStateException("Employee " + empId + " cannot be assigned to this shift");
-            if (!shift.assignEmployee(role, empId)) throw new IllegalStateException("Assignment failed: role full or not required");
+            
+            verifyEmployeeBranch(emp, branchId);
+            
+            if (!canAssign(emp, shift, role, date, type, isOvertime)) {
+                throw new IllegalStateException("Employee " + empId + " cannot be assigned to this shift");
+            }
+            if (!shift.assignEmployee(role, empId)) {
+                throw new IllegalStateException("Assignment failed: role full or not required");
+            }
             if (isOvertime) {
                 shift.addOvertimeEmployee(empId);
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("assignEmployee failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("assignEmployee failed: " + e.getMessage());
         }
     }
-
-    public void removeEmployee(int userId, LocalDate date, ShiftType type, Certification role, int employeeId) {
+    public void removeEmployee(int userId, int branchId, LocalDate date, ShiftType type, Certification role, int employeeId) {
         try {
             verifyHR(userId);
 
-            Shift shift = shiftMemory.get(date, type);
+            Employee emp = employeeMemory.get(employeeId);
+            if (emp == null) throw new IllegalArgumentException("Employee " + employeeId + " not found");
+            
+            verifyEmployeeBranch(emp, branchId);
+
+            Shift shift = shiftMemory.get(branchId, date, type);
             shift.removeEmployee(role, employeeId);
 
             updateHistory();
-
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(
-                    "removeEmployee failed: " + e.getMessage()
-            );
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new IllegalArgumentException("removeEmployee failed: " + e.getMessage());
         }
     }
 
-    public void createShift(int userId, LocalDate day, ShiftType type) {
+   public void createShift(int userId, int branchId, LocalDate day, ShiftType type) {
         try {
             verifyHR(userId);
             LocalDate today = LocalDate.now();
@@ -75,19 +84,19 @@ public class ShiftController {
                 throw new IllegalArgumentException("Shift date must be within the next week (" + nextSunday + " to " + nextSaturday + ")");
             }
 
-            String id = day.toString() + "_" + type.name();
-            Shift newShift = new Shift(id, day, type);
+            String id = branchId + "_" + day.toString() + "_" + type.name();
+            Shift newShift = new Shift(id, branchId, day, type);
             shiftMemory.save(newShift);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("createShift failed: " + e.getMessage());
         }
     }
-
-    public void setRequirement(int userId, LocalDate date, ShiftType type, Certification role, int count) {
+    
+    public void setRequirement(int userId, int branchId, LocalDate date, ShiftType type, Certification role, int count) {
         try {
             verifyHR(userId);
             updateHistory();
-            Shift shift = shiftMemory.get(date, type);
+            Shift shift = shiftMemory.get(branchId, date, type);
             shift.setRequirement(role, count);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("setRequirement failed: " + e.getMessage());
@@ -96,60 +105,55 @@ public class ShiftController {
 
     // getters
 
-    public Shift getPastShift(int userId, LocalDate day, ShiftType type) {
+   public Shift getPastShift(int userId, int branchId, LocalDate day, ShiftType type) {
         try {
             verifyHR(userId);
             updateHistory();
-            return shiftMemory.getPast(day, type);
+            return shiftMemory.getPast(branchId, day, type);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("getPastShift failed: " + e.getMessage());
         }
     }
 
-    public List<Shift> getWeeklySchedule(int userId) {
+    public List<Shift> getWeeklySchedule(int userId, int branchId) {
         try {
-            verifyLogged(userId);
-            return shiftMemory.getAllActiveShifts();
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("getActiveShifts failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("getActiveShifts failed: " + e.getMessage());
+            verifyHR(userId);
+            updateHistory();
+            return shiftMemory.getAllActiveShifts(branchId);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new IllegalArgumentException("getWeeklySchedule failed: " + e.getMessage());
         }
     }
 
-    public Shift getShift(int userId, LocalDate date, ShiftType type) {
+    public Shift getShift(int userId, int branchId, LocalDate date, ShiftType type) {
         try {
-            verifyLogged(userId);
-            return shiftMemory.get(date, type);
+            verifyHR(userId);
+            return shiftMemory.get(branchId, date, type);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("getShift failed: " + e.getMessage());
         }
     }
 
-    public List<Employee> getAvailableForRole(int userId, LocalDate date, ShiftType type, Certification role) {
+  public List<Employee> getAvailableForRole(int userId, int branchId, LocalDate date, ShiftType type, Certification role) {
         try {
             verifyHR(userId);
-            Shift shift = shiftMemory.get(date, type);
-            List<Employee> candidates = employeeMemory.getAllAvailableAndCertified(date, type, role);
+            Shift shift = shiftMemory.get(branchId, date, type);
+            List<Employee> candidates = employeeMemory.getAllAvailableAndCertified(branchId, date, type, role);
             List<Employee> result = new ArrayList<>();
             for (Employee emp : candidates) {
                 if (canAssign(emp, shift, role, date, type, false)) {
                     result.add(emp);
                 }
             }
-
             return result;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("getAvailableForRole: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("getAvailableForRole: " + e.getMessage());
         }
-
     }
-    public List<Employee> getAllWithCertification(int userId, Certification role) {
+    public List<Employee> getAllWithCertification(int userId, int branchId, Certification role) {
         try {
             verifyHR(userId);
-            return employeeMemory.getByrole(role);
+            return employeeMemory.getByrole(branchId, role);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("getAllWithCertification failed: " + e.getMessage());
         } catch (IllegalStateException e) {
@@ -168,22 +172,20 @@ public class ShiftController {
             if (date.isBefore(LocalDate.now())) {
                 throw new IllegalArgumentException("Deadline cannot be in the past");
             }
-            this.deadline = date;
-        } catch (IllegalArgumentException e) {
+            this.deadline = date; 
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("setDeadline failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("setDeadline failed: " + e.getMessage());
         }
     }
 
     public void setWeeklyConstraints(int userId, Map<LocalDate, Set<ShiftType>> cons) {
         try {
             verifyLogged(userId);
-            checkDeadline();
             Employee emp = employeeMemory.get(userId);
             if (emp == null) {
                 throw new IllegalArgumentException("Employee " + userId + " not found");
             }
+            checkDeadline();
             emp.setWeeklyConstraints(cons);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("setWeeklyConstraints failed: " + e.getMessage());
@@ -208,87 +210,102 @@ public class ShiftController {
         }
     }
 
-    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyConstraints(int userId, int empId) {
+    // Called by employee themselves
+    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyConstraints(int employeeId) {
         try {
-            verifyLogged(userId);
-            verifyReadAccess(userId, empId);
-            Employee emp = employeeMemory.get(empId);
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + empId + " not found");
-            }
+            verifyLogged(employeeId);
+            Employee emp = employeeMemory.get(employeeId);
+            if (emp == null) throw new IllegalArgumentException("Employee " + employeeId + " not found");
             return emp.getWeeklyConstraints();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("getWeeklyConstraints failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("getWeeklyConstraints failed: " + e.getMessage());
         }
     }
 
-    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyPreferences(int userId, int empId) {
+    // Called by HR for a branch employee
+    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyConstraints(int hrUserId, int branchId, int targetEmpId) {
         try {
-            verifyLogged(userId);
-            verifyReadAccess(userId, empId);
-            Employee emp = employeeMemory.get(empId);
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + empId + " not found");
-            }
+            verifyHR(hrUserId);
+            Employee emp = employeeMemory.get(targetEmpId);
+            if (emp == null) throw new IllegalArgumentException("Employee " + targetEmpId + " not found");
+            verifyEmployeeBranch(emp, branchId);
+            return emp.getWeeklyConstraints();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new IllegalArgumentException("getWeeklyConstraints failed: " + e.getMessage());
+        }
+    }
+
+    // Called by employee themselves
+    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyPreferences(int employeeId) {
+        try {
+            verifyLogged(employeeId);
+            Employee emp = employeeMemory.get(employeeId);
+            if (emp == null) throw new IllegalArgumentException("Employee " + employeeId + " not found");
             return emp.getWeeklyPreferences();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("getWeeklyPreferences failed: " + e.getMessage());
-        }  catch (IllegalStateException e) {
-            throw new IllegalStateException("getWeeklyPreferences failed: " + e.getMessage());
+        }
+    }
+
+    // Called by HR for a branch employee
+    public Map<LocalDate, Map<ShiftType, Boolean>> getWeeklyPreferences(int hrUserId, int branchId, int targetEmpId) {
+        try {
+            verifyHR(hrUserId);
+            Employee emp = employeeMemory.get(targetEmpId);
+            if (emp == null) throw new IllegalArgumentException("Employee " + targetEmpId + " not found");
+            verifyEmployeeBranch(emp, branchId);
+            return emp.getWeeklyPreferences();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new IllegalArgumentException("getWeeklyPreferences failed: " + e.getMessage());
         }
     }
 
 
     // override logic
 
-    public String createOverrideRequest(int userId, int empId, LocalDate date, ShiftType type, Certification role) {
+    public String createOverrideRequest(int hrUserId, int branchId, int targetEmpId, LocalDate date, ShiftType type, Certification role) {
         try {
-            verifyHR(userId);
-            shiftMemory.get(date, type);
-            Employee emp = employeeMemory.get(empId);
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + empId + " not found");
-            }
+            verifyHR(hrUserId);
+            Employee emp = employeeMemory.get(targetEmpId);
+            if (emp == null) throw new IllegalArgumentException("Employee " + targetEmpId + " not found");
+            verifyEmployeeBranch(emp, branchId);
+
+            shiftMemory.get(branchId, date, type); 
             if (emp.isAvailable(date, type)) {
-                throw new IllegalStateException("Employee " + empId + " is already available for this shift, no override needed");
+                throw new IllegalStateException("Employee " + targetEmpId + " is already available for this shift, no override needed");
             }
+            
             String requestId = requestMemory.generateId();
-            OverrideRequest request = new OverrideRequest(requestId, userId, empId, date, type, role);
+            OverrideRequest request = new OverrideRequest(requestId, hrUserId, targetEmpId, date, type, role);
             requestMemory.save(request);
             return requestId;
-
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("createOverrideRequest failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("createOverrideRequest failed: " + e.getMessage());
         }
     }
 
-    public void assignWithOverride(int userId, String requestId) {
+    public void assignWithOverride(int hrUserId, int branchId, String requestId) {
         try {
-            verifyHR(userId);
+            verifyHR(hrUserId);
             OverrideRequest request = requestMemory.get(requestId);
             if (request.getStatus() != RequestStatus.APPROVED) {
-                throw new IllegalStateException("Cannot override: request " + requestId + " has not been approved by the employee");
+                throw new IllegalStateException("Cannot override: request " + requestId + " has not been approved");
             }
-            Shift shift = shiftMemory.get(request.getDate(), request.getShiftType());
+            
             Employee emp = employeeMemory.get(request.getEmpId());
-            if (emp == null) {
-                throw new IllegalArgumentException("Employee " + request.getEmpId() + " not found");
-            }
+            if (emp == null) throw new IllegalArgumentException("Employee " + request.getEmpId() + " not found");
+            verifyEmployeeBranch(emp, branchId);
+            
+            Shift shift = shiftMemory.get(branchId, request.getDate(), request.getShiftType());
             if (!emp.isCertified(request.getRole())) {
                 throw new IllegalStateException("Employee " + request.getEmpId() + " is not certified for role " + request.getRole());
             }
 
             if (!shift.assignEmployee(request.getRole(), request.getEmpId())) {
-                throw new IllegalStateException("Assignment failed: role " + request.getRole() + " is full or not required");
+                throw new IllegalStateException("Assignment failed: role full or not required");
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("assignWithOverride failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("assignWithOverride failed: " + e.getMessage());
         }
     }
 
@@ -314,14 +331,20 @@ public class ShiftController {
         }
     }
 
-    public List<OverrideRequest> viewSentRequests(int userId) {
+    public List<OverrideRequest> viewSentRequests(int hrUserId, int branchId) {
         try {
-            verifyHR(userId);
-            return requestMemory.getByHR(userId);
-        } catch (IllegalArgumentException e) {
+            verifyHR(hrUserId);
+           
+            List<OverrideRequest> hrRequests = requestMemory.getByHR(hrUserId);
+            List<OverrideRequest> filteredRequests = hrRequests.stream()
+            .filter(req -> {
+                Employee emp = employeeMemory.get(req.getEmpId()); 
+            return emp.getBranchId() == branchId;
+            }).toList();
+        return filteredRequests;
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("viewSentRequests failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("viewSentRequests failed: " + e.getMessage());
         }
     }
 
@@ -336,122 +359,118 @@ public class ShiftController {
         }
     }
 
-    public OverrideRequest viewRequest(int userId, String requestId) {
+   public OverrideRequest viewRequest(int userId, String requestId) {
         try {
-            verifyHR(userId);
+            verifyLogged(userId);
             OverrideRequest request = requestMemory.get(requestId);
-            if (request.getHrId() != userId) {
-                throw new IllegalStateException("Request " + requestId + " does not belong to HR " + userId);
+            if (request.getHrId() != userId && request.getEmpId() != userId) {
+                throw new IllegalStateException("Access denied to request " + requestId);
             }
             return request;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("viewRequest failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("viewRequest failed: " + e.getMessage());
         }
     }
 
     // helpers
 
     private boolean canAssign(Employee emp, Shift shift, Certification role, LocalDate date, ShiftType type, boolean isOvertime) {
-        if (!emp.isAvailable(date, type)) return false;
-        if (!emp.isCertified(role)) return false;
-        if (isOvertime) {
-            if (!shift.canAcceptOvertime() || !emp.willOvertime()) return false;
-
-        }
-        if (!emp.willDouble()) {
-            List<Shift> shiftsOnDate = shiftMemory.getByDate(date);
-            for (Shift s : shiftsOnDate) {
-                if (!s.getID().equals(shift.getID())
-                        && s.isEmployeeAssigned(emp.getID())) {
-                    return false;
-                }
-            }
-        }
-        if (shift.isEmployeeAssigned(emp.getID())) {
-            boolean isShiftManager = shift.isAssignedAsRole(Certification.SHIFT_MANAGER, emp.getID());
-            if (!isShiftManager) return false;
-            int rolesHeld = shift.countRoles(emp.getID());
-            if (rolesHeld >= 2) {
-                return false;
-            }
-        }
-
-        return true;
+    if (!emp.isAvailable(date, type)) return false;
+    if (!emp.isCertified(role)) return false;
+    
+    // Overtime capacity check is already localized to this specific shift/branch object
+    if (isOvertime) {
+        if (!shift.canAcceptOvertime() || !emp.willOvertime()) return false;
     }
-
+    
+    // FIXED: Only query shifts for the employee's specific branch
+    if (!emp.willDouble()) {
+        List<Shift> branchShiftsOnDate = shiftMemory.getByBranchAndDate(shift.getBranchId(), date);
+        for (Shift s : branchShiftsOnDate) {
+            if (!s.getID().equals(shift.getID()) && s.isEmployeeAssigned(emp.getID())) {
+                return false; // Already working another shift at this branch today
+            }
+        }
+    }
+    
+    if (shift.isEmployeeAssigned(emp.getID())) {
+        boolean isShiftManager = shift.isAssignedAsRole(Certification.SHIFT_MANAGER, emp.getID());
+        if (!isShiftManager) return false;
+        if (shift.countRoles(emp.getID()) >= 2) return false;
+    }
+    return true;
+}
     private void checkDeadline() {
-        if (deadline.isBefore(LocalDate.now())) {
+        if (deadline != null && deadline.isBefore(LocalDate.now())) {
             throw new IllegalStateException("The submission deadline has passed");
         }
     }
 
     private void updateHistory() {
-        try {
-            LocalDate nextSunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
-            for (Shift s : shiftMemory.getAllActiveShifts()) {
-                if (s.getDate().isBefore(nextSunday)) {
-                    shiftMemory.archiveShift(s.getDate(), s.getType());
-                }
+    try {
+        LocalDate nextSunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+        for (Shift s : shiftMemory.getAllActiveShifts()) {
+            if (s.getDate().isBefore(nextSunday)) {
+                shiftMemory.archiveShift(s.getBranchId(), s.getDate(), s.getType());
             }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("updateHistory failed: " + e.getMessage());
         }
+    } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("updateHistory failed: " + e.getMessage());
     }
+}
 
     private void verifyLogged(int userId) {
-        try {
-            if (!userController.isLogged(userId)) {
-                throw new IllegalStateException("Access denied: User " + userId + " is not logged in");
-            }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("verifyLogged failed: " + e.getMessage());
+        if (!userController.isLogged(userId)) {
+            throw new IllegalStateException("Access denied: User " + userId + " is not logged in");
         }
     }
 
     private void verifyHR(int userId) {
-        try {
-            verifyLogged(userId);
-            Employee userEmp = employeeMemory.get(userId);
-            if (userEmp == null || !userEmp.isHR()) {
-                throw new IllegalStateException("Access denied: User " + userId + " is not an HR manager");
-            }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("verifyHR failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("verifyHR failed: " + e.getMessage());
+        verifyLogged(userId);
+        Employee userEmp = employeeMemory.get(userId);
+        if (userEmp == null || !userEmp.isHR()) {
+            throw new IllegalStateException("Access denied: User " + userId + " is not an HR manager");
         }
     }
 
-    private void verifyReadAccess(int userId, int empId) {
-        Employee user = employeeMemory.get(userId);
-        if (user == null) {
-            throw new IllegalArgumentException("User " + userId + " not found");
-        }
-        if (!user.isHR() && userId != empId) {
-            throw new IllegalStateException("Access denied: User " + userId + " can only access their own data");
+    private void verifyEmployeeBranch(Employee emp, int branchId) {
+        if (emp.getBranchId() != branchId) {
+            throw new IllegalStateException("Action denied: Employee " + emp.getID() + " belongs to branch " + emp.getBranchId() + ", not branch " + branchId);
         }
     }
 
-    public void verifyDelivery(LocalDate date, LocalTime time, int driverId) {
+    public void verifyDelivery(List<Integer> branchIds, LocalDate date, LocalTime time, int driverId) {
         ShiftType expectedShiftType;
         try {
             expectedShiftType = ShiftType.fromTime(time);
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("Delivery time is outside of operating shift hours.", e);
         }
-        Shift shift = shiftMemory.get(date, expectedShiftType); 
-        if (shift == null) {
-            throw new IllegalStateException("No shift scheduled for " + date + " during " + expectedShiftType);
+        
+        for (int branchId : branchIds) {
+            Shift shift = shiftMemory.get(branchId, date, expectedShiftType); 
+            if (shift == null) {
+                throw new IllegalStateException("No shift scheduled for branch " + branchId + " on " + date);
+            }
+            
+            List<Integer> warehouseStaff = shift.getAssignments().getOrDefault(Certification.WAREHOUSE, Collections.emptyList());
+            if (warehouseStaff.isEmpty()) {
+                throw new IllegalStateException("Delivery rejected: No warehouse employee assigned at branch " + branchId);
+            }
         }
-        if (!shift.isAssignedAsRole(Certification.DRIVER, driverId)) {
-        throw new IllegalStateException("Driver ID " + driverId + " is not assigned as a driver for this shift.");
+
+        boolean driverIsScheduledAnywhere = false;
+        List<Shift> shiftsInTimeSlot = shiftMemory.getShiftsByDateAndType(date, expectedShiftType);
+        
+        for (Shift s : shiftsInTimeSlot) {
+            if (s.isAssignedAsRole(Certification.DRIVER, driverId)) {
+                driverIsScheduledAnywhere = true;
+                break;
+            }
         }
-       
-        List<Integer> warehouseStaff = shift.getAssignments().getOrDefault(Certification.WAREHOUSE, Collections.emptyList());
-        if (warehouseStaff.isEmpty()) {
-        throw new IllegalStateException("Delivery rejected: No warehouse employee is assigned to handle the receiving end for this shift.");
+        
+        if (!driverIsScheduledAnywhere) {
+            throw new IllegalStateException("Delivery rejected: Driver ID " + driverId + " is not assigned in this shift window.");
         }
     }
   

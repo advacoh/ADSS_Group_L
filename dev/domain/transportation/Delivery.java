@@ -4,9 +4,9 @@ import enums.DeliveryStatus;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 
 public class Delivery {
-
     private int id;
     private LocalDate date;
     private LocalTime departureTime;
@@ -16,6 +16,7 @@ public class Delivery {
     private Truck truck;
     private Driver driver;
     private List<DeliveryDocument> documents;
+    private int currentStep = 0; // Default starts at 0
 
     public Delivery(
             int id,
@@ -37,6 +38,16 @@ public class Delivery {
         this.truck = truck;
         this.driver = driver;
         this.documents = documents;
+    }
+
+    public List<Integer> getBranches() {
+        return documents.stream()
+                .map(DeliveryDocument::getDestination)   // 1. Extract destination site from each document
+                .filter(Objects::nonNull)
+                .filter(Site::isBranch)                  // 2. Only keep sites that are branches
+                .map(Site::getId)                        // 3. Extract the branch ID
+                .distinct()                              // 5. Deduplicate if multiple documents go to the same branch
+                .toList();
     }
 
     public int getId() {
@@ -76,4 +87,21 @@ public class Delivery {
     public void setStatus(DeliveryStatus status) {
         this.status = status;
     }
+
+    public void setTruck(Truck truck) { 
+        this.truck = truck; 
+    }
+
+    public void setRecordedWeight(double recordedWeight) {
+        this.recordedWeight = recordedWeight;
+    }
+
+    public int getCurrentStep() { 
+        return currentStep; 
+    }
+
+    public void incrementStep() { 
+        this.currentStep++; 
+    }
+
 }

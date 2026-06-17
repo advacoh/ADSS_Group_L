@@ -36,7 +36,7 @@ public class ProfileMenu {
         System.out.println("\n--- View Details ---");
 
         Response<EmployeeSL> response = personnelService.getEmployeeDetails(
-            manager.getLoggedInUserId(), manager.getLoggedInUserId());
+            manager.getLoggedInUserId());
 
         if (!response.isError()) {
             System.out.println(response.getValue().toString());
@@ -57,7 +57,7 @@ public class ProfileMenu {
         boolean willOvertime = InputUtil.readInt("Choice: ") == 1;
 
         Response<Void> response = personnelService.updateEmployeeSettings(
-            manager.getLoggedInUserId(), manager.getLoggedInUserId(), dayOff, willDouble, willOvertime);
+            manager.getLoggedInUserId(), dayOff, willDouble, willOvertime);
 
         if (!response.isError()) {
             System.out.println("Settings updated successfully.");

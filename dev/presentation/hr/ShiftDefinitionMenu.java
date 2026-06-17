@@ -15,15 +15,18 @@ public class ShiftDefinitionMenu {
 
     private final MenuManager manager;
     private final SchedulingService schedulingService;
+    private final int branchId; // The active branch context
 
-    public ShiftDefinitionMenu(MenuManager manager, SchedulingService schedulingService) {
+    // Updated constructor to capture the branch context passed from HRMenu
+    public ShiftDefinitionMenu(MenuManager manager, SchedulingService schedulingService, int branchId) {
         this.manager = manager;
         this.schedulingService = schedulingService;
+        this.branchId = branchId;
     }
 
     public void show() {
         while (true) {
-            System.out.println("\n=== Shift Definition ===");
+            System.out.println("\n=== Shift Definition (Branch ID: " + branchId + ") ===");
             System.out.println("1) Create shift");
             System.out.println("2) Set requirements");
             System.out.println("3) Back");
@@ -41,8 +44,9 @@ public class ShiftDefinitionMenu {
         LocalDate date = InputUtil.readDayOfWeek();
         ShiftType type = InputUtil.readShiftType();
 
+        // Passed branchId to contextually create a shift profile for this branch location
         Response<Void> response = schedulingService.createShift(
-                manager.getLoggedInUserId(), date, type
+                manager.getLoggedInUserId(), branchId, date, type
         );
 
         if (response.isError())
@@ -60,8 +64,9 @@ public class ShiftDefinitionMenu {
 
         int count = InputUtil.readInt("Select amount: ");
 
+        // Passed branchId to map role staffing constraints directly onto this branch's schedule
         Response<Void> response = schedulingService.setRequirement(
-                manager.getLoggedInUserId(), date, type, role, count
+                manager.getLoggedInUserId(), branchId, date, type, role, count
         );
 
         if (response.isError())
