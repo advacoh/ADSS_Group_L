@@ -76,16 +76,16 @@ public class TransportService {
         return transportController.createDelivery(delivery);
     }
 
-    public void addTruck(Truck truck) {
-        transportController.addTruck(truck);
+    public boolean addTruck(Truck truck) {
+        return transportController.addTruck(truck);
+    }
+
+    public boolean addSite(Site site) {
+        return transportController.addSite(site);
     }
 
     public void addDriver(Driver driver) {
         transportController.addDriver(driver);
-    }
-
-    public void addSite(Site site) {
-        transportController.addSite(site);
     }
 
     public List<DeliverySL> getAllDeliveries() {
@@ -204,6 +204,10 @@ public class TransportService {
 
     public void updateDeliveryStatus(int deliveryId, enums.DeliveryStatus status) {
         transportController.updateDeliveryStatus(deliveryId, status);
+    }
+
+    public boolean resolvePendingDelivery(int deliveryId) {
+        return transportController.resolvePendingDelivery(deliveryId);
     }
 
 }

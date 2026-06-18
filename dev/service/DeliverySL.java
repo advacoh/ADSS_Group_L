@@ -16,6 +16,7 @@ public class DeliverySL {
     private final TruckSL truck;
     private final DriverSL driver;
     private final int documentsCount;
+    private final String pendingReason;
 
     public DeliverySL(Delivery delivery) {
         this.id = delivery.getId();
@@ -27,6 +28,7 @@ public class DeliverySL {
         this.truck = new TruckSL(delivery.getTruck());
         this.driver = new DriverSL(delivery.getDriver());
         this.documentsCount = delivery.getDocuments() == null ? 0 : delivery.getDocuments().size();
+        this.pendingReason = delivery.getPendingReason();
     }
 
     public int getId() { return id; }
@@ -38,6 +40,7 @@ public class DeliverySL {
     public TruckSL getTruck() { return truck; }
     public DriverSL getDriver() { return driver; }
     public int getDocumentsCount() { return documentsCount; }
+    public String getPendingReason() { return pendingReason; }
 
     public String shortString() {
         return "Delivery #" + id + " | " + date + " " + departureTime +
@@ -48,14 +51,21 @@ public class DeliverySL {
 
     @Override
     public String toString() {
-        return "Delivery ID: " + id +
+        String base = "Delivery ID: " + id +
                 "\nDate: " + date +
                 "\nDeparture Time: " + departureTime +
                 "\nRecorded Weight: " + recordedWeight +
-                "\nStatus: " + status +
-                "\nSource: " + source.shortString() +
+                "\nStatus: " + status;
+
+        if (status == DeliveryStatus.PENDING && pendingReason != null) {
+            base += "\nPending Reason: " + pendingReason;
+        }
+
+        base += "\nSource: " + source.shortString() +
                 "\nTruck: " + truck.shortString() +
                 "\nDriver: " + driver.shortString() +
                 "\nDocuments Count: " + documentsCount;
+
+        return base;
     }
 }

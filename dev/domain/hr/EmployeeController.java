@@ -1,6 +1,8 @@
 package domain.hr;
 import java.util.*;
 import java.time.LocalDate;
+import domain.transportation.Driver;
+import enums.LicenseType;
 
 public class EmployeeController {
     private UserController userController;
@@ -46,9 +48,8 @@ public class EmployeeController {
         }
     }
 
-
-   public void addEmployee(int userID, int branchId, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType employementType, SalType salaryType, int salary,
-                            int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certificationsList) {
+    public void addEmployee(int userID, int branchId, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType employementType, SalType salaryType, int salary,
+                            int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certificationsList, LicenseType licenseType) {
         try {
             verifyLogged(userID);
             verifyHR(userID);
@@ -60,7 +61,14 @@ public class EmployeeController {
             verifyDayOff(dayOff);
             this.userController.validatePassword(password);
             
-            Employee newEmp = new Employee(newEmpID, name, bankAccount, startDate, employementType, salaryType, salary, vacationDay, willOvertime, dayOff, doubleShiftAllowed, certificationsList);
+            Employee newEmp;
+            //special case for driver, if the employee has a driver certification and a license type is provided, create a Driver instance
+            if (certificationsList.contains(Certification.DRIVER) && licenseType != null) {
+                newEmp = new Driver(newEmpID, name, bankAccount, startDate, employementType, salaryType, salary, vacationDay, willOvertime, dayOff, doubleShiftAllowed, certificationsList, licenseType);
+            } else {
+                newEmp = new Employee(newEmpID, name, bankAccount, startDate, employementType, salaryType, salary, vacationDay, willOvertime, dayOff, doubleShiftAllowed, certificationsList);
+            }
+            
             newEmp.setBranchId(branchId); 
             
             this.employeeMemory.save(newEmp);

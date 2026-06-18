@@ -86,7 +86,11 @@ public class SiteMenu {
                 zone
         );
 
-        transportService.addSite(site);
-        System.out.println("Site added successfully!");
+        boolean isAdded = transportService.addSite(site);
+        if (isAdded) {
+            System.out.println("Site added successfully!");
+        } else {
+            System.out.println("Error: A site with this ID already exists.");
+        }
     }
 }

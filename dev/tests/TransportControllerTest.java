@@ -34,9 +34,10 @@ public class TransportControllerTest {
     //add truck and then check if it was added correctly
     @Test
     public void testAddAndRetrieveTruck() {
-        controller.addTruck(heavyTruck);
+        boolean isAdded = controller.addTruck(heavyTruck);
+        assertTrue(isAdded, "Truck should be added successfully");
+
         List<Truck> trucks = controller.getAllTrucks();
-        
         assertEquals(1, trucks.size(), "Truck list should contain 1 truck");
         assertEquals("123-45-678", trucks.get(0).getLicenseNumber(), "License number should match");
     }

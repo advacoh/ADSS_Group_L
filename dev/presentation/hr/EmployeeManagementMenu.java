@@ -12,6 +12,7 @@ import presentation.InputUtil;
 import presentation.MenuManager;
 import service.EmployeeSL;
 import service.PersonnelService;
+import enums.LicenseType;
 
 public class EmployeeManagementMenu {
 
@@ -92,11 +93,17 @@ public class EmployeeManagementMenu {
             }
         }
 
-        // Passed branchId as a parameter here
+        // if the employee is a Driver, we need to ask for the license type
+        LicenseType licenseType = null;
+        if (selectedCertifications.contains(Certification.DRIVER)) {
+            System.out.println("\nDriver certification selected. Please specify license details.");
+            licenseType = InputUtil.readLicenseType();
+        }
+
         Response<Void> response = personnelService.addEmployee(
             manager.getLoggedInUserId(), branchId, empID, password, name, bankAccount, startDate,
             empType, salType, salary, vacationDays, willOvertime,
-            dayOff, doubleShift, selectedCertifications);
+            dayOff, doubleShift, selectedCertifications, licenseType);
 
         if (!response.isError()) {
             System.out.println("Employee hired successfully.");

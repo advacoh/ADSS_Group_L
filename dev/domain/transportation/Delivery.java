@@ -17,6 +17,7 @@ public class Delivery {
     private Driver driver;
     private List<DeliveryDocument> documents;
     private int currentStep = 0; // Default starts at 0
+    private String pendingReason;
 
     public Delivery(
             int id,
@@ -102,6 +103,14 @@ public class Delivery {
 
     public void incrementStep() { 
         this.currentStep++; 
+    }
+
+    public String getPendingReason() {
+        return pendingReason;
+    }
+
+    public void setPendingReason(String pendingReason) {
+        this.pendingReason = pendingReason;
     }
 
 }
