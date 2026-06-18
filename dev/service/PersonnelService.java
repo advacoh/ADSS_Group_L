@@ -14,6 +14,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.stream.Collectors;
+import enums.DeliveryStatus;
+import enums.LicenseType;
 
 
 public class PersonnelService {
@@ -26,14 +29,14 @@ public class PersonnelService {
         this.employeeController = employeeController;
         this.transportController = transportController;
     }
-
+    
     public Response<Void> addEmployee(int activeUserId, int branchId, int newEmpID, String password, String name, int bankAccount, LocalDate startDate, EmpType empType,
-                                      SalType salaryType, int salary, int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certificationsList) {
+                                      SalType salaryType, int salary, int vacationDay, boolean willOvertime, int dayOff, boolean doubleShiftAllowed, Set<Certification> certificationsList, LicenseType licenseType) {
         try {
             employeeController.addEmployee(
                     activeUserId, branchId, newEmpID, password, name, bankAccount, startDate,
                     empType, salaryType, salary, vacationDay, willOvertime,
-                    dayOff, doubleShiftAllowed, certificationsList);
+                    dayOff, doubleShiftAllowed, certificationsList, licenseType);
             return Response.success(null);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return Response.failure(e.getMessage());
@@ -189,6 +192,13 @@ public class PersonnelService {
             emp.getCertifications(), 
             emp.getStatus()
         );
+    }
+
+    public List<DeliverySL> getPendingDeliveries() {
+        return transportController.getAllDeliveries().stream()
+                .filter(delivery -> delivery.getStatus() == DeliveryStatus.PENDING)
+                .map(DeliverySL::new)
+                .collect(Collectors.toList());
     }
 }
 

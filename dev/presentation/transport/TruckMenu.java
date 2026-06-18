@@ -79,7 +79,11 @@ public class TruckMenu {
                 requiredLicenseType
         );
 
-        transportService.addTruck(truck);
-        System.out.println("Truck added successfully!");
+        boolean isAdded = transportService.addTruck(truck);
+        if (isAdded) {
+            System.out.println("Truck added successfully!");
+        } else {
+            System.out.println("Error: A truck with this license number already exists.");
+        }
     }
 }

@@ -6,6 +6,7 @@ import presentation.MenuManager;
 import service.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class HRMenu {
 
@@ -19,9 +20,13 @@ public class HRMenu {
     private final EmployeeManagementMenu employeeMenu;
     private final HRRequestMenu requestMenu;
 
+    private final PersonnelService personnelService;
+
+
     public HRMenu(MenuManager manager, SchedulingService schedulingService, PersonnelService personnelService, AuthService authService, int branchId) {
         this.manager = manager;
         this.schedulingService = schedulingService;
+        this.personnelService = personnelService;
         this.authService = authService;
         this.branchId = branchId;
         
@@ -43,7 +48,8 @@ public class HRMenu {
             System.out.println("3) Employee Management");
             System.out.println("4) Request Handling");
             System.out.println("5) View History");
-            System.out.println("6) Back to Global Dashboard");
+            System.out.println("6) View PENDING Deliveries Alerts");
+            System.out.println("7) Back to Global Dashboard");
 
             int choice = InputUtil.readInt();
 
@@ -62,7 +68,8 @@ public class HRMenu {
                         requestMenu.show();
 
                 case 5 -> viewHistory();
-                case 6 -> {
+                case 6 -> viewPendingDeliveriesAlerts();
+                case 7 -> { 
                     System.out.println("Returning to global dashboard...");
                     return;
                 }
@@ -94,6 +101,24 @@ public class HRMenu {
         } else {
             System.out.println(response.getValue().toString());
         }
+    }
+
+    private void viewPendingDeliveriesAlerts() {
+        System.out.println("\n=== Deliveries Awaiting HR Staffing ===");
+        List<DeliverySL> pendingDeliveries = personnelService.getPendingDeliveries();
+        
+        if (pendingDeliveries.isEmpty()) {
+            System.out.println("Good news! There are no pending deliveries awaiting staffing.");
+            return;
+        }
+        
+        for (DeliverySL d : pendingDeliveries) {
+            System.out.println("Delivery ID: " + d.getId() + " | Date: " + d.getDate() + " | Departure: " + d.getDepartureTime());
+            System.out.println("Missing Requirement: " + d.getPendingReason());
+            System.out.println("---------------------------------------------------");
+        }
+        
+        System.out.println("Make sure to assign a Driver or a Warehouse Worker to the required shifts to resolve these!");
     }
 
 }

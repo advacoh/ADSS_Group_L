@@ -23,14 +23,16 @@ public class DeliveryMenu {
             System.out.println("2) View all deliveries");
             System.out.println("3) View delivery details");
             System.out.println("4) Execute delivery");
-            System.out.println("5) Back");
+            System.out.println("5) Resolve PENDING deliveries");
+            System.out.println("6) Back");
 
             switch (InputUtil.readInt("Choose option: ")) {
                 case 1 -> createDelivery();
                 case 2 -> viewAllDeliveries();
                 case 3 -> viewDeliveryDetails();
                 case 4 -> executeDelivery();
-                case 5 -> { return; }
+                case 5 -> resolvePendingDeliveries();
+                case 6 -> { return; }
                 default -> System.out.println("Invalid option.");
             }
         }
@@ -319,6 +321,32 @@ public class DeliveryMenu {
                 System.out.println("Weight verified. Items handled successfully.");
                 transportService.incrementDeliveryStep(selectedDelivery.getId()); 
             }
+        }
+    }
+
+    private void resolvePendingDeliveries() {
+        System.out.println("\n--- Resolve PENDING Deliveries ---");
+        List<DeliverySL> pendingDeliveries = transportService.getAllDeliveries().stream()
+                .filter(d -> d.getStatus() == enums.DeliveryStatus.PENDING)
+                .toList();
+
+        if (pendingDeliveries.isEmpty()) {
+            System.out.println("No pending deliveries at the moment.");
+            return;
+        }
+
+        for (DeliverySL d : pendingDeliveries) {
+            System.out.println("Delivery ID: " + d.getId() + " | Status: PENDING");
+        }
+
+        int id = InputUtil.readInt("Enter Delivery ID to attempt resolution (or 0 to cancel): ");
+        if (id == 0) return;
+
+        boolean success = transportService.resolvePendingDelivery(id);
+        if (success) {
+            System.out.println("Success! Missing staff assigned. Delivery is now READY.");
+        } else {
+            System.out.println("Still missing staff! Contact HR to assign the missing roles.");
         }
     }
 }
