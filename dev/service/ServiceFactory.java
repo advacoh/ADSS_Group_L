@@ -105,7 +105,7 @@ public class ServiceFactory {
                 startDate2,
                 EmpType.PART_TIME, SalType.HOURLY, 45,
                 10, false, 7, false,
-                new HashSet<>(List.of(Certification.CASHIER))
+                new HashSet<>(List.of(Certification.CASHIER, Certification.WAREHOUSE))
         );
         emp2.setBranchId(1); 
         
@@ -220,19 +220,22 @@ public class ServiceFactory {
         shift1.setRequirement(Certification.DRIVER, 1);
 
         shift1.assignEmployee(Certification.SHIFT_MANAGER, 100000004); 
-        shift1.assignEmployee(Certification.CASHIER, 100000002);       
         shift1.assignEmployee(Certification.CASHIER, 100000004);       
         shift1.assignEmployee(Certification.WAREHOUSE, 100000003); 
-        shift1.assignEmployee(Certification.DRIVER, 100000006); 
+        //shift1.assignEmployee(Certification.DRIVER, 100000006); 
           
         shiftMemory.save(shift1);
 
         // first shift for branch 2
         Shift shift12 = new Shift("SHIFT_001_02",2,this.targetTuesday , ShiftType.MORNING);
-        shift1.setRequirement(Certification.CASHIER, 2);
-        shift1.setRequirement(Certification.WAREHOUSE, 1);
-        shift1.setRequirement(Certification.DRIVER, 1);
-        shiftMemory.save(shift1);
+        shift12.setRequirement(Certification.CASHIER, 2);
+        shift12.setRequirement(Certification.WAREHOUSE, 1);
+        shift12.setRequirement(Certification.DRIVER, 1);
+
+        shift12.assignEmployee(Certification.WAREHOUSE, 100000002); 
+        shift12.assignEmployee(Certification.DRIVER, 100000006);
+
+        shiftMemory.save(shift12);
 
         // Shift 2 
         Shift shift2 = new Shift("SHIFT_002", 1, this.targetWednesday , ShiftType.MORNING);
