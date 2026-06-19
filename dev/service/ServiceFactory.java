@@ -370,7 +370,7 @@ public class ServiceFactory {
         List<DeliveryDocument> ddList = new ArrayList<>();
         ddList.add(dd1);
         ddList.add(dd2);
-        ddList.add(dd3);
+        //ddList.add(dd3);
 
         Delivery delivery = new Delivery(
                 1,
