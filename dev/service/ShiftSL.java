@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Data Transfer Object for the Shift domain model.
+ *  Transfer Object for the Shift domain model.
  * Used to pass shift data across the Service Layer without exposing domain logic.
  */
 public class ShiftSL {

@@ -237,6 +237,18 @@ public class ServiceFactory {
 
         shiftMemory.save(shift12);
 
+
+        // Tuesday morning shift for Branch 4 
+        Shift shift14 = new Shift("SHIFT_001_04", 4, this.targetTuesday, ShiftType.MORNING);
+        shift14.setRequirement(Certification.CASHIER, 1);
+        shift14.setRequirement(Certification.WAREHOUSE, 1);
+        shift14.setRequirement(Certification.DRIVER, 1);
+
+        shift14.assignEmployee(Certification.WAREHOUSE, 100000002); 
+        shift14.assignEmployee(Certification.DRIVER, 100000006);
+
+        shiftMemory.save(shift14);
+
         // Shift 2 
         Shift shift2 = new Shift("SHIFT_002", 1, this.targetWednesday , ShiftType.MORNING);
         shift2.setRequirement(Certification.CASHIER, 2);
@@ -320,48 +332,83 @@ public class ServiceFactory {
         );
         transportController.addDriver(driver);
 
-        Site site1 = new Site(
-                1,
-                "Beer Sheva Store Branch",
-                "Bar Nisan 6",
-                "0587243922",
-                "Alex Roso",
-                SiteType.BRANCH,
-                new DeliveryZone(1, "South Zone 101")
+        transportController.addSite(
+            1,
+            "Beer Sheva Store Branch",
+            "Bar Nisan 6",
+            "0587243922",
+            "Alex Roso",
+            SiteType.BRANCH,
+            1, 
+            "South Zone 101"
         );
 
-        Site site2 = new Site(
-                2,
-                "Dimona Store Branch",
-                "Rager 6",
-                "0587243922",
-                "Bar Bussani",
-                SiteType.BRANCH,
-                new DeliveryZone(1, "South Zone 102")
+        transportController.addSite(
+            2,
+            "Dimona Store Branch",
+            "Rager 6",
+            "0587243922",
+            "Bar Bussani",
+            SiteType.BRANCH,
+            1, 
+            "South Zone 102"
         );
 
-        Site site3 = new Site(
-                3,
-                "Tnuva Dairy Supplier",
-                "Avraham Avinu 10",
-                "0587243922",
-                "Omer Biton",
-                SiteType.SUPPLIER,
-                new DeliveryZone(1, "South Zone 103")
+        transportController.addSite(
+            3,
+            "Tnuva Dairy Supplier",
+            "Avraham Avinu 10",
+            "0587243922",
+            "Omer Biton",
+            SiteType.SUPPLIER,
+            1, 
+            "South Zone 103"
         );
 
-        transportController.addSite(site1);
-        transportController.addSite(site2);
-        transportController.addSite(site3);
-
-        Truck truck = new Truck(
-                "123-45-678",
-                "Volvo FL Series", 
-                3000.0,
-                8000.0,
-                LicenseType.B
+        transportController.addSite(
+            4,
+            "Eilat Store Branch",
+            "HaTmarim Blvd 40",
+            "0587243922",
+            "Noam Levi",
+            SiteType.BRANCH,
+            2, 
+            "South Zone 104"
         );
-        transportController.addTruck(truck);
+
+        transportController.addTruck(
+            "123-45-678",
+            "Volvo FL Series", 
+            3000.0,
+            8000.0,
+            LicenseType.B
+        );
+
+        transportController.addTruck(
+            "222-33-444",
+            "Ford Transit Heavy Utility", 
+            3200.0,     
+            10000.0,      
+            LicenseType.B  
+        );
+
+        transportController.addTruck(
+            "987-65-432",
+            "Isuzu Forward", 
+            4500.0,          
+            12000.0,        
+            LicenseType.C1  
+        );
+
+        transportController.addTruck(
+            "555-12-345",
+            "Scania R-Series", 
+            7500.0,         
+            26000.0,        
+            LicenseType.C    
+        );
+
+
 
         List<TransportedItem> itemsForDoc1 = new ArrayList<>();
         itemsForDoc1.add(new TransportedItem(501, "Milk 3%", 100));
@@ -370,31 +417,25 @@ public class ServiceFactory {
         List<TransportedItem> itemsForDoc2 = new ArrayList<>();
         itemsForDoc2.add(new TransportedItem(503, "Yellow Cheese", 30));
 
-        List<TransportedItem> itemsForDoc3 = new ArrayList<>();
-        itemsForDoc3.add(new TransportedItem(504, "Empty Crates", 80));
+        List<TransportedItem> itemsForDoc3 = new ArrayList<>();    
 
-        DeliveryDocument dd1 = new DeliveryDocument(1001, site1, itemsForDoc1);
-        DeliveryDocument dd2 = new DeliveryDocument(1002, site2, itemsForDoc2);
-        DeliveryDocument dd3 = new DeliveryDocument(1003, site3, itemsForDoc3);
+        List<TransportController.DocInput> docInputs = new ArrayList<>();
+        docInputs.add(new TransportController.DocInput(1001, 2, itemsForDoc1)); 
+        docInputs.add(new TransportController.DocInput(1002, 3, itemsForDoc2));
+        docInputs.add(new TransportController.DocInput(1003, 4, itemsForDoc2));
+         
 
-        List<DeliveryDocument> ddList = new ArrayList<>();
-        ddList.add(dd1);
-        ddList.add(dd2);
-        //ddList.add(dd3);
-
-        Delivery delivery = new Delivery(
-                1,
-                this.targetTuesday,   
-                LocalTime.of(8, 30),        
+        transportController.createDelivery(
+                1,                          
+                this.targetTuesday,          
+                LocalTime.of(8, 30),         
                 4000.0,                     
-                DeliveryStatus.READY,
-                site3,                      
-                truck,
-                driver,
-                ddList
+                1,                           
+                "123-45-678",            
+                100000006,                   
+                docInputs                  
         );
 
-        transportController.createDelivery(delivery);     
     }
 }
 
