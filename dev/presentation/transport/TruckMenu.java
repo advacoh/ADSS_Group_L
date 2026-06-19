@@ -68,18 +68,10 @@ public class TruckMenu {
         String model = InputUtil.readString("Enter model: ");
         double netWeight = InputUtil.readDouble("Enter net weight: ");
         double maxCapacityWeight = InputUtil.readDouble("Enter max capacity weight: ");
-
         LicenseType requiredLicenseType = InputUtil.readLicenseType();
 
-        Truck truck = new Truck(
-                licenseNumber,
-                model,
-                netWeight,
-                maxCapacityWeight,
-                requiredLicenseType
-        );
-
-        boolean isAdded = transportService.addTruck(truck);
+        boolean isAdded = transportService.addTruck(licenseNumber, model, netWeight, maxCapacityWeight, requiredLicenseType);
+        
         if (isAdded) {
             System.out.println("Truck added successfully!");
         } else {

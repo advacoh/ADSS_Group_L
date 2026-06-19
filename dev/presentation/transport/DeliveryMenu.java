@@ -20,19 +20,21 @@ public class DeliveryMenu {
         while (true) {
             System.out.println("\n=== Delivery Menu ===");
             System.out.println("1) Create delivery");
-            System.out.println("2) View all deliveries");
-            System.out.println("3) View delivery details");
-            System.out.println("4) Execute delivery");
-            System.out.println("5) Resolve PENDING deliveries");
-            System.out.println("6) Back");
+            System.out.println("2) Update delivery"); // חדש!
+            System.out.println("3) View all deliveries");
+            System.out.println("4) View delivery details");
+            System.out.println("5) Execute delivery");
+            System.out.println("6) Resolve PENDING deliveries");
+            System.out.println("7) Back");
 
             switch (InputUtil.readInt("Choose option: ")) {
                 case 1 -> createDelivery();
-                case 2 -> viewAllDeliveries();
-                case 3 -> viewDeliveryDetails();
-                case 4 -> executeDelivery();
-                case 5 -> resolvePendingDeliveries();
-                case 6 -> { return; }
+                case 2 -> updateDelivery();
+                case 3 -> viewAllDeliveries();
+                case 4 -> viewDeliveryDetails();
+                case 5 -> executeDelivery();
+                case 6 -> resolvePendingDeliveries();
+                case 7 -> { return; }
                 default -> System.out.println("Invalid option.");
             }
         }
@@ -55,34 +57,39 @@ public class DeliveryMenu {
         TruckSL truck = selectTruck();
         if (truck == null) return;
 
-        DriverSL driver = selectDriver();
+        DriverSL driver = selectAvailableDriver(date, departureTime, truck);
         if (driver == null) return;
 
         double recordedWeight = InputUtil.readDouble("Enter recorded truck weight: ");
 
-        List<TransportService.DeliveryDocumentInput> documents = createDocumentInputs();
+        List<domain.transportation.TransportController.DocInput> documents = createDocumentInputs();
         if (documents.isEmpty()) {
             System.out.println("Delivery must contain at least one delivery document.");
             return;
         }
 
         boolean success = transportService.createDelivery(
-                id,
-                date,
-                departureTime,
-                recordedWeight,
-                source.getId(),
-                truck.getLicenseNumber(),
-                driver.getId(),
-                documents
+                id, date, departureTime, recordedWeight,
+                source.getId(), truck.getLicenseNumber(), driver.getId(), documents
         );
 
         if (success) {
             System.out.println("Delivery created successfully!");
         } else {
-            System.out.println("Delivery creation failed.");
-            System.out.println("Possible reasons: incompatible driver license, overweight truck, invalid documents, or missing shift requirements.");
+            System.out.println("Delivery creation failed. See error messages above.");
         }
+    }
+
+    private DriverSL selectAvailableDriver(LocalDate date, LocalTime time, TruckSL truck) {
+        List<DriverSL> availableDrivers = transportService.getAvailableDrivers(date, time, truck.getLicenseNumber());
+
+        if (availableDrivers.isEmpty()) {
+            System.out.println("No available drivers found for this date, time, and truck (Filtered by HR Shifts & License).");
+            return null;
+        }
+
+        System.out.println("\nSelect driver (Showing ONLY available drivers with matching license):");
+        return InputUtil.selectItem(availableDrivers);
     }
 
     private SiteSL selectSourceSite() {
@@ -109,20 +116,8 @@ public class DeliveryMenu {
         return InputUtil.selectItem(trucks);
     }
 
-    private DriverSL selectDriver() {
-        List<DriverSL> drivers = transportService.getAllDrivers();
-
-        if (drivers.isEmpty()) {
-            System.out.println("No drivers found. Drivers should be managed through HR.");
-            return null;
-        }
-
-        System.out.println("\nSelect driver:");
-        return InputUtil.selectItem(drivers);
-    }
-
-    private List<TransportService.DeliveryDocumentInput> createDocumentInputs() {
-        List<TransportService.DeliveryDocumentInput> documents = new ArrayList<>();
+    private List<domain.transportation.TransportController.DocInput> createDocumentInputs() {
+        List<domain.transportation.TransportController.DocInput> documents = new ArrayList<>();
 
         while (true) {
             System.out.println("\n--- Create Delivery Document ---");
@@ -138,7 +133,7 @@ public class DeliveryMenu {
                 continue;
             }
 
-            documents.add(new TransportService.DeliveryDocumentInput(
+            documents.add(new domain.transportation.TransportController.DocInput(
                     documentId,
                     destination.getId(),
                     items
@@ -151,6 +146,7 @@ public class DeliveryMenu {
 
         return documents;
     }
+
 
     private SiteSL selectDestinationSite() {
         List<SiteSL> sites = transportService.getAllSites();
@@ -347,6 +343,61 @@ public class DeliveryMenu {
             System.out.println("Success! Missing staff assigned. Delivery is now READY.");
         } else {
             System.out.println("Still missing staff! Contact HR to assign the missing roles.");
+        }
+    }
+
+    private void updateDelivery() {
+        System.out.println("\n--- Update Delivery ---");
+        List<DeliverySL> deliveries = transportService.getAllDeliveries();
+        if (deliveries.isEmpty()) {
+            System.out.println("No deliveries to update.");
+            return;
+        }
+
+        System.out.println("Select a delivery to update:");
+        DeliverySL selected = InputUtil.selectItem(deliveries);
+        if (selected == null) return;
+
+        if (selected.getStatus() == enums.DeliveryStatus.EXECUTING || selected.getStatus() == enums.DeliveryStatus.COMPLETED) {
+            System.out.println("Cannot update a delivery that is already executing or completed.");
+            return;
+        }
+
+        System.out.println("\nEnter new details for Delivery ID " + selected.getId() + ":");
+        
+        System.out.println("Enter new delivery date:");
+        LocalDate date = InputUtil.readDate();
+        if (date == null) return;
+
+        LocalTime departureTime = InputUtil.readTime();
+
+        SiteSL source = selectSourceSite();
+        if (source == null) return;
+
+        TruckSL truck = selectTruck();
+        if (truck == null) return;
+
+        DriverSL driver = selectAvailableDriver(date, departureTime, truck);
+        if (driver == null) return;
+
+        double recordedWeight = InputUtil.readDouble("Enter new recorded truck weight: ");
+
+        System.out.println("\n--- Rebuild Documents & Destinations ---");
+        List<domain.transportation.TransportController.DocInput> documents = createDocumentInputs();
+        if (documents.isEmpty()) {
+            System.out.println("Delivery must contain at least one document.");
+            return;
+        }
+
+        boolean success = transportService.updateDelivery(
+                selected.getId(), date, departureTime, recordedWeight,
+                source.getId(), truck.getLicenseNumber(), driver.getId(), documents
+        );
+
+        if (success) {
+            System.out.println("Delivery updated successfully!");
+        } else {
+            System.out.println("Delivery update failed. See error messages above.");
         }
     }
 }

@@ -113,4 +113,24 @@ public class Delivery {
         this.pendingReason = pendingReason;
     }
 
+    public void setDate(LocalDate date) {
+        this.date = date; 
+    }
+
+    public void setDepartureTime(LocalTime departureTime) { 
+        this.departureTime = departureTime; 
+    }
+
+    public void setSource(Site source) { 
+        this.source = source; 
+    }
+
+    public void setDriver(Driver driver) { 
+        this.driver = driver; 
+    }
+
+    public void setDocuments(List<DeliveryDocument> documents) { 
+        this.documents = documents; 
+    }
+
 }

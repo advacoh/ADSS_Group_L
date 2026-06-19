@@ -23,65 +23,20 @@ public class TransportService {
             List<TransportedItem> items
     ) {}
 
-    public boolean createDelivery(
-            int id,
-            LocalDate date,
-            LocalTime departureTime,
-            double recordedWeight,
-            int sourceSiteId,
-            String truckLicenseNumber,
-            int driverId,
-            List<DeliveryDocumentInput> documentInputs
+   public boolean createDelivery(
+            int id, LocalDate date, LocalTime departureTime, double recordedWeight,
+            int sourceSiteId, String truckLicenseNumber, int driverId,
+            List<TransportController.DocInput> documentInputs
     ) {
-        Site source = findSiteById(sourceSiteId);
-        Truck truck = findTruckByLicenseNumber(truckLicenseNumber);
-        Driver driver = findDriverById(driverId);
-
-        if (source == null || truck == null || driver == null) {
-            return false;
-        }
-
-        List<DeliveryDocument> documents = new ArrayList<>();
-
-        for (DeliveryDocumentInput input : documentInputs) {
-            Site destination = findSiteById(input.destinationSiteId());
-
-            if (destination == null || input.items() == null || input.items().isEmpty()) {
-                return false;
-            }
-
-            documents.add(new DeliveryDocument(
-                    input.documentId(),
-                    destination,
-                    input.items()
-            ));
-        }
-
-        Delivery delivery = new Delivery(
-                id,
-                date,
-                departureTime,
-                recordedWeight,
-                DeliveryStatus.READY,
-                source,
-                truck,
-                driver,
-                documents
-        );
-
-        return transportController.createDelivery(delivery);
+        return transportController.createDelivery(id, date, departureTime, recordedWeight, sourceSiteId, truckLicenseNumber, driverId, documentInputs);
     }
 
-    public boolean createDelivery(Delivery delivery) {
-        return transportController.createDelivery(delivery);
+    public boolean addTruck(String licenseNumber, String model, double netWeight, double maxCapacityWeight, enums.LicenseType requiredLicenseType) {
+        return transportController.addTruck(licenseNumber, model, netWeight, maxCapacityWeight, requiredLicenseType);
     }
 
-    public boolean addTruck(Truck truck) {
-        return transportController.addTruck(truck);
-    }
-
-    public boolean addSite(Site site) {
-        return transportController.addSite(site);
+    public boolean addSite(int id, String name, String address, String phoneNumber, String contactPerson, enums.SiteType siteType, int zoneId, String zoneName) {
+        return transportController.addSite(id, name, address, phoneNumber, contactPerson, siteType, zoneId, zoneName);
     }
 
     public void addDriver(Driver driver) {
@@ -210,4 +165,15 @@ public class TransportService {
         return transportController.resolvePendingDelivery(deliveryId);
     }
 
+    public List<DriverSL> getAvailableDrivers(LocalDate date, LocalTime time, String truckLicenseNumber) {
+        return transportController.getAvailableDrivers(date, time, truckLicenseNumber).stream()
+                .map(DriverSL::new)
+                .collect(Collectors.toList());
+    }
+
+    public boolean updateDelivery(int id, LocalDate newDate, LocalTime newTime, double newWeight,
+                                  int sourceSiteId, String truckLicenseNumber, int driverId,
+                                  List<domain.transportation.TransportController.DocInput> documentInputs) {
+        return transportController.updateDelivery(id, newDate, newTime, newWeight, sourceSiteId, truckLicenseNumber, driverId, documentInputs);
+    }
 }

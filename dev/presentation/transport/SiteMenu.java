@@ -18,16 +18,20 @@ public class SiteMenu {
 
     public void start() {
         while (true) {
-            System.out.println("1) Add site");
-            System.out.println("2) View all sites");
-            System.out.println("3) View site details");
-            System.out.println("4) Back");
+            System.out.println("\n=== Site Menu ===");
+            System.out.println("1) Add Supplier Site");
+            System.out.println("2) Add Branch Site");
+            System.out.println("3) View all sites");
+            System.out.println("4) View site details");
+            System.out.println("5) Back");
 
             switch (InputUtil.readInt("Choose option: ")) {
-                case 1 -> addSite();
-                case 2 -> viewAllSites();
-                case 3 -> viewSiteDetails();
-                case 4 -> { return; }
+                case 1 -> addSite(SiteType.SUPPLIER);
+                case 2 -> addSite(SiteType.BRANCH);
+                case 3 -> viewAllSites();
+                case 4 -> viewSiteDetails();
+                case 5 -> { return; }
+                default -> System.out.println("Invalid option.");
             }
         }
     }
@@ -60,38 +64,24 @@ public class SiteMenu {
         System.out.println("\n--- Site Details ---");
         System.out.println(selected);
     }
-    private void addSite() {
-    System.out.println("\n--- Add Supplier Site ---");
 
-    int id = InputUtil.readInt("Enter site ID: ");
-    String name = InputUtil.readString("Enter site name: ");
-    String address = InputUtil.readString("Enter address: ");
-    String phoneNumber = InputUtil.readString("Enter phone number: ");
-    String contactPerson = InputUtil.readString("Enter contact person: ");
+    private void addSite(SiteType siteType) {
+        System.out.println("\n--- Add " + (siteType == SiteType.SUPPLIER ? "Supplier" : "Branch") + " Site ---");
 
-    // Automatically assign the site type as SUPPLIER instead of asking the user
-    SiteType siteType = SiteType.SUPPLIER; 
+        int id = InputUtil.readInt("Enter site ID: ");
+        String name = InputUtil.readString("Enter site name: ");
+        String address = InputUtil.readString("Enter address: ");
+        String phoneNumber = InputUtil.readString("Enter phone number: ");
+        String contactPerson = InputUtil.readString("Enter contact person: ");
+        
+        int zoneId = InputUtil.readInt("Enter delivery zone ID: ");
+        String zoneName = InputUtil.readString("Enter delivery zone name: ");
 
-    int zoneId = InputUtil.readInt("Enter delivery zone ID: ");
-    String zoneName = InputUtil.readString("Enter delivery zone name: ");
-
-    DeliveryZone zone = new DeliveryZone(zoneId, zoneName);
-
-    Site site = new Site(
-            id,
-            name,
-            address,
-            phoneNumber,
-            contactPerson,
-            siteType,
-            zone
-    );
-
-    boolean isAdded = transportService.addSite(site);
-    if (isAdded) {
-        System.out.println("Supplier site added successfully!");
-    } else {
-        System.out.println("Error: A site with this ID already exists.");
+        boolean isAdded = transportService.addSite(id, name, address, phoneNumber, contactPerson, siteType, zoneId, zoneName);
+        if (isAdded) {
+            System.out.println("Site added successfully!");
+        } else {
+            System.out.println("Error: A site with this ID already exists.");
+        }
     }
-}
 }
