@@ -227,6 +227,13 @@ public class ServiceFactory {
           
         shiftMemory.save(shift1);
 
+        // first shift for branch 2
+        Shift shift12 = new Shift("SHIFT_001_02",2,this.targetTuesday , ShiftType.MORNING);
+        shift1.setRequirement(Certification.CASHIER, 2);
+        shift1.setRequirement(Certification.WAREHOUSE, 1);
+        shift1.setRequirement(Certification.DRIVER, 1);
+        shiftMemory.save(shift1);
+
         // Shift 2 
         Shift shift2 = new Shift("SHIFT_002", 1, this.targetWednesday , ShiftType.MORNING);
         shift2.setRequirement(Certification.CASHIER, 2);
