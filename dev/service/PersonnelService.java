@@ -157,16 +157,7 @@ public class PersonnelService {
         }
     }
 
-    public Response<Void> registerBranch(int branchId, String branchName) {
-        try {
-           
-            // this.transportController.addSite(branchId, branchName, "BRANCH");
-            return Response.success(null);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return Response.failure(e.getMessage());
-        }
-    }
-
+   
     public Response<Void> addTransportManager(int empId, String empName, String password) {
     try {
         this.employeeController.registerTransportManager(empId, empName, password);

@@ -16,6 +16,10 @@ public class DriverRepository {
         drivers.add(driver);
     }
 
+    public void removeDriver(Driver driver) {
+        drivers.remove(driver);
+    }
+
     public List<Driver> getAllDrivers() {
         return drivers;
     }

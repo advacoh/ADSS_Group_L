@@ -16,8 +16,7 @@ public class MenuManager {
 
     public MenuManager(AuthService authService, SchedulingService schedulingService, PersonnelService personnelService, TransportService transportService) {
         this.authService = authService;
-        // Instantiate the global dashboard instead of a specific branch menu
-        this.hrDashboardMenu = new HRDashboardMenu(this, schedulingService, personnelService, authService);
+        this.hrDashboardMenu = new HRDashboardMenu(this, schedulingService, personnelService, authService, transportService);
         this.employeeMenu = new EmployeeMenu(this, schedulingService, personnelService, authService);
         this.transportMenu = new TransportMenu(transportService);
     }

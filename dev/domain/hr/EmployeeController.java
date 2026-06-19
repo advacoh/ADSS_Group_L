@@ -3,14 +3,17 @@ import java.util.*;
 import java.time.LocalDate;
 import domain.transportation.Driver;
 import enums.LicenseType;
+import repository.DriverRepository;
 
 public class EmployeeController {
     private UserController userController;
     private EmployeeMemory employeeMemory;
+    private DriverRepository driverMemory;
 
-    public EmployeeController(UserController userController, EmployeeMemory employeeMemory) {
+    public EmployeeController(UserController userController, EmployeeMemory employeeMemory, DriverRepository driverMemory) {
         this.userController = userController;
         this.employeeMemory = employeeMemory;
+        this.driverMemory = driverMemory;
     }
 
     // Private Helper Methods
@@ -65,6 +68,7 @@ public class EmployeeController {
             //special case for driver, if the employee has a driver certification and a license type is provided, create a Driver instance
             if (certificationsList.contains(Certification.DRIVER) && licenseType != null) {
                 newEmp = new Driver(newEmpID, name, bankAccount, startDate, employementType, salaryType, salary, vacationDay, willOvertime, dayOff, doubleShiftAllowed, certificationsList, licenseType);
+                this.driverMemory.addDriver((Driver) newEmp); 
             } else {
                 newEmp = new Employee(newEmpID, name, bankAccount, startDate, employementType, salaryType, salary, vacationDay, willOvertime, dayOff, doubleShiftAllowed, certificationsList);
             }
@@ -85,6 +89,15 @@ public class EmployeeController {
             verifyEmployeeInBranch(empId, branchId);
             
             Employee emp = getEmployeeOrThrow(empId);
+            if (emp.getStatus() == Status.INACTIVE) {
+                throw new IllegalArgumentException("Employee is already inactive");
+            }
+            if (emp.isDriver()) {
+                Driver driver = driverMemory.getDriverById(empId);
+                if (driver != null) {
+                    driverMemory.getAllDrivers().remove(driver); 
+                }
+            }
             emp.setStatus(Status.INACTIVE);
             employeeMemory.update(emp);
             this.userController.delete(empId);

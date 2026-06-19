@@ -1,6 +1,10 @@
 package presentation.hr;
 
 import java.time.LocalDate;
+
+import domain.transportation.DeliveryZone;
+import domain.transportation.Site;
+import enums.SiteType;
 import presentation.InputUtil;
 import presentation.MenuManager;
 import service.*;
@@ -10,13 +14,15 @@ public class HRDashboardMenu {
     private final SchedulingService schedulingService;
     private final PersonnelService personnelService; // Handles employee AND branch data checks
     private final AuthService authService;
+    private final TransportService transportService; 
 
     public HRDashboardMenu(MenuManager manager, SchedulingService schedulingService, 
-                             PersonnelService personnelService, AuthService authService) {
+                             PersonnelService personnelService, AuthService authService, TransportService transportService) {
         this.manager = manager;
         this.schedulingService = schedulingService;
         this.personnelService = personnelService;
         this.authService = authService;
+        this.transportService = transportService;
     }
 
     public void show() {
@@ -64,19 +70,40 @@ public class HRDashboardMenu {
     }
 
     private void registerNewBranch() {
-        System.out.println("\n=== Register New Branch ===");
-        System.out.print("Enter New Branch ID: ");
-        int branchId = InputUtil.readInt();
+    System.out.println("\n=== Register New Branch ===");
+    
+    // Gather all necessary data for the transport Site
+    int branchId = InputUtil.readInt("Enter New Branch ID: ");
+    String branchName = InputUtil.readString("Enter Branch Name/Location: "); 
+    String address = InputUtil.readString("Enter branch address: ");
+    String phoneNumber = InputUtil.readString("Enter phone number: ");
+    String contactPerson = InputUtil.readString("Enter contact person: ");
 
-        String branchName = InputUtil.readString("Enter Branch Name/Location: "); 
+    int zoneId = InputUtil.readInt("Enter delivery zone ID: ");
+    String zoneName = InputUtil.readString("Enter delivery zone name: ");
 
-        Response<Void> response = personnelService.registerBranch(branchId, branchName);
-        if (response.isError()) {
-            System.out.println("Registration failed: " + response.getErrorMessage());
-        } else {
-            System.out.println("Branch " + branchId + " registered successfully.");
-        }
+    // Hardcode the type to BRANCH
+    SiteType siteType = SiteType.BRANCH; 
+
+    DeliveryZone zone = new DeliveryZone(zoneId, zoneName);
+    Site site = new Site(
+            branchId,
+            branchName,
+            address,
+            phoneNumber,
+            contactPerson,
+            siteType,
+            zone
+    );
+
+    // Register directly via transport service
+    boolean isAdded = transportService.addSite(site);
+    if (isAdded) {
+        System.out.println("Branch " + branchId + " registered successfully as a transport site.");
+    } else {
+        System.out.println("Error: A site with ID " + branchId + " already exists.");
     }
+}
 
     private void addTransportManager() {
         System.out.println("\n=== Add New Transport Manager ===");

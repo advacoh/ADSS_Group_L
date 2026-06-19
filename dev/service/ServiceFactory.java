@@ -35,7 +35,7 @@ import domain.transportation.DeliveryDocument;
 import domain.transportation.Delivery;
 import enums.SiteType;
 import enums.DeliveryStatus;
-
+import repository.DriverRepository;
 
 public class ServiceFactory { 
    
@@ -54,17 +54,18 @@ public class ServiceFactory {
         EmployeeMemory employeeMemory = new EmployeeMemory();
         ShiftMemory shiftMemory = new ShiftMemory();
         RequestMemory requestMemory = new RequestMemory();
+        DriverRepository driverMemory = new DriverRepository();
       
         calculateDynamicDates();
 
         if (withData) {
-            populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory);
+            populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
         }
 
         UserController userController = new UserController(userMemory);
-        EmployeeController employeeController = new EmployeeController(userController, employeeMemory);
+        EmployeeController employeeController = new EmployeeController(userController, employeeMemory, driverMemory);
         ShiftController shiftController = new ShiftController(shiftMemory, employeeMemory, userController, requestMemory);
-        TransportController transportController = new TransportController(shiftController);
+        TransportController transportController = new TransportController(shiftController, driverMemory);
 
         this.authService = new AuthService(userController, employeeController);
         this.PersonnelService = new PersonnelService(userController, employeeController, transportController);
@@ -85,7 +86,7 @@ public class ServiceFactory {
         this.targetThursday = sunday.plusDays(4); 
     }
 
-    public void populateEmployeeMemory(EmployeeMemory employeeMemory) {
+    public void populateEmployeeMemory(EmployeeMemory employeeMemory, DriverRepository driverMemory){ {
         LocalDate startDate1 = LocalDate.of(2025, 1, 15);
         LocalDate startDate2 = LocalDate.of(2024, 6, 1);
         LocalDate startDate3 = LocalDate.of(2021, 9, 10);
@@ -180,7 +181,9 @@ public class ServiceFactory {
         employeeMemory.save(emp4);
         employeeMemory.save(emp5);
         employeeMemory.save(driverEmp);
-        }
+        driverMemory.addDriver(driverEmp);
+     } }
+
 
     public void populateUserMmemory(UserMemory userMemory){
         User user1 = new User(100000001, "sarah123");   // Sarah Cohen - HR Manager
@@ -267,9 +270,9 @@ public class ServiceFactory {
         
     }
     
-    private void populateTestData(UserMemory u, EmployeeMemory e, ShiftMemory s, RequestMemory r) {
+    private void populateTestData(UserMemory u, EmployeeMemory e, ShiftMemory s, RequestMemory r, DriverRepository d) {
         populateUserMmemory(u);
-        populateEmployeeMemory(e);
+        populateEmployeeMemory(e, d);
         populateShiftMemory(s);
         populateRequestMemory(r);
     }

@@ -120,6 +120,10 @@ public class Employee {
         return this.certifications.contains(Certification.DELIVERY_MANAGER);
     }
 
+    public boolean isDriver() {
+        return this.certifications.contains(Certification.DRIVER);
+    }
+
     public void addCertification(Certification newCert) {
         if (this.certifications == null) {
             this.certifications = new HashSet<>();

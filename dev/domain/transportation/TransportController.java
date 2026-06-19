@@ -19,10 +19,10 @@ public class TransportController {
     private SiteRepository siteRepository;
     private ShiftController shiftController;
 
-    public TransportController(ShiftController shiftController) {
+    public TransportController(ShiftController shiftController, DriverRepository driverRepository) {
         this.deliveryRepository = new DeliveryRepository();
         this.truckRepository = new TruckRepository();
-        this.driverRepository = new DriverRepository();
+        this.driverRepository = driverRepository;
         this.siteRepository = new SiteRepository();
         this.shiftController = shiftController;    }
 

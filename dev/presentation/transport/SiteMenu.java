@@ -61,36 +61,37 @@ public class SiteMenu {
         System.out.println(selected);
     }
     private void addSite() {
-        System.out.println("\n--- Add Site ---");
+    System.out.println("\n--- Add Supplier Site ---");
 
-        int id = InputUtil.readInt("Enter site ID: ");
-        String name = InputUtil.readString("Enter site name: ");
-        String address = InputUtil.readString("Enter address: ");
-        String phoneNumber = InputUtil.readString("Enter phone number: ");
-        String contactPerson = InputUtil.readString("Enter contact person: ");
+    int id = InputUtil.readInt("Enter site ID: ");
+    String name = InputUtil.readString("Enter site name: ");
+    String address = InputUtil.readString("Enter address: ");
+    String phoneNumber = InputUtil.readString("Enter phone number: ");
+    String contactPerson = InputUtil.readString("Enter contact person: ");
 
-        SiteType siteType = InputUtil.readSiteType();
+    // Automatically assign the site type as SUPPLIER instead of asking the user
+    SiteType siteType = SiteType.SUPPLIER; 
 
-        int zoneId = InputUtil.readInt("Enter delivery zone ID: ");
-        String zoneName = InputUtil.readString("Enter delivery zone name: ");
+    int zoneId = InputUtil.readInt("Enter delivery zone ID: ");
+    String zoneName = InputUtil.readString("Enter delivery zone name: ");
 
-        DeliveryZone zone = new DeliveryZone(zoneId, zoneName);
+    DeliveryZone zone = new DeliveryZone(zoneId, zoneName);
 
-        Site site = new Site(
-                id,
-                name,
-                address,
-                phoneNumber,
-                contactPerson,
-                siteType,
-                zone
-        );
+    Site site = new Site(
+            id,
+            name,
+            address,
+            phoneNumber,
+            contactPerson,
+            siteType,
+            zone
+    );
 
-        boolean isAdded = transportService.addSite(site);
-        if (isAdded) {
-            System.out.println("Site added successfully!");
-        } else {
-            System.out.println("Error: A site with this ID already exists.");
-        }
+    boolean isAdded = transportService.addSite(site);
+    if (isAdded) {
+        System.out.println("Supplier site added successfully!");
+    } else {
+        System.out.println("Error: A site with this ID already exists.");
     }
+}
 }

@@ -76,6 +76,7 @@ public class EmployeeManagementMenu {
 
         List<Certification> eligibleRoles = new ArrayList<>(Arrays.asList(Certification.values()));
         eligibleRoles.remove(Certification.HR_MANAGER);
+        eligibleRoles.remove(Certification.DELIVERY_MANAGER);
 
         Set<Certification> selectedCertifications = new HashSet<>();
 
