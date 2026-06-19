@@ -13,27 +13,27 @@ public class SiteRepository {
 
     public SiteRepository() {
         this.sites = new ArrayList<>();
-        DeliveryZone southZone = new DeliveryZone(1, "South");
-        Site branch = new Site(
-                 1,
-                "Beer Sheva Branch",
-               "Rager Blvd 10, Beer Sheva",
-                "08-7654321",
-              "Yossi Cohen",
-                 SiteType.BRANCH,
-                southZone
-            );
-            Site branch2 = new Site(
-                 2,
-                "Beer Sheva Branch",
-               "Rager Blvd 10, Beer Sheva",
-                "08-7654321",
-              "Yossi Cohen",
-                 SiteType.BRANCH,
-                southZone
-            );
-            sites.add(branch);
-            sites.add(branch2);
+        // DeliveryZone southZone = new DeliveryZone(1, "South");
+        // Site branch = new Site(
+        //          1,
+        //         "Beer Sheva Branch",
+        //        "Rager Blvd 10, Beer Sheva",
+        //         "08-7654321",
+        //       "Yossi Cohen",
+        //          SiteType.BRANCH,
+        //         southZone
+        //     );
+        //     Site branch2 = new Site(
+        //          2,
+        //         "Beer Sheva Branch",
+        //        "Rager Blvd 10, Beer Sheva",
+        //         "08-7654321",
+        //       "Yossi Cohen",
+        //          SiteType.BRANCH,
+        //         southZone
+        //     );
+        //     sites.add(branch);
+        //     sites.add(branch2);
         }
         
 

@@ -133,7 +133,6 @@ public class TransportController {
                                   int sourceSiteId, String truckLicenseNumber, int driverId,
                                   List<DocInput> documentInputs) {
                                       
-        // 1. שליפת אובייקטים (הקונטרולר שולף אותם כדי שיוכל לייצר את ההובלה)
         Site source = getAllSites().stream().filter(s -> s.getId() == sourceSiteId).findFirst().orElse(null);
         Truck truck = getAllTrucks().stream().filter(t -> t.getLicenseNumber().equals(truckLicenseNumber)).findFirst().orElse(null);
         Driver driver = getAllDrivers().stream().filter(d -> d.getId() == driverId).findFirst().orElse(null);
@@ -143,7 +142,6 @@ public class TransportController {
             return false;
         }
 
-        // 2. יצירת רשימת המסמכים מהקלטים
         List<DeliveryDocument> documents = new java.util.ArrayList<>();
         for (DocInput input : documentInputs) {
             Site destination = getAllSites().stream().filter(s -> s.getId() == input.destinationSiteId).findFirst().orElse(null);
@@ -154,10 +152,8 @@ public class TransportController {
             documents.add(new DeliveryDocument(input.documentId, destination, input.items));
         }
 
-        // 3. יצירת אובייקט ההובלה בעצמנו!
         Delivery delivery = new Delivery(id, date, departureTime, recordedWeight, DeliveryStatus.PLANNED, source, truck, driver, documents);
 
-        // --- הולידציות המקוריות שלנו נשארות ---
         if (delivery.getRecordedWeight() <= 0) {
             System.out.println("Error: Recorded weight must be greater than zero.");
             return false;

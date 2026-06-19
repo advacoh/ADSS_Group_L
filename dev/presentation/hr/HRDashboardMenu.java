@@ -84,20 +84,17 @@ public class HRDashboardMenu {
 
     // Hardcode the type to BRANCH
     SiteType siteType = SiteType.BRANCH; 
-
-    DeliveryZone zone = new DeliveryZone(zoneId, zoneName);
-    Site site = new Site(
-            branchId,
-            branchName,
-            address,
-            phoneNumber,
-            contactPerson,
-            siteType,
-            zone
+    boolean isAdded = transportService.addSite(
+        branchId, 
+        branchName, 
+        address, 
+        phoneNumber, 
+        contactPerson, 
+        siteType, 
+        zoneId,
+        zoneName   
     );
 
-    // Register directly via transport service
-    boolean isAdded = transportService.addSite(site);
     if (isAdded) {
         System.out.println("Branch " + branchId + " registered successfully as a transport site.");
     } else {

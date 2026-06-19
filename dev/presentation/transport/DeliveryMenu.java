@@ -279,7 +279,6 @@ public class DeliveryMenu {
             double newWeight = InputUtil.readDouble("Enter the current truck weight recorded at this site: ");
 
             boolean weightOk = transportService.processDeliveryStop(selectedDelivery.getId(), currentStep, newWeight);
-
             if (!weightOk) {
                 System.out.println("\nError: The truck is OVERWEIGHT for its maximum legal capacity.");
                 System.out.println("1) Reduce supply and re-weigh.");
@@ -291,21 +290,54 @@ public class DeliveryMenu {
                     case 1 -> System.out.println("Please unload items or fix the load balance.");
                     case 2 -> {
                         List<SiteSL> allSites = transportService.getAllSites();
-                        System.out.println("\nSelect a replacement destination site:");
-                        SiteSL replacementSite = InputUtil.selectItem(allSites);
-                        if (replacementSite != null) {
-                            transportService.changeDocumentDestination(selectedDelivery.getId(), currentStep, replacementSite.getId());
-                            System.out.println("Destination updated successfully.");
+                        List<SiteSL> validReplacements = allSites.stream()
+                                .filter(site -> !site.getName().equals(nextSiteName))
+                                .toList();
+
+                        if (validReplacements.isEmpty()) {
+                            System.out.println("No alternative replacement sites available in the system.");
+                        } else {
+                            System.out.println("\nSelect a replacement destination site:");
+                            SiteSL replacementSite = InputUtil.selectItem(validReplacements);
+                            if (replacementSite != null) {
+                                transportService.changeDocumentDestination(selectedDelivery.getId(), currentStep, replacementSite.getId());
+                                System.out.println("Destination updated successfully. Proceeding to " + replacementSite.getName());
+                            }
                         }
                     }
                     case 3 -> {
                         List<TruckSL> allTrucks = transportService.getAllTrucks();
-                        System.out.println("\nSelect a replacement truck:");
-                        TruckSL replacementTruck = InputUtil.selectItem(allTrucks);
+    
+                        DeliverySL currentDeliveryState = transportService.getAllDeliveries().stream()
+                                .filter(d -> d.getId() == selectedDelivery.getId())
+                                .findFirst()
+                                .get();
+                                
+                        DriverSL activeDriver = currentDeliveryState.getDriver();
+                        List<TruckSL> alternativeTrucks = allTrucks.stream()
+                                .filter(truck -> !truck.getLicenseNumber().equals(currentDeliveryState.getTruck().getLicenseNumber()))
+                                .filter(truck -> {
+                                    enums.LicenseType driverLicense = activeDriver.getLicenseType(); 
+                                    if (driverLicense == enums.LicenseType.C) 
+                                        return true; 
+                                    if (driverLicense == enums.LicenseType.C1) 
+                                        return truck.getRequiredLicenseType() != enums.LicenseType.C; 
+                                    return truck.getRequiredLicenseType() == enums.LicenseType.B;
+                                })
+                                .toList();
+
+                        if (alternativeTrucks.isEmpty()) {
+                            System.out.println("No alternative trucks available that match this driver's license (" + activeDriver.getLicenseType() + ").");
+                            continue; 
+                        }
+
+                        System.out.println("\nSelect a replacement truck (Showing ONLY compatible trucks):");
+                        TruckSL replacementTruck = InputUtil.selectItem(alternativeTrucks);
+                        
                         if (replacementTruck != null) {
                             boolean truckSwapped = transportService.changeDeliveryTruck(selectedDelivery.getId(), replacementTruck.getLicenseNumber());
                             if (truckSwapped) {
-                                System.out.println("Truck swapped successfully.");
+                                System.out.println("Truck swapped successfully to license: " + replacementTruck.getLicenseNumber());
                             } else {
                                 System.out.println("Failed to swap truck.");
                             }
