@@ -7,57 +7,88 @@ import java.util.Set;
 
 public class UserController {
 
-    private UserMemory userMemory;
+    private final UserMapper userMapper;
 
     public UserController(UserMemory userMemory) {
-        this.userMemory = userMemory;
+        this.userMapper = new UserMapper();
     }
 
+
     public boolean isLogged(int id) {
-        try {
-            userMemory.getUser(id);
-            return userMemory.isLogged(id);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("isLogged failed: " + e.getMessage());
+        UserDTO dto = userMapper.selectById(id);
+        if (dto == null) {
+            throw new IllegalArgumentException("isLogged failed: User " + id + " not found");
         }
+        return dto.isLoggedIn(); 
     }
+
 
     public void register(int id, String password) {
         try {
-            User user = new User(id, password);
-            userMemory.save(user);
+            // If id or password break any rules, the user constructor throws an exception.
+            new User(id, password);
+            UserDTO dto = new UserDTO(id, password, false);
+            if (!userMapper.insert(dto)) {
+                throw new IllegalArgumentException("User " + id + " already exists in database");
+            }
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Registration failed: " + e.getMessage());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Registration failed due to a database error.");
         }
     }
+
 
     public void delete(int id) {
         try {
-            userMemory.delete(id);
+            // Attempt to execute the deletion.
+            if (!userMapper.delete(id)) {
+                throw new IllegalArgumentException("User " + id + " does not exist");
+            }
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Delete failed: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Delete failed due to a database error.");
         }
     }
 
-    public void login(int id, String password) {
+
+    public void login(int id, String typedPassword) { 
         try {
-            User user = userMemory.getUser(id);
-            if (!user.login(password)) {
+            UserDTO dto = userMapper.selectById(id);
+            if (dto == null) {
+                throw new IllegalArgumentException("User " + id + " not found");
+            }
+            User domainUser = new User(dto.getId(), dto.getPassword());
+            if (!domainUser.login(typedPassword)) {
                 throw new IllegalArgumentException("Incorrect password");
             }
-            userMemory.login(id);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Login failed: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new IllegalStateException("Login failed: " + e.getMessage());
+            if (dto.isLoggedIn()) {
+                throw new IllegalStateException("User " + id + " is already logged in");
+            }
+            if (!userMapper.updateLoginStatus(id, true)) {
+                throw new RuntimeException("Could not update login status in database.");
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Login failed due to an unexpected database error.");
         }
     }
 
     public void logout(int id) {
         try {
-            userMemory.logout(id);
+            UserDTO dto = userMapper.selectById(id);
+            if (dto == null || !dto.isLoggedIn()) {
+                throw new IllegalStateException("User " + id + " is not logged in");
+            }
+            if (!userMapper.updateLoginStatus(id, false)) {
+                throw new RuntimeException("Could not update logout status in database.");
+            }
         } catch (IllegalStateException e) {
             throw new IllegalStateException("Logout failed: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Logout failed due to an unexpected database error.");
         }
     }
 

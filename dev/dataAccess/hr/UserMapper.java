@@ -100,4 +100,14 @@ public class UserMapper {
             System.err.println("Failed to create Users table: " + e.getMessage());
         }
     }
+
+    public void resetAllLoginStatuses() {
+        String sql = "UPDATE " + TABLE_NAME + " SET IsLoggedIn = 0;";
+        try (Connection conn = getConnection(); 
+            Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error during startup reset: " + e.getMessage());
+        }
+    }
 }
