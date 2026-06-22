@@ -5,3 +5,5 @@ bin/
 out/
 *.class
 *.iml
+
+supermarket.db
