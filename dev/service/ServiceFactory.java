@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import dataAccess.hr.UserMapper;
 import domain.transportation.Driver;
 import enums.LicenseType;
 import domain.transportation.TransportController;
@@ -58,9 +60,10 @@ public class ServiceFactory {
       
         calculateDynamicDates();
 
-        if (withData) {
-            populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
-        }
+        UserMapper userMapper = new UserMapper();
+        userMapper.resetAllLoginStatuses();
+
+        System.out.println("DEBUG: Sarah login status after reset is: " + userMapper.selectById(100000001).isLoggedIn());
 
         UserController userController = new UserController(userMemory);
         EmployeeController employeeController = new EmployeeController(userController, employeeMemory, driverMemory);
@@ -72,7 +75,10 @@ public class ServiceFactory {
         this.schedulingService = new SchedulingService(shiftController);
         this.transportService = new TransportService(transportController);
 
-        populateTransportData(transportController);
+        if (withData) {
+            populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
+            populateTransportData(transportController); // It can find the shifts successfully now!
+        }
     }
 
     
@@ -182,6 +188,14 @@ public class ServiceFactory {
         employeeMemory.save(emp5);
         employeeMemory.save(driverEmp);
         driverMemory.addDriver(driverEmp);
+
+        dataAccess.hr.UserMapper mapper = new dataAccess.hr.UserMapper();
+    
+        insertIfMissing(mapper, 100000001, "sarah123");
+        insertIfMissing(mapper, 100000002, "yossi123");
+        insertIfMissing(mapper, 100000003, "dana1234");
+        insertIfMissing(mapper, 100000004, "ron12345");
+        insertIfMissing(mapper, 100000005, "transport123");
      } }
 
 
@@ -437,5 +451,14 @@ public class ServiceFactory {
         );
 
     }
+
+    private void insertIfMissing(dataAccess.hr.UserMapper mapper, int id, String password) {
+        if (mapper.selectById(id) == null) {
+            mapper.insert(new dataAccess.hr.UserDTO(id, password, false));
+        }
+    }
+
+
+
 }
 
