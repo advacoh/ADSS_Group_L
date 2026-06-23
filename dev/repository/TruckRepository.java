@@ -1,31 +1,55 @@
 package repository;
 
-import domain.transportation.Truck;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import dataAccess.transportation.TruckDTO;
+import dataAccess.transportation.TruckMapper;
+import domain.transportation.Truck;
 
 public class TruckRepository {
-
-    private List<Truck> trucks;
+    private final TruckMapper truckMapper;
 
     public TruckRepository() {
-        this.trucks = new ArrayList<>();
+        this.truckMapper = new TruckMapper();
     }
 
     public void addTruck(Truck truck) {
-        trucks.add(truck);
+        TruckDTO dto = new TruckDTO(
+                truck.getLicenseNumber(),
+                truck.getModel(),
+                truck.getNetWeight(),
+                truck.getMaxCapacityWeight(),
+                truck.getRequiredLicenseType()
+        );
+
+        truckMapper.insert(dto);
+    }
+
+    public Truck getTruckByLicenseNumber(String licenseNumber) {
+        TruckDTO dto = truckMapper.selectByLicenseNumber(licenseNumber);
+        if (dto == null) return null;
+        return toDomain(dto);
     }
 
     public List<Truck> getAllTrucks() {
-        return trucks;
+        return truckMapper.selectAll()
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
     }
-    
-    public Truck getTruckByLicenseNumber(String licenseNumber) {
-        for (Truck truck : trucks) {
-            if (truck.getLicenseNumber().equals(licenseNumber)) {
-                return truck;
-            }
-        }
-        return null;
+
+    public boolean deleteTruck(String licenseNumber) {
+        return truckMapper.delete(licenseNumber);
+    }
+
+    private Truck toDomain(TruckDTO dto) {
+        return new Truck(
+                dto.getLicenseNumber(),
+                dto.getModel(),
+                dto.getNetWeight(),
+                dto.getMaxCapacityWeight(),
+                dto.getRequiredLicenseType()
+        );
     }
 }
