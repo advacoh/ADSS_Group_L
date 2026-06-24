@@ -187,6 +187,7 @@ public class ShiftController {
             }
             checkDeadline();
             emp.setWeeklyConstraints(cons);
+
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("setWeeklyConstraints failed: " + e.getMessage());
         } catch (IllegalStateException e) {
