@@ -16,7 +16,7 @@ public class Delivery {
     private Truck truck;
     private Driver driver;
     private List<DeliveryDocument> documents;
-    private int currentStep = 0; // Default starts at 0
+    private int currentStep = 0; 
     private String pendingReason;
 
     public Delivery(
@@ -43,11 +43,11 @@ public class Delivery {
 
     public List<Integer> getBranches() {
         return documents.stream()
-                .map(DeliveryDocument::getDestination)   // 1. Extract destination site from each document
+                .map(DeliveryDocument::getDestination)   
                 .filter(Objects::nonNull)
-                .filter(Site::isBranch)                  // 2. Only keep sites that are branches
-                .map(Site::getId)                        // 3. Extract the branch ID
-                .distinct()                              // 5. Deduplicate if multiple documents go to the same branch
+                .filter(Site::isBranch)                 
+                .map(Site::getId)                        
+                .distinct()                             
                 .toList();
     }
 
@@ -132,5 +132,4 @@ public class Delivery {
     public void setDocuments(List<DeliveryDocument> documents) { 
         this.documents = documents; 
     }
-
 }

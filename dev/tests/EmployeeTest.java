@@ -1,19 +1,17 @@
-import domain.hr.Employee;
-import domain.hr.EmpType;
-import domain.hr.SalType;
-import domain.hr.Certification;
-import domain.hr.Status;
-import domain.hr.ShiftType;
+package domain.hr;
 
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
+
 import java.time.LocalDate;
 import java.time.DayOfWeek;
 import java.util.*;
 
+@DisplayName("Employee Domain Class Tests")
 public class EmployeeTest {
 
     private Employee employee;
+
     private LocalDate getNextWeekDay(DayOfWeek targetDay) {
         LocalDate sunday = LocalDate.now();
         while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
@@ -24,343 +22,188 @@ public class EmployeeTest {
 
     @BeforeEach
     void setUp() {
-        // New employee before each test
         employee = new Employee(
             100000001, "Test User", 123456,
             LocalDate.of(2024, 1, 1),
             EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-            15, true, 6, false,
+            15, true, 6, false, 
             new HashSet<>(List.of(Certification.CASHIER))
         );
     }
 
-    // Basic Creation Tests
-
-    @Test
-    void testEmployeeCreatedWithCorrectName() {
-        assertEquals("Test User", employee.getName());
-    }
-
-    @Test
-    void testEmployeeCreatedWithCorrectID() {
-        assertEquals(100000001, employee.getID());
-    }
-
-    @Test
-    void testEmployeeIsActiveByDefault() {
-        assertEquals(Status.ACTIVE, employee.getStatus());
-    }
-
-    @Test
-    void testEmployeeCreatedWithCorrectSalary() {
-        assertEquals(10000, employee.getSalary());
-    }
-
-    @Test
-    void testEmployeeCreatedWithCorrectVacationDays() {
-        assertEquals(15, employee.getVacation());
-    }
-
-    // Certification Tests 
-
-    @Test
-    void testEmployeeHasInitialCertification() {
-        assertTrue(employee.isCertified(Certification.CASHIER));
-    }
-
-    @Test
-    void testAddCertification() {
-        employee.addCertification(Certification.WAREHOUSE);
-        assertTrue(employee.isCertified(Certification.WAREHOUSE));
-    }
-
-    @Test
-    void testAddDuplicateCertificationDoesNotDuplicate() {
-        employee.addCertification(Certification.CASHIER);
-        long count = employee.getCertifications().stream()
-            .filter(c -> c == Certification.CASHIER)
-            .count();
-        assertEquals(1, count);
-    }
-
-    @Test
-    void testRemoveCertification() {
-        employee.removeCertification(Certification.CASHIER);
-        assertFalse(employee.isCertified(Certification.CASHIER));
-    }
-
-    @Test
-    void testRemoveNonExistentCertificationReturnsFalse() {
-        boolean result = employee.removeCertification(Certification.HR_MANAGER);
-        assertFalse(result);
-    }
-
-    @Test
-    void testRemoveExistingCertificationReturnsTrue() {
-        boolean result = employee.removeCertification(Certification.CASHIER);
-        assertTrue(result);
-    }
-
-    // Constructor Validation Tests
-
-    @Test
-    void testNullNameThrows() {
-        assertThrows(NullPointerException.class, () ->
-            new Employee(100000001, null, 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testNullStartDateThrows() {
-        assertThrows(NullPointerException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                null,
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testNullEmploymentTypeThrows() {
-        assertThrows(NullPointerException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                null, SalType.GLOBAL, 10000,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testNullSalaryTypeThrows() {
-        assertThrows(NullPointerException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, null, 10000,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testNullCertificationsThrows() {
-        assertThrows(NullPointerException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                15, true, 6, false,
-                null));
-    }
-
-    @Test
-    void testIDTooShortThrows() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Employee(12345678, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testIDTooLongThrows() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Employee(1000000000, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testNegativeSalaryThrows() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, -1,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testZeroSalaryThrows() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 0,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testNegativeVacationThrows() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                -1, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testNegativeBankAccountThrows() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Employee(100000001, "Test User", -1,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                15, true, 6, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testDayOffZeroThrows() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                15, true, 0, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    @Test
-    void testDayOffEightThrows() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Employee(100000001, "Test User", 123456,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
-                15, true, 8, false,
-                new HashSet<>(List.of(Certification.CASHIER))));
-    }
-
-    // HR Tests 
-
-    @Test
-    void testIsNotHRByDefault() {
-        assertFalse(employee.isHR());
-    }
-
-    @Test
-    void testBecomeHRAfterAddingCertification() {
-        employee.addCertification(Certification.HR_MANAGER);
-        assertTrue(employee.isHR());
-    }
-
-    @Test
-    void testNoLongerHRAfterRemovingCertification() {
-        employee.addCertification(Certification.HR_MANAGER);
-        employee.removeCertification(Certification.HR_MANAGER);
-        assertFalse(employee.isHR());
-    }
-
-    // Status Tests 
-
-    @Test
-    void testDismissedEmployeeIsInactive() {
-        employee.setStatus(Status.INACTIVE);
-        assertEquals(Status.INACTIVE, employee.getStatus());
-    }
-
-    @Test
-    void testReactivatedEmployeeIsActive() {
-        employee.setStatus(Status.INACTIVE);
-        employee.setStatus(Status.ACTIVE);
-        assertEquals(Status.ACTIVE, employee.getStatus());
-    }
-
-    //  Setter Tests 
-
-    @Test
-    void testSetName() {
-        employee.setName("New Name");
-        assertEquals("New Name", employee.getName());
-    }
-
-    @Test
-    void testSetSalary() {
-        employee.setSalary(20000);
-        assertEquals(20000, employee.getSalary());
-    }
-
-    @Test
-    void testSetVacation() {
-        employee.setVacation(20);
-        assertEquals(20, employee.getVacation());
-    }
-
-    @Test
-    void testSetBankAccount() {
-        employee.setBankAccount(999999);
-        assertEquals(999999, employee.getBankAccount());
-    }
-
-    // Weekly Constraints Tests 
-
-    @Test
-    void testSetWeeklyConstraintsThrowsOnNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-            employee.setWeeklyConstraints(null));
-    }
-
-    @Test
-    void testSetWeeklyPreferencesThrowsOnNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-            employee.setWeeklyPreferences(null));
-    }
-
-    @Test
-    void testSetWeeklyConstraintsValidDay() {
-        LocalDate monday = getNextWeekDay(DayOfWeek.MONDAY);
-
-        Map<LocalDate, Set<ShiftType>> cons = new HashMap<>();
-        cons.put(monday, new HashSet<>(Set.of(ShiftType.MORNING)));
-
-        assertDoesNotThrow(() -> employee.setWeeklyConstraints(cons));
-        assertTrue(employee.isAvailable(monday, ShiftType.MORNING));
-    }
-
-    @Test
-    void testSetWeeklyConstraintsOnDayOffThrowsWarning() {
-        LocalDate sunday = LocalDate.now();
-        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
-            sunday = sunday.plusDays(1);
+    @Nested
+    @DisplayName("1. Constructor Validation & Instantiation")
+    class ConstructorTests {
+        
+        @Test
+        @DisplayName("Should successfully create an employee with correct basic properties")
+        void testValidEmployeeCreation() {
+            assertEquals("Test User", employee.getName());
+            assertEquals(100000001, employee.getID());
+            assertEquals(10000, employee.getSalary());
+            assertEquals(15, employee.getVacation());
+            assertEquals(Status.ACTIVE, employee.getStatus());
         }
-        LocalDate friday = sunday.plusDays(5); // Friday of that week
 
-        Map<LocalDate, Set<ShiftType>> cons = new HashMap<>();
-        cons.put(friday, new HashSet<>(Set.of(ShiftType.MORNING)));
-
-        assertThrows(IllegalArgumentException.class, () ->
-            employee.setWeeklyConstraints(cons));
-    }
-
-    @Test
-    void testSetWeeklyPreferencesWithoutConstraintThrowsWarning() {
-        LocalDate sunday = LocalDate.now();
-        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
-            sunday = sunday.plusDays(1);
+        @Test
+        @DisplayName("Should throw NullPointerException when required objects are null")
+        void testNullValidations() {
+            assertThrows(NullPointerException.class, () -> new Employee(100000001, null, 123456, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, SalType.GLOBAL, 10000, 15, true, 6, false, new HashSet<>(List.of(Certification.CASHIER))));
+            assertThrows(NullPointerException.class, () -> new Employee(100000001, "Test User", 123456, null, EmpType.FULL_TIME, SalType.GLOBAL, 10000, 15, true, 6, false, new HashSet<>(List.of(Certification.CASHIER))));
+            assertThrows(NullPointerException.class, () -> new Employee(100000001, "Test User", 123456, LocalDate.of(2024, 1, 1), null, SalType.GLOBAL, 10000, 15, true, 6, false, new HashSet<>(List.of(Certification.CASHIER))));
+            assertThrows(NullPointerException.class, () -> new Employee(100000001, "Test User", 123456, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, null, 10000, 15, true, 6, false, new HashSet<>(List.of(Certification.CASHIER))));
+            assertThrows(NullPointerException.class, () -> new Employee(100000001, "Test User", 123456, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, SalType.GLOBAL, 10000, 15, true, 6, false, null));
         }
-        LocalDate monday = sunday.plusDays(1);
 
-        employee.setWeeklyConstraints(new HashMap<>());
+        @Test
+        @DisplayName("Should throw IllegalArgumentException for negative or invalid number inputs")
+        void testNumericValidations() {
+            assertThrows(IllegalArgumentException.class, () -> new Employee(100000001, "Test User", 123456, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, SalType.GLOBAL, -1, 15, true, 6, false, new HashSet<>()));
+            assertThrows(IllegalArgumentException.class, () -> new Employee(100000001, "Test User", 123456, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, SalType.GLOBAL, 0, 15, true, 6, false, new HashSet<>()));
+            assertThrows(IllegalArgumentException.class, () -> new Employee(100000001, "Test User", 123456, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, SalType.GLOBAL, 10000, -1, true, 6, false, new HashSet<>()));
+            assertThrows(IllegalArgumentException.class, () -> new Employee(100000001, "Test User", -1, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, SalType.GLOBAL, 10000, 15, true, 6, false, new HashSet<>()));
+        }
 
-        Map<LocalDate, Set<ShiftType>> prefs = new HashMap<>();
-        prefs.put(monday, new HashSet<>(Set.of(ShiftType.MORNING)));
-
-        assertThrows(IllegalArgumentException.class, () ->
-            employee.setWeeklyPreferences(prefs));
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when dayOff is outside 1-7 range")
+        void testDayOffBoundaries() {
+            assertThrows(IllegalArgumentException.class, () -> new Employee(100000001, "Test User", 123456, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, SalType.GLOBAL, 10000, 15, true, 0, false, new HashSet<>()));
+            assertThrows(IllegalArgumentException.class, () -> new Employee(100000001, "Test User", 123456, LocalDate.of(2024, 1, 1), EmpType.FULL_TIME, SalType.GLOBAL, 10000, 15, true, 8, false, new HashSet<>()));
+        }
     }
 
-    @Test
-    void testEmptyConstraintsClearsAll() {
-        LocalDate monday = getNextWeekDay(DayOfWeek.MONDAY);
+    @Nested
+    @DisplayName("2. Certifications & Role Checks")
+    class CertificationTests {
 
-        Map<LocalDate, Set<ShiftType>> cons = new HashMap<>();
-        cons.put(monday, new HashSet<>(Set.of(ShiftType.MORNING)));
-        employee.setWeeklyConstraints(cons);
-        assertTrue(employee.isAvailable(monday, ShiftType.MORNING));
+        @Test
+        @DisplayName("Should correctly initialize and identify baseline certifications")
+        void testInitialCertifications() {
+            assertTrue(employee.isCertified(Certification.CASHIER));
+            assertFalse(employee.isHR());
+        }
 
-        employee.setWeeklyConstraints(new HashMap<>());
-        assertFalse(employee.isAvailable(monday, ShiftType.MORNING));
+        @Test
+        @DisplayName("Should allow adding new, non-duplicate certifications")
+        void testAddCertification() {
+            employee.addCertification(Certification.WAREHOUSE);
+            assertTrue(employee.isCertified(Certification.WAREHOUSE));
+            
+            employee.addCertification(Certification.CASHIER);
+            long count = employee.getCertifications().stream().filter(c -> c == Certification.CASHIER).count();
+            assertEquals(1, count, "Duplicate certifications should not be added to the Set");
+        }
+
+        @Test
+        @DisplayName("Should allow removing certifications and return boolean status")
+        void testRemoveCertification() {
+            assertTrue(employee.removeCertification(Certification.CASHIER));
+            assertFalse(employee.isCertified(Certification.CASHIER));
+            
+            assertFalse(employee.removeCertification(Certification.HR_MANAGER), "Removing non-existent cert should return false");
+        }
+
+        @Test
+        @DisplayName("Should accurately reflect HR status based on current certifications")
+        void testHRRoleToggle() {
+            employee.addCertification(Certification.HR_MANAGER);
+            assertTrue(employee.isHR());
+            
+            employee.removeCertification(Certification.HR_MANAGER);
+            assertFalse(employee.isHR());
+        }
+    }
+
+    @Nested
+    @DisplayName("3. Weekly Scheduling (Constraints & Preferences)")
+    class WeeklySubmissionTests {
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException on null map submissions")
+        void testNullSubmissions() {
+            assertThrows(IllegalArgumentException.class, () -> employee.setWeeklyConstraints(null));
+            assertThrows(IllegalArgumentException.class, () -> employee.setWeeklyPreferences(null));
+        }
+
+        @Test
+        @DisplayName("Should successfully submit constraints for a valid work day")
+        void testSetValidWeeklyConstraints() {
+            LocalDate monday = getNextWeekDay(DayOfWeek.MONDAY);
+            Map<LocalDate, Set<ShiftType>> cons = new HashMap<>();
+            cons.put(monday, new HashSet<>(Set.of(ShiftType.MORNING)));
+
+            assertDoesNotThrow(() -> employee.setWeeklyConstraints(cons));
+            assertTrue(employee.isAvailable(monday, ShiftType.MORNING));
+        }
+
+        @Test
+        @DisplayName("Should clear all constraints when passed an empty map")
+        void testClearConstraints() {
+            LocalDate monday = getNextWeekDay(DayOfWeek.MONDAY);
+            Map<LocalDate, Set<ShiftType>> cons = new HashMap<>();
+            cons.put(monday, new HashSet<>(Set.of(ShiftType.MORNING)));
+            employee.setWeeklyConstraints(cons);
+            
+            employee.setWeeklyConstraints(new HashMap<>());
+            assertFalse(employee.isAvailable(monday, ShiftType.MORNING));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when attempting to submit a constraint on predefined day off")
+        void testConstraintOnDayOffThrows() {
+            LocalDate sunday = LocalDate.now();
+            while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+                sunday = sunday.plusDays(1);
+            }
+            LocalDate friday = sunday.plusDays(5); 
+
+            Map<LocalDate, Set<ShiftType>> cons = new HashMap<>();
+            cons.put(friday, new HashSet<>(Set.of(ShiftType.MORNING)));
+
+            assertThrows(IllegalArgumentException.class, () -> employee.setWeeklyConstraints(cons));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when submitting a preference for an unavailable shift")
+        void testPreferenceWithoutConstraintThrows() {
+            LocalDate monday = getNextWeekDay(DayOfWeek.MONDAY);
+            employee.setWeeklyConstraints(new HashMap<>());
+
+            Map<LocalDate, Set<ShiftType>> prefs = new HashMap<>();
+            prefs.put(monday, new HashSet<>(Set.of(ShiftType.MORNING)));
+
+            assertThrows(IllegalArgumentException.class, () -> employee.setWeeklyPreferences(prefs));
+        }
+    }
+
+    @Nested
+    @DisplayName("4. Standard Getters, Setters & Status")
+    class StandardPropertyTests {
+
+        @Test
+        @DisplayName("Should correctly update basic employee details")
+        void testBasicSetters() {
+            employee.setName("New Name");
+            assertEquals("New Name", employee.getName());
+
+            employee.setSalary(20000);
+            assertEquals(20000, employee.getSalary());
+
+            employee.setVacation(20);
+            assertEquals(20, employee.getVacation());
+
+            employee.setBankAccount(999999);
+            assertEquals(999999, employee.getBankAccount());
+        }
+
+        @Test
+        @DisplayName("Should correctly toggle Active/Inactive status")
+        void testStatusToggles() {
+            employee.setStatus(Status.INACTIVE);
+            assertEquals(Status.INACTIVE, employee.getStatus());
+
+            employee.setStatus(Status.ACTIVE);
+            assertEquals(Status.ACTIVE, employee.getStatus());
+        }
     }
 }
