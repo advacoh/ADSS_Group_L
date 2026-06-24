@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import dataAccess.hr.EmployeeMapper;
 import dataAccess.hr.UserMapper;
 import domain.transportation.Driver;
 import enums.LicenseType;
@@ -52,8 +53,11 @@ public class ServiceFactory {
 
    
     public ServiceFactory(boolean withData) {
+
+        String connectionString = withData ? "jdbc:sqlite:adss_data.db" : "jdbc:sqlite:adss.db";
+        EmployeeMapper employeeMapper = new EmployeeMapper(connectionString);
         UserMemory userMemory = new UserMemory();
-        EmployeeMemory employeeMemory = new EmployeeMemory();
+        EmployeeMemory employeeMemory = new EmployeeMemory(employeeMapper);
         ShiftMemory shiftMemory = new ShiftMemory();
         RequestMemory requestMemory = new RequestMemory();
         DriverRepository driverMemory = new DriverRepository();
