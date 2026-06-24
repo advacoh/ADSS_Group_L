@@ -9,6 +9,7 @@ import java.util.Set;
 
 import dataAccess.hr.EmployeeMapper;
 import dataAccess.hr.OverrideRequestMapper;
+import dataAccess.hr.ShiftMapper;
 import dataAccess.hr.UserMapper;
 import domain.transportation.Driver;
 import enums.LicenseType;
@@ -55,12 +56,14 @@ public class ServiceFactory {
    
     public ServiceFactory(boolean withData) {
 
-        String connectionString = withData ? "jdbc:sqlite:adss_data.db" : "jdbc:sqlite:adss.db";
+        // String connectionString = withData ? "jdbc:sqlite:adss_data.db" : "jdbc:sqlite:adss.db";
+        String connectionString = "jdbc:sqlite:supermarket.db";
         EmployeeMapper employeeMapper = new EmployeeMapper(connectionString);
+        ShiftMapper shiftMapper = new ShiftMapper(connectionString);
         OverrideRequestMapper overrideRequestMapper = new OverrideRequestMapper(connectionString);
         UserMemory userMemory = new UserMemory();
         EmployeeMemory employeeMemory = new EmployeeMemory(employeeMapper);
-        ShiftMemory shiftMemory = new ShiftMemory();
+        ShiftMemory shiftMemory = new ShiftMemory(shiftMapper);
         RequestMemory requestMemory = new RequestMemory(overrideRequestMapper);
         DriverRepository driverMemory = new DriverRepository();
       
@@ -81,10 +84,10 @@ public class ServiceFactory {
         this.schedulingService = new SchedulingService(shiftController);
         this.transportService = new TransportService(transportController);
 
-        if (withData) {
-            populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
-            populateTransportData(transportController); // It can find the shifts successfully now!
-        }
+        // if (withData) {
+        //     populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
+        //     populateTransportData(transportController); // It can find the shifts successfully now!
+        // }
     }
 
     
