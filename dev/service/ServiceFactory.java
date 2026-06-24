@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import dataAccess.hr.EmployeeMapper;
+import dataAccess.hr.OverrideRequestMapper;
 import dataAccess.hr.UserMapper;
 import domain.transportation.Driver;
 import enums.LicenseType;
@@ -56,10 +57,11 @@ public class ServiceFactory {
 
         String connectionString = withData ? "jdbc:sqlite:adss_data.db" : "jdbc:sqlite:adss.db";
         EmployeeMapper employeeMapper = new EmployeeMapper(connectionString);
+        OverrideRequestMapper overrideRequestMapper = new OverrideRequestMapper(connectionString);
         UserMemory userMemory = new UserMemory();
         EmployeeMemory employeeMemory = new EmployeeMemory(employeeMapper);
         ShiftMemory shiftMemory = new ShiftMemory();
-        RequestMemory requestMemory = new RequestMemory();
+        RequestMemory requestMemory = new RequestMemory(overrideRequestMapper);
         DriverRepository driverMemory = new DriverRepository();
       
         calculateDynamicDates();
