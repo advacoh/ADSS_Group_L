@@ -9,10 +9,13 @@ public class UserController {
 
     private final UserMapper userMapper;
 
-    public UserController(UserMemory userMemory) {
+    public UserController() {
         this.userMapper = new UserMapper();
     }
 
+    public UserController(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
 
     public boolean isLogged(int id) {
         UserDTO dto = userMapper.selectById(id);
