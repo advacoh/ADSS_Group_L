@@ -63,6 +63,7 @@ public class Employee {
     public int getVacation() { return vacation; } 
     public Status getStatus() { return status; }
     public boolean willOvertime(){ return willOvertime; }
+    public WeeklySubmission getWeeklySubmission() { return weeklySubmission; }
     
     public String getDayOff() {
         int dayOff = this.weeklySubmission.getDayOff();

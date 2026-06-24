@@ -153,7 +153,7 @@ public class ShiftController {
     public List<Employee> getAllWithCertification(int userId, int branchId, Certification role) {
         try {
             verifyHR(userId);
-            return employeeMemory.getByrole(branchId, role);
+            return employeeMemory.getByRole(branchId, role);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("getAllWithCertification failed: " + e.getMessage());
         } catch (IllegalStateException e) {
