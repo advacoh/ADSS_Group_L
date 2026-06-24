@@ -67,7 +67,7 @@ public class ServiceFactory {
         UserMapper userMapper = new UserMapper();
         userMapper.resetAllLoginStatuses();
 
-        System.out.println("DEBUG: Sarah login status after reset is: " + userMapper.selectById(100000001).isLoggedIn());
+       // System.out.println("DEBUG: Sarah login status after reset is: " + userMapper.selectById(100000001).isLoggedIn());
 
         UserController userController = new UserController(userMemory);
         EmployeeController employeeController = new EmployeeController(userController, employeeMemory, driverMemory);
