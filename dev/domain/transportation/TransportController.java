@@ -192,6 +192,10 @@ public class TransportController {
                 System.out.println("Error: Duplicate Document ID found.");
                 return false;
             }
+            if (isDocumentIdExists(doc.getDocumentId(), delivery.getId())) {
+                System.out.println("Error: Document ID " + doc.getDocumentId() + " already exists in the system.");
+                return false;
+            }
             if (doc.getDestination().getId() == delivery.getSource().getId()) {
                 System.out.println("Error: Destination site cannot be the same as the Source site.");
                 return false;
@@ -377,6 +381,27 @@ public class TransportController {
 
         Delivery tempDelivery = new Delivery(id, newDate, newTime, newWeight, DeliveryStatus.PLANNED, source, truck, driver, documents);
 
+        Set<Integer> documentIds = new HashSet<>();
+        Set<Integer> destinationIds = new HashSet<>();
+        for (DeliveryDocument doc : tempDelivery.getDocuments()) {
+            if (!documentIds.add(doc.getDocumentId())) { 
+                System.out.println("Error: Duplicate Document ID found in input.");
+                return false;
+            }
+            if (isDocumentIdExists(doc.getDocumentId(), tempDelivery.getId())) {
+                System.out.println("Error: Document ID " + doc.getDocumentId() + " already exists in another delivery.");
+                return false;
+            }
+            if (doc.getDestination().getId() == tempDelivery.getSource().getId()) {
+                System.out.println("Error: Destination site cannot be the same as the Source site.");
+                return false;
+            }
+            if (!destinationIds.add(doc.getDestination().getId())) {
+                System.out.println("Error: Duplicate destination found.");
+                return false;
+            }
+        }
+
         if (tempDelivery.getRecordedWeight() <= 0) return false;
 
         for (Delivery d : getAllDeliveries()) {
@@ -430,5 +455,17 @@ public class TransportController {
         deliveryRepository.updateDelivery(existing);
         
         return true;
+    }
+
+    private boolean isDocumentIdExists(int documentId, int currentDeliveryId) {
+        for (Delivery d : getAllDeliveries()) {
+            if (d.getId() == currentDeliveryId) continue; // אם אנחנו בעדכון, נדלג על ההובלה הנוכחית
+            for (DeliveryDocument doc : d.getDocuments()) {
+                if (doc.getDocumentId() == documentId) {
+                    return true; // ה-ID הזה כבר תפוס בהובלה אחרת!
+                }
+            }
+        }
+        return false;
     }
 }
