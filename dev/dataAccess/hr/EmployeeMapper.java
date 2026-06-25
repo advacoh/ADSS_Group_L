@@ -120,6 +120,8 @@ public class EmployeeMapper {
                     pstmt.executeUpdate();
                 }
                 certificationMapper.saveCertifications(dto.getId(), dto.getCertifications(), conn);
+                if (dto.getWeeklySubmission() != null)
+                weeklySubmissionMapper.save(dto.getId(), dto.getWeeklySubmission(), conn);
                 conn.commit();
             } catch (SQLException e) {
                 conn.rollback();

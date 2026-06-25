@@ -24,7 +24,13 @@ public class WeeklySubmission {
         for (int i = 0; i < 7; i++) {
             Map<ShiftType, SlotSubmission> dailyShifts = new HashMap<>();
             for (ShiftType shift : ShiftType.values()) {
-                dailyShifts.put(shift, new SlotSubmission());
+                SlotSubmission slot = new SlotSubmission();
+                // On day off, employee is neither available nor preferred
+                if (current.getDayOfWeek().getValue() % 7 + 1 == dayOff) {
+                    slot.setConstraint(false);
+                    slot.setPreference(false);
+                }
+                dailyShifts.put(shift, slot);
             }
             this.slots.put(current, dailyShifts);
             current = current.plusDays(1);
