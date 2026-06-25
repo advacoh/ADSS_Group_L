@@ -268,65 +268,65 @@ public class EmployeeIntegrationTest {
         assertTrue(savedShift.isAssignedAsRole(role, empId), "Employee should be assigned specifically as a Cashier");
     }
 
-    // @Test
-    // @DisplayName("Should successfully process an override request: HR submits, Employee approves, HR assigns")
-    // void testOverrideRequestFlow() {
-    //     // Arrange
-    //     int empId = 100000009; 
-    //     int branchId = 1;
-    //     String password = "overridePass123";
+    @Test
+    @DisplayName("Should successfully process an override request: HR submits, Employee approves, HR assigns")
+    void testOverrideRequestFlow() {
+        // Arrange
+        int empId = 100000009; 
+        int branchId = 1;
+        String password = "overridePass123";
         
-    //     LocalDate nextSunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
-    //     LocalDate validShiftDate = nextSunday.plusDays(2); 
+        LocalDate nextSunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+        LocalDate validShiftDate = nextSunday.plusDays(2); 
         
-    //     ShiftType shiftType = ShiftType.EVENING;
-    //     Certification role = Certification.CASHIER;
+        ShiftType shiftType = ShiftType.EVENING;
+        Certification role = Certification.CASHIER;
 
         
-    //     employeeController.addEmployee(
-    //         HR_USER_ID, branchId, empId, password, "Override Target", 55555, 
-    //         LocalDate.now(), EmpType.FULL_TIME, SalType.GLOBAL, 8000, 10, 
-    //         true, 6, false, Set.of(role), null
-    //     );
+        employeeController.addEmployee(
+            HR_USER_ID, branchId, empId, password, "Override Target", 55555, 
+            LocalDate.now(), EmpType.FULL_TIME, SalType.GLOBAL, 8000, 10, 
+            true, 6, false, Set.of(role), null
+        );
 
-    //     // Employee sets constraints making himself unavailable for the Evening shift
-    //     shiftController.createShift(HR_USER_ID, branchId, validShiftDate, shiftType);
-    //     shiftController.setRequirement(HR_USER_ID, branchId, validShiftDate, shiftType, role, 1);
+        // Employee sets constraints making himself unavailable for the Evening shift
+        shiftController.createShift(HR_USER_ID, branchId, validShiftDate, shiftType);
+        shiftController.setRequirement(HR_USER_ID, branchId, validShiftDate, shiftType, role, 1);
 
-    //     userController.login(empId, password);
-    //     Map<LocalDate, Set<ShiftType>> constraints = new HashMap<>();
-    //     constraints.put(validShiftDate, new HashSet<>(Set.of(ShiftType.MORNING))); 
-    //     shiftController.setWeeklyConstraints(empId, constraints);
-    //     userController.logout(empId);
+        userController.login(empId, password);
+        Map<LocalDate, Set<ShiftType>> constraints = new HashMap<>();
+        constraints.put(validShiftDate, new HashSet<>(Set.of(ShiftType.MORNING))); 
+        shiftController.setWeeklyConstraints(empId, constraints);
+        userController.logout(empId);
 
-    //     // Act & Assert
+        // Act & Assert
 
-    //     String requestId = assertDoesNotThrow(() -> {
-    //         return shiftController.createOverrideRequest(HR_USER_ID, branchId, empId, validShiftDate, shiftType, role);
-    //     }, "HR should be able to create an override request for an unavailable employee");
+        String requestId = assertDoesNotThrow(() -> {
+            return shiftController.createOverrideRequest(HR_USER_ID, branchId, empId, validShiftDate, shiftType, role);
+        }, "HR should be able to create an override request for an unavailable employee");
         
-    //     assertNotNull(requestId, "Override request ID should be generated");
+        assertNotNull(requestId, "Override request ID should be generated");
 
-    //     userController.login(empId, password);
+        userController.login(empId, password);
         
-    //     assertDoesNotThrow(() -> {
-    //         shiftController.respondToRequest(empId, requestId, true);
-    //     }, "Employee should be able to approve the pending request");
+        assertDoesNotThrow(() -> {
+            shiftController.respondToRequest(empId, requestId, true);
+        }, "Employee should be able to approve the pending request");
         
-    //     OverrideRequest request = shiftController.viewRequest(empId, requestId);
-    //     assertEquals(RequestStatus.APPROVED, request.getStatus(), "The request status should now be APPROVED");
+        OverrideRequest request = shiftController.viewRequest(empId, requestId);
+        assertEquals(RequestStatus.APPROVED, request.getStatus(), "The request status should now be APPROVED");
         
-    //     userController.logout(empId);
+        userController.logout(empId);
 
-    //     assertDoesNotThrow(() -> {
-    //         shiftController.assignWithOverride(HR_USER_ID, branchId, requestId);
-    //     }, "HR should successfully assign the employee using the approved override request");
+        assertDoesNotThrow(() -> {
+            shiftController.assignWithOverride(HR_USER_ID, branchId, requestId);
+        }, "HR should successfully assign the employee using the approved override request");
 
-    //     Shift savedShift = shiftController.getShift(HR_USER_ID, branchId, validShiftDate, shiftType);
+        Shift savedShift = shiftController.getShift(HR_USER_ID, branchId, validShiftDate, shiftType);
         
-    //     assertTrue(savedShift.isEmployeeAssigned(empId), "Employee should be formally assigned to the shift");
-    //     assertTrue(savedShift.isAssignedAsRole(role, empId), "Employee should be assigned specifically as a Cashier");
-    // }
+        assertTrue(savedShift.isEmployeeAssigned(empId), "Employee should be formally assigned to the shift");
+        assertTrue(savedShift.isAssignedAsRole(role, empId), "Employee should be assigned specifically as a Cashier");
+    }
 
     
     @Test
