@@ -23,6 +23,11 @@ public class TruckMapper {
         createTableIfNotExists();
     }
 
+    public TruckMapper(String connectionString) {
+        this.connectionString = connectionString;
+        createTableIfNotExists();
+    }
+    
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection(connectionString);
     }

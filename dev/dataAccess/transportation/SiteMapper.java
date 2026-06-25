@@ -23,6 +23,11 @@ public class SiteMapper {
         createTableIfNotExists();
     }
 
+    public SiteMapper(String connectionString) {
+        this.connectionString = connectionString;
+        createTableIfNotExists();
+    }
+
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection(connectionString);
     }

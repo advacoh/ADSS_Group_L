@@ -35,6 +35,15 @@ public class TransportController {
         this.shiftController = shiftController; 
     }
 
+    public TransportController(ShiftController shiftController, DriverRepository driverRepository, String connectionString) {
+        this.truckRepository = new TruckRepository(connectionString);
+        this.siteRepository = new SiteRepository(connectionString);
+        this.deliveryRepository = new DeliveryRepository(driverRepository, this.truckRepository, this.siteRepository, connectionString);
+        
+        this.driverRepository = driverRepository;
+        this.shiftController = shiftController; 
+    }
+
 
     public void addDriver(Driver driver) {
         driverRepository.addDriver(driver);

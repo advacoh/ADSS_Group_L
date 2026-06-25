@@ -95,6 +95,8 @@ public class EmployeeMemory {
         stringsToCerts(dto.getCertifications())
     );
 
+    emp.setStatus(Status.valueOf(dto.getStatus()));
+
     // 3. Set the Branch ID using your specific setter rule
     emp.setBranchId(dto.getBranchId());
 

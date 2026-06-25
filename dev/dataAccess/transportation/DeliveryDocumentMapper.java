@@ -22,6 +22,11 @@ public class DeliveryDocumentMapper {
         createTableIfNotExists();
     }
 
+    public DeliveryDocumentMapper(String connectionString) {
+        this.connectionString = connectionString;
+        createTableIfNotExists();
+    }
+
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection(connectionString);
     }
