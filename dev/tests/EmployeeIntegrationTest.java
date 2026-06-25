@@ -44,7 +44,6 @@ public class EmployeeIntegrationTest {
     private ShiftMemory shiftMemory;
     private RequestMemory requestMemory;
     
-    //private final String TEST_DB_URL = "jdbc:sqlite::memory:"; 
     private String TEST_DB_URL; 
     private Connection keepAliveConnection;
 
@@ -52,8 +51,6 @@ public class EmployeeIntegrationTest {
 
     @BeforeEach
     void setUp() throws SQLException {
-
-        //added
         TEST_DB_URL = "jdbc:sqlite:file:memdb_" + UUID.randomUUID().toString() + "?mode=memory&cache=shared";
         keepAliveConnection = DriverManager.getConnection(TEST_DB_URL);
 
@@ -77,12 +74,55 @@ public class EmployeeIntegrationTest {
         employeeController.registerHR(HR_USER_ID, "secureHrPass123");
         userController.login(HR_USER_ID, "secureHrPass123"); 
     }
-//added
+
     @AfterEach
     void tearDown() throws SQLException {
         if (keepAliveConnection != null && !keepAliveConnection.isClosed()) {
             keepAliveConnection.close();
         }
+    }
+
+
+    @Test
+    @DisplayName("Should successfully allow HR to set role requirements for a shift")
+    void testHRSetShiftRequirement() {
+        // Arrange
+        int branchId = 1;
+        
+        LocalDate nextSunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+        LocalDate validShiftDate = nextSunday.plusDays(3); 
+        
+        ShiftType shiftType = ShiftType.MORNING;
+        
+        // Define the roles 
+        Certification role1 = Certification.CASHIER;
+        int requiredCashiers = 3;
+        
+        Certification role2 = Certification.SHIFT_MANAGER;
+        int requiredManagers = 1;
+
+        assertDoesNotThrow(() -> {
+            shiftController.createShift(HR_USER_ID, branchId, validShiftDate, shiftType);
+        }, "HR should be able to create a valid shift in the next week");
+
+        // Act
+        assertDoesNotThrow(() -> {
+            shiftController.setRequirement(HR_USER_ID, branchId, validShiftDate, shiftType, role1, requiredCashiers);
+            shiftController.setRequirement(HR_USER_ID, branchId, validShiftDate, shiftType, role2, requiredManagers);
+        }, "HR should be able to successfully set staffing requirements for multiple roles");
+
+        // Assert
+        Shift savedShift = assertDoesNotThrow(() -> {
+            return shiftController.getShift(HR_USER_ID, branchId, validShiftDate, shiftType);
+        }, "HR should be able to retrieve the shift");
+        
+        assertNotNull(savedShift, "The shift should exist in the system");
+
+        assertEquals(requiredCashiers, savedShift.getRequiredRoles().getOrDefault(role1, 0), "The shift should require exactly 3 Cashiers");
+        assertEquals(requiredManagers, savedShift.getRequiredRoles().getOrDefault(role2, 0), "The shift should require exactly 1 Shift Manager");
+        
+        assertEquals(0, savedShift.getRequiredRoles().getOrDefault(Certification.WAREHOUSE, 0), "Unset roles should have a requirement of 0");
+        
     }
 
     @Test
@@ -226,6 +266,134 @@ public class EmployeeIntegrationTest {
         
         assertTrue(savedShift.isEmployeeAssigned(empId), "Employee should be assigned to the shift");
         assertTrue(savedShift.isAssignedAsRole(role, empId), "Employee should be assigned specifically as a Cashier");
+    }
+
+    // @Test
+    // @DisplayName("Should successfully process an override request: HR submits, Employee approves, HR assigns")
+    // void testOverrideRequestFlow() {
+    //     // Arrange
+    //     int empId = 100000009; 
+    //     int branchId = 1;
+    //     String password = "overridePass123";
+        
+    //     LocalDate nextSunday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+    //     LocalDate validShiftDate = nextSunday.plusDays(2); 
+        
+    //     ShiftType shiftType = ShiftType.EVENING;
+    //     Certification role = Certification.CASHIER;
+
+        
+    //     employeeController.addEmployee(
+    //         HR_USER_ID, branchId, empId, password, "Override Target", 55555, 
+    //         LocalDate.now(), EmpType.FULL_TIME, SalType.GLOBAL, 8000, 10, 
+    //         true, 6, false, Set.of(role), null
+    //     );
+
+    //     // Employee sets constraints making himself unavailable for the Evening shift
+    //     shiftController.createShift(HR_USER_ID, branchId, validShiftDate, shiftType);
+    //     shiftController.setRequirement(HR_USER_ID, branchId, validShiftDate, shiftType, role, 1);
+
+    //     userController.login(empId, password);
+    //     Map<LocalDate, Set<ShiftType>> constraints = new HashMap<>();
+    //     constraints.put(validShiftDate, new HashSet<>(Set.of(ShiftType.MORNING))); 
+    //     shiftController.setWeeklyConstraints(empId, constraints);
+    //     userController.logout(empId);
+
+    //     // Act & Assert
+
+    //     String requestId = assertDoesNotThrow(() -> {
+    //         return shiftController.createOverrideRequest(HR_USER_ID, branchId, empId, validShiftDate, shiftType, role);
+    //     }, "HR should be able to create an override request for an unavailable employee");
+        
+    //     assertNotNull(requestId, "Override request ID should be generated");
+
+    //     userController.login(empId, password);
+        
+    //     assertDoesNotThrow(() -> {
+    //         shiftController.respondToRequest(empId, requestId, true);
+    //     }, "Employee should be able to approve the pending request");
+        
+    //     OverrideRequest request = shiftController.viewRequest(empId, requestId);
+    //     assertEquals(RequestStatus.APPROVED, request.getStatus(), "The request status should now be APPROVED");
+        
+    //     userController.logout(empId);
+
+    //     assertDoesNotThrow(() -> {
+    //         shiftController.assignWithOverride(HR_USER_ID, branchId, requestId);
+    //     }, "HR should successfully assign the employee using the approved override request");
+
+    //     Shift savedShift = shiftController.getShift(HR_USER_ID, branchId, validShiftDate, shiftType);
+        
+    //     assertTrue(savedShift.isEmployeeAssigned(empId), "Employee should be formally assigned to the shift");
+    //     assertTrue(savedShift.isAssignedAsRole(role, empId), "Employee should be assigned specifically as a Cashier");
+    // }
+
+    
+    @Test
+    @DisplayName("Should successfully allow HR to view details of an INACTIVE (dismissed) employee")
+    void testHRViewsInactiveEmployeeDetails() {
+        // Arrange
+        int targetEmpId = 100000010; 
+        int branchId = 1;
+        String password = "toBeDismissed123";
+        Certification role = Certification.CASHIER;
+
+        employeeController.addEmployee(
+            HR_USER_ID, branchId, targetEmpId, password, "Departed Employee", 55555, 
+            LocalDate.now(), EmpType.FULL_TIME, SalType.GLOBAL, 8000, 10, 
+            true, 6, false, Set.of(role), null
+        );
+
+        assertDoesNotThrow(() -> {
+            employeeController.dismissEmployee(HR_USER_ID, branchId, targetEmpId);
+        }, "HR should be able to successfully dismiss the employee");
+
+        // Act
+        Employee retrievedEmployee = assertDoesNotThrow(() -> {
+            return employeeController.getEmployeeDetails(HR_USER_ID, branchId, targetEmpId);
+        }, "HR should be able to retrieve details of an inactive employee");
+
+        // Assert
+        assertNotNull(retrievedEmployee, "The system should still return the employee object");
+        assertEquals(targetEmpId, retrievedEmployee.getID(), "Retrieved employee ID should match");
+        assertEquals("Departed Employee", retrievedEmployee.getName(), "Retrieved employee name should match");
+        
+        assertEquals(Status.INACTIVE, retrievedEmployee.getStatus(), "Employee status must be INACTIVE in the system");
+        
+        assertThrows(RuntimeException.class, () -> {
+            userController.login(targetEmpId, password);
+        }, "Dismissed employee's user credentials should be deleted, preventing login");
+    }
+
+    @Test
+    @DisplayName("Should successfully allow HR to view shifts that are in history")
+    void testHRViewsPastShiftHistory() {
+        // Arrange
+        int branchId = 1;
+        
+        LocalDate pastDate = LocalDate.now().minusDays(1);
+        ShiftType shiftType = ShiftType.MORNING;
+        String shiftId = branchId + "_" + pastDate.toString() + "_" + shiftType.name();
+        
+        // We bypass shiftController.createShift() because it restricts creation to the next week.
+        // By saving directly to shiftMemory, we simulate a shift that was created in the past.
+        Shift pastShift = new Shift(shiftId, branchId, pastDate, shiftType);
+        shiftMemory.save(pastShift); 
+
+        // Act
+        Shift retrievedShift = assertDoesNotThrow(() -> {
+            return shiftController.getPastShift(HR_USER_ID, branchId, pastDate, shiftType);
+        }, "HR should be able to successfully retrieve a past shift");
+
+        // Assert
+        assertNotNull(retrievedShift, "The retrieved past shift should not be null");
+        assertEquals(pastDate, retrievedShift.getDate(), "The date of the retrieved shift should match the past date");
+        assertEquals(shiftType, retrievedShift.getType(), "The shift type should match");
+        assertEquals(branchId, retrievedShift.getBranchId(), "The branch ID should match");
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+             shiftController.getShift(HR_USER_ID, branchId, pastDate, shiftType);
+        }, "Standard getShift should fail because the shift has been moved to history");
     }
 
 
