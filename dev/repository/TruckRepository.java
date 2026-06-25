@@ -14,6 +14,10 @@ public class TruckRepository {
         this.truckMapper = new TruckMapper();
     }
 
+    public TruckRepository(String connectionString) {
+        this.truckMapper = new TruckMapper(connectionString);
+    }
+
     public void addTruck(Truck truck) {
         TruckDTO dto = new TruckDTO(
                 truck.getLicenseNumber(),

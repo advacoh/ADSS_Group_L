@@ -20,7 +20,12 @@ public class DeliveryMapper {
         this.connectionString = "jdbc:sqlite:" + path;
         createTableIfNotExists();
     }
-    
+
+    public DeliveryMapper(String connectionString) {
+        this.connectionString = connectionString;
+        createTableIfNotExists();
+    }
+
 
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection(connectionString);

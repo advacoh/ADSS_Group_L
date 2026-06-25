@@ -28,6 +28,20 @@ public class DeliveryRepository {
         this.siteRepository = siteRepository;
     }
 
+    public DeliveryRepository(DriverRepository driverRepository,
+                              TruckRepository truckRepository,
+                              SiteRepository siteRepository,
+                              String connectionString) {
+        this.deliveryMapper = new DeliveryMapper(connectionString);
+        this.documentMapper = new DeliveryDocumentMapper(connectionString);
+        this.itemMapper = new TransportedItemMapper(connectionString);
+
+        this.driverRepository = driverRepository;
+        this.truckRepository = truckRepository;
+        this.siteRepository = siteRepository;
+    }
+
+
     public void addDelivery(Delivery delivery) {
         DeliveryDTO dto = new DeliveryDTO(
                 delivery.getId(),

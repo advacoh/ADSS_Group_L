@@ -16,6 +16,10 @@ public class SiteRepository {
         this.siteMapper = new SiteMapper();
     }
 
+    public SiteRepository(String connectionString) {
+        this.siteMapper = new SiteMapper(connectionString);
+    }
+
     public void addSite(Site site) {
         if (siteExists(site.getId())) {
             return;
