@@ -20,6 +20,11 @@ public class DriverMapper {
         createTableIfNotExists();
     }
 
+    public DriverMapper(String connectionString) {
+        this.connectionString = connectionString;
+        createTableIfNotExists();
+    }
+
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection(connectionString);
     }

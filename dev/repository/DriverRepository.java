@@ -27,6 +27,14 @@ public class DriverRepository {
         this.employeeMapper = new EmployeeMapper(connectionString);
     }
 
+    public DriverRepository(String testConnectionString) {
+        this.driverMapper = new DriverMapper(testConnectionString); 
+        this.employeeMapper = new EmployeeMapper(testConnectionString);
+
+    }
+
+
+
     public void addDriver(Driver driver) {
         if (driverMapper.selectById(driver.getId()) != null) {
             return;
