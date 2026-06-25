@@ -74,9 +74,9 @@ public class EmployeeController {
             }
             
             newEmp.setBranchId(branchId); 
-            
-            this.employeeMemory.save(newEmp);
             this.userController.register(newEmpID, password);
+            this.employeeMemory.save(newEmp);
+            
         } catch (IllegalArgumentException e) {
             throw e; 
         }    
