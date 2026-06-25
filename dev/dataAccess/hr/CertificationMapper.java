@@ -3,7 +3,7 @@ package dataAccess.hr;
 import java.sql.*;
 import java.util.*;
 
-class CertificationMapper {
+public class CertificationMapper {
     private final String connectionString;
 
     CertificationMapper(String connectionString) {

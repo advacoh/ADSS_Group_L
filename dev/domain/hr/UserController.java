@@ -36,8 +36,8 @@ public class UserController {
             }
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Registration failed: " + e.getMessage());
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Registration failed due to a database error.");
+       } catch (Exception e) {
+        throw new IllegalArgumentException("Registration failed due to a database error: " + e.getMessage());
         }
     }
 

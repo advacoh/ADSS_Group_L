@@ -28,12 +28,12 @@ public class TransportController {
     public record DocInput(int documentId, int destinationSiteId, List<TransportedItem> items) {}
 
     public TransportController(ShiftController shiftController, DriverRepository driverRepository) {
-        this.deliveryRepository = new DeliveryRepository();
         this.truckRepository = new TruckRepository();
         this.driverRepository = driverRepository;
         this.siteRepository = new SiteRepository();
-        this.shiftController = shiftController;    }
-
+        this.deliveryRepository = new DeliveryRepository(driverRepository, truckRepository, siteRepository);
+        this.shiftController = shiftController; 
+    }
 
 
     public void addDriver(Driver driver) {
@@ -235,6 +235,7 @@ public class TransportController {
             shiftController.verifyDelivery(delivery.getBranches(), delivery.getDate(), delivery.getDepartureTime(), delivery.getDriver().getId());
             delivery.setStatus(DeliveryStatus.READY);
             delivery.setPendingReason(null);
+            deliveryRepository.updateDelivery(delivery);
             return true;
         } catch (IllegalStateException e) {
             // still cannot resolve the pending issue
@@ -269,6 +270,7 @@ public class TransportController {
         }
         
         delivery.setRecordedWeight(newWeight); 
+        deliveryRepository.updateDelivery(delivery);
         return true;
     }
 
@@ -276,6 +278,7 @@ public class TransportController {
         Delivery delivery = deliveryRepository.getDeliveryById(deliveryId);
         if (delivery != null) {
             delivery.setStatus(status);
+            deliveryRepository.updateDelivery(delivery);
         }
     }
 
@@ -284,6 +287,7 @@ public class TransportController {
         Site newSite = siteRepository.getSiteById(newSiteId); 
         if (delivery != null && newSite != null) {
             delivery.getDocuments().get(step).setDestination(newSite);
+            deliveryRepository.updateDelivery(delivery);
         }
     }
 
@@ -300,6 +304,7 @@ public class TransportController {
         if (delivery != null && newTruck != null) {
             if (isDriverCompatibleWithTruck(delivery.getDriver(), newTruck)) {
                 delivery.setTruck(newTruck); 
+                deliveryRepository.updateDelivery(delivery);
                 return true;
             }
         }
@@ -412,6 +417,8 @@ public class TransportController {
         existing.setDocuments(documents);
         existing.setStatus(tempDelivery.getStatus());
         existing.setPendingReason(tempDelivery.getPendingReason());
+        
+        deliveryRepository.updateDelivery(existing);
         
         return true;
     }
