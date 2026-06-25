@@ -184,7 +184,6 @@ public class EmployeeIntegrationTest {
         assertTrue(savedConstraints.get(nextMonday).get(ShiftType.MORNING), "Monday Morning should be an available constraint");
         assertTrue(savedConstraints.get(nextMonday).get(ShiftType.EVENING), "Monday Evening should be an available constraint");
         assertTrue(savedPreferences.get(nextMonday).get(ShiftType.MORNING), "Monday Morning should be a preference");
-        //assertFalse(savedPreferences.get(nextMonday).get(ShiftType.EVENING), "Monday Evening should NOT be a preference");
     }
 
 
