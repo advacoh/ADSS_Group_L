@@ -281,7 +281,7 @@ public class EmployeeManagementMenu {
             return;
         }
         List<Certification> eligible = Arrays.stream(Certification.values())
-                .filter(c -> c != Certification.HR_MANAGER)
+                .filter(c -> c != Certification.HR_MANAGER && c != Certification.DELIVERY_MANAGER)
                 .filter(c -> !details.getValue().getCertifications().contains(c))
                 .collect(Collectors.toList());
 
@@ -314,7 +314,7 @@ public class EmployeeManagementMenu {
         }
 
         List<Certification> current = details.getValue().getCertifications().stream()
-                .filter(c -> c != Certification.HR_MANAGER)
+                .filter(c -> c != Certification.HR_MANAGER && c != Certification.DELIVERY_MANAGER)
                 .collect(Collectors.toList());
 
         if (current.isEmpty()) {

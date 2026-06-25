@@ -20,17 +20,15 @@ public class SiteMenu {
         while (true) {
             System.out.println("\n=== Site Menu ===");
             System.out.println("1) Add Supplier Site");
-            System.out.println("2) Add Branch Site");
-            System.out.println("3) View all sites");
-            System.out.println("4) View site details");
-            System.out.println("5) Back");
+            System.out.println("2) View all sites");
+            System.out.println("3) View site details");
+            System.out.println("4) Back");
 
             switch (InputUtil.readInt("Choose option: ")) {
                 case 1 -> addSite(SiteType.SUPPLIER);
-                case 2 -> addSite(SiteType.BRANCH);
-                case 3 -> viewAllSites();
-                case 4 -> viewSiteDetails();
-                case 5 -> { return; }
+                case 2 -> viewAllSites();
+                case 3 -> viewSiteDetails();
+                case 4 -> { return; }
                 default -> System.out.println("Invalid option.");
             }
         }
