@@ -74,7 +74,7 @@ public class ServiceFactory {
 
        // System.out.println("DEBUG: Sarah login status after reset is: " + userMapper.selectById(100000001).isLoggedIn());
 
-        UserController userController = new UserController(userMemory);
+        UserController userController = new UserController();
         EmployeeController employeeController = new EmployeeController(userController, employeeMemory, driverMemory);
         ShiftController shiftController = new ShiftController(shiftMemory, employeeMemory, userController, requestMemory);
         TransportController transportController = new TransportController(shiftController, driverMemory);
@@ -88,6 +88,7 @@ public class ServiceFactory {
         //     populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
         //     populateTransportData(transportController); // It can find the shifts successfully now!
         // }
+
     }
 
     

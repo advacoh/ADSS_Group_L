@@ -13,6 +13,11 @@ public class UserMapper {
         this.connectionString = "jdbc:sqlite:" + path;
         createTableIfNotExists();
     }
+    
+    public UserMapper(String connectionString) {
+        this.connectionString = connectionString;
+        createTableIfNotExists();
+    }
 
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection(connectionString);
