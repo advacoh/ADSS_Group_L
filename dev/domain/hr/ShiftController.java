@@ -50,6 +50,7 @@ public class ShiftController {
             if (isOvertime) {
                 shift.addOvertimeEmployee(empId);
             }
+            shiftMemory.update(shift);
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("assignEmployee failed: " + e.getMessage());
         }
@@ -66,6 +67,7 @@ public class ShiftController {
             Shift shift = shiftMemory.get(branchId, date, type);
             shift.removeEmployee(role, employeeId);
 
+            shiftMemory.update(shift);
             updateHistory();
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new IllegalArgumentException("removeEmployee failed: " + e.getMessage());
@@ -98,7 +100,8 @@ public class ShiftController {
             updateHistory();
             Shift shift = shiftMemory.get(branchId, date, type);
             shift.setRequirement(role, count);
-        } catch (IllegalArgumentException e) {
+            shiftMemory.update(shift);
+        } catch (IllegalArgumentException | IllegalStateException e ) {
             throw new IllegalArgumentException("setRequirement failed: " + e.getMessage());
         }
     }
@@ -187,6 +190,7 @@ public class ShiftController {
             }
             checkDeadline();
             emp.setWeeklyConstraints(cons);
+            employeeMemory.update(emp);
 
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("setWeeklyConstraints failed: " + e.getMessage());
@@ -204,6 +208,7 @@ public class ShiftController {
                 throw new IllegalArgumentException("Employee " + userId + " not found");
             }
             emp.setWeeklyPreferences(prefs);
+            employeeMemory.update(emp);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("setWeeklyPreferences failed: " + e.getMessage());
         } catch (IllegalStateException e) {
@@ -324,6 +329,7 @@ public class ShiftController {
 
             if (approved) request.approve();
             else          request.reject();
+            requestMemory.update(request);
 
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("respondToRequest failed: " + e.getMessage());
