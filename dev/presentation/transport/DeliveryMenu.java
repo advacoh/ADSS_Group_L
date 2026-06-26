@@ -175,6 +175,19 @@ public class DeliveryMenu {
                 continue;
             }
 
+            boolean alreadyExists = false;
+            for (TransportedItem item : items) {
+                if (item.getItemId() == itemId) {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (alreadyExists) {
+                System.out.println("Error: Item ID " + itemId + " is already listed in this document! Cannot duplicate.");
+                continue;
+            }
+
             items.add(new TransportedItem(itemId, itemName, quantity));
 
             if (!InputUtil.readYesNo("Add another item?")) {

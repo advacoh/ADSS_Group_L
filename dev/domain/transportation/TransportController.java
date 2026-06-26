@@ -233,8 +233,13 @@ public class TransportController {
             return false;
         }
 
-        deliveryRepository.addDelivery(delivery);
-        return true;
+        try {
+            deliveryRepository.addDelivery(delivery);
+            return true;
+        } catch (Exception e) {
+            System.out.println("Error: Database rejection during creation - " + e.getMessage());
+            return false;
+        }
     }
 
     public boolean resolvePendingDelivery(int deliveryId) {
@@ -452,9 +457,13 @@ public class TransportController {
         existing.setStatus(tempDelivery.getStatus());
         existing.setPendingReason(tempDelivery.getPendingReason());
         
-        deliveryRepository.updateDelivery(existing);
-        
-        return true;
+        try {
+            deliveryRepository.updateDelivery(existing);
+            return true;
+        } catch (Exception e) {
+            System.out.println("Error: Database rejection during update - " + e.getMessage());
+            return false;
+        }
     }
 
     private boolean isDocumentIdExists(int documentId, int currentDeliveryId) {
