@@ -45,7 +45,7 @@
                             <mainClass>presentation.Main</mainClass>
                         </manifest>
                     </archive>
-                    <outputDirectory>${project.basedir}/release</outputDirectory>
+                    <outputDirectory>${project.basedir}</outputDirectory>
                     <finalName>adss2025_v01</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>

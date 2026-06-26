@@ -84,11 +84,48 @@ public class ServiceFactory {
         this.schedulingService = new SchedulingService(shiftController);
         this.transportService = new TransportService(transportController);
 
-        // if (withData) {
-        //     populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
-        //     populateTransportData(transportController); // It can find the shifts successfully now!
-        // }
+        if (withData) {
+            clearAllData(connectionString);
+            populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
+            populateTransportData(transportController); // It can find the shifts successfully now!
+        }
 
+    }
+
+    private void clearAllData(String connectionString) {
+        System.out.println(">>> clearAllData RUNNING");
+        String[] tables = {
+            // --- transport ---
+            "TransportedItems",
+            "DeliveryDocuments",
+            "Deliveries",
+            "Drivers",
+            "Trucks",
+            "Sites",
+            // --- HR shift structure  ---
+            "shift_assignments",
+            "shift_overtime",
+            "shift_required_roles",
+            "shifts",
+            "override_requests",
+            // --- HR employee structure ---
+            "slot_submission",
+            "weekly_submission",
+            "employee_certifications",
+            "employee",
+            "Users"
+        };
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection(connectionString);
+            java.sql.Statement stmt = conn.createStatement()) {
+            for (String table : tables) {
+                try {
+                    stmt.executeUpdate("DELETE FROM " + table + ";");
+                } catch (java.sql.SQLException ignore) {
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            throw new RuntimeException("Failed to clear database before seeding", e);
+        }
     }
 
     
