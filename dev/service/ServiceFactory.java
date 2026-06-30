@@ -55,9 +55,15 @@ public class ServiceFactory {
 
    
     public ServiceFactory(boolean withData) {
+        System.out.println(">>> ServiceFactory constructor called with withData = " + withData);
 
         // String connectionString = withData ? "jdbc:sqlite:adss_data.db" : "jdbc:sqlite:adss.db";
         String connectionString = "jdbc:sqlite:supermarket.db";
+
+
+    if (withData) {
+        clearAllData(connectionString); // clear DB FIRST
+    }
         EmployeeMapper employeeMapper = new EmployeeMapper(connectionString);
         ShiftMapper shiftMapper = new ShiftMapper(connectionString);
         OverrideRequestMapper overrideRequestMapper = new OverrideRequestMapper(connectionString);
@@ -85,7 +91,7 @@ public class ServiceFactory {
         this.transportService = new TransportService(transportController);
 
         if (withData) {
-            clearAllData(connectionString);
+            // clearAllData(connectionString);
             populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
             populateTransportData(transportController); // It can find the shifts successfully now!
         }
@@ -209,7 +215,6 @@ public class ServiceFactory {
             18, true, 1, false,
             new HashSet<>(List.of(Certification.DELIVERY_MANAGER))
         );
-        emp5.setBranchId(1); 
 
         Driver driverEmp = new Driver(
             100000006,
@@ -225,8 +230,26 @@ public class ServiceFactory {
             false,
             new HashSet<>(List.of(Certification.DRIVER)),
             LicenseType.B
-    );
-    driverEmp.setBranchId(1); 
+        );
+    driverEmp.setBranchId(1);
+    
+        Driver driverEmp2 = new Driver(
+           100000007,
+        "Dana NoShift",
+        100007,
+        LocalDate.of(2024, 1, 1),
+        EmpType.FULL_TIME,
+        SalType.GLOBAL,
+        11000,
+        18,
+        true,
+        1,
+        false,
+        new HashSet<>(List.of(Certification.DRIVER)),
+        LicenseType.B
+        );
+
+        driverEmp2.setBranchId(1);
 
         employeeMemory.save(emp1);
         employeeMemory.save(emp2);
@@ -234,7 +257,9 @@ public class ServiceFactory {
         employeeMemory.save(emp4);
         employeeMemory.save(emp5);
         employeeMemory.save(driverEmp);
+        employeeMemory.save(driverEmp2);
         driverMemory.addDriver(driverEmp);
+        driverMemory.addDriver(driverEmp2);
 
         dataAccess.hr.UserMapper mapper = new dataAccess.hr.UserMapper();
     
@@ -376,22 +401,22 @@ public class ServiceFactory {
         return this.transportService;
     }
     private void populateTransportData(TransportController transportController) {
-        Driver driver = new Driver(
-                100000006,
-                "David Driver",
-                100006,
-                LocalDate.of(2024, 1, 1),
-                EmpType.FULL_TIME,
-                SalType.GLOBAL,
-                11000,
-                18,
-                true,
-                1,
-                false,
-                new HashSet<>(List.of(Certification.DRIVER)),
-                LicenseType.B
-        );
-        transportController.addDriver(driver);
+        // Driver driver = new Driver(
+        //         100000006,
+        //         "David Driver",
+        //         100006,
+        //         LocalDate.of(2024, 1, 1),
+        //         EmpType.FULL_TIME,
+        //         SalType.GLOBAL,
+        //         11000,
+        //         18,
+        //         true,
+        //         1,
+        //         false,
+        //         new HashSet<>(List.of(Certification.DRIVER)),
+        //         LicenseType.B
+        // );
+        // transportController.addDriver(driver);
 
         transportController.addSite(
             1,
@@ -495,6 +520,40 @@ public class ServiceFactory {
                 "123-45-678",            
                 100000006,                   
                 docInputs                  
+        );
+
+        // Driver driver2 = new Driver(
+        // 100000007,
+        // "Dana NoShift",
+        // 100007,
+        // LocalDate.of(2024, 1, 1),
+        // EmpType.FULL_TIME,
+        // SalType.GLOBAL,
+        // 11000,
+        // 18,
+        // true,
+        // 1,
+        // false,
+        // new HashSet<>(List.of(Certification.DRIVER)),
+        // LicenseType.B
+        // );
+        // transportController.addDriver(driver2);
+
+        List<TransportedItem> itemsForDoc4 = new ArrayList<>();
+        itemsForDoc4.add(new TransportedItem(504, "Yogurt", 20));
+
+        List<TransportController.DocInput> docInputsPending = new ArrayList<>();
+        docInputsPending.add(new TransportController.DocInput(1004, 2, itemsForDoc4));
+
+        transportController.createDelivery(
+                2,
+                this.targetTuesday,
+                LocalTime.of(9, 0),
+             500.0,
+            1,
+            "222-33-444",
+            100000007,   // driver2 — no shift exists, verification will fail
+                docInputsPending
         );
 
     }
