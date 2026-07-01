@@ -10,6 +10,9 @@ Modeling Tools:
 Use Case Diagrams: Draw.io
 Sequence Diagrams: Draw.io
 Class Diagram: Draw.io
+JUnit 5: org.junit.jupiter.api
+SQLite JDBC Driver: java.sql
+
 
 Submitted Files:
 - use-cases/
