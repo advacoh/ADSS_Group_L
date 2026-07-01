@@ -1,0 +1,102 @@
+package presentation.hr;
+
+import domain.hr.RequestStatus;
+import presentation.InputUtil;
+import presentation.MenuManager;
+import service.OverrideRequestSL;
+import service.Response;
+import service.SchedulingService;
+
+import java.util.List;
+
+public class HRRequestMenu {
+
+    private final MenuManager manager;
+    private final SchedulingService schedulingService;
+    private final int branchId; // The active branch context
+
+    // Updated constructor to capture the branch context passed from HRMenu
+    public HRRequestMenu(MenuManager manager, SchedulingService schedulingService, int branchId) {
+        this.manager = manager;
+        this.schedulingService = schedulingService;
+        this.branchId = branchId;
+    }
+
+    public void show() {
+        while (true) {
+            System.out.println("\n=== Request Handling (Branch ID: " + branchId + ") ===");
+            System.out.println("1) View requests");
+            System.out.println("2) Back");
+
+            switch (InputUtil.readInt()) {
+                case 1 -> viewRequests();
+                case 2 -> { return; }
+                default -> System.out.println("Invalid option.");
+            }
+        }
+    }
+
+    private void viewRequests() {
+        List<OverrideRequestSL> requests = fetchAndDisplayRequests();
+        if (requests == null || requests.isEmpty()) return;
+
+        OverrideRequestSL selected = InputUtil.selectItem(requests);
+        if (selected == null) return;
+
+        System.out.println(selected);
+        promptAssignWithOverride(selected);
+    }
+
+    private List<OverrideRequestSL> fetchAndDisplayRequests() {
+        // Passed branchId to scope and filter the override request lookups
+        Response<List<OverrideRequestSL>> response = schedulingService.viewSentRequests(
+                manager.getLoggedInUserId(), branchId
+        );
+        if (response.isError()) {
+            System.out.println("Could not fetch requests: " + response.getErrorMessage());
+            return null;
+        }
+
+        List<OverrideRequestSL> requests = response.getValue();
+        if (requests.isEmpty()) {
+            System.out.println("No open requests.");
+            return requests;
+        }
+
+        System.out.println("\n=== Override Requests ===");
+        for (int i = 0; i < requests.size(); i++) {
+            System.out.println((i + 1) + ") " + requests.get(i).toShortString());
+        }
+
+        return requests;
+    }
+
+    private void promptAssignWithOverride(OverrideRequestSL request) {
+        if (request.getStatus() != RequestStatus.APPROVED) {
+            System.out.println("Request has not been approved yet, cannot assign.");
+            return;
+        }
+        System.out.print("Assign with override? (y/n): ");
+
+        while (true) {
+            switch (InputUtil.readRaw().toLowerCase()) {
+                case "y" -> {
+                    // Passed branchId to ensure the deep database assignment executes within the correct branch constraint
+                    Response<Void> response = schedulingService.assignWithOverride(
+                                    manager.getLoggedInUserId(),
+                                    branchId,
+                                    request.getId()
+                    );
+                    if (response.isError())
+                        System.out.println("Assignment failed: " + response.getErrorMessage());
+                    else
+                        System.out.println("Employee assigned successfully!");
+                    return;
+                }
+                case "n" -> { return; }
+                default ->
+                        System.out.print("Please enter y or n: ");
+            }
+        }
+    }
+}

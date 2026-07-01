@@ -1,0 +1,570 @@
+package service;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import dataAccess.hr.EmployeeMapper;
+import dataAccess.hr.OverrideRequestMapper;
+import dataAccess.hr.ShiftMapper;
+import dataAccess.hr.UserMapper;
+import domain.transportation.Driver;
+import enums.LicenseType;
+import domain.transportation.TransportController;
+import domain.hr.Certification;
+import domain.hr.EmpType;
+import domain.hr.Employee;
+import domain.hr.EmployeeController;
+import domain.hr.EmployeeMemory;
+import domain.hr.OverrideRequest;
+import domain.hr.RequestMemory;
+import domain.hr.SalType;
+import domain.hr.Shift;
+import domain.hr.ShiftController;
+import domain.hr.ShiftMemory;
+import domain.hr.ShiftType;
+import domain.hr.User;
+import domain.hr.UserController;
+import domain.hr.UserMemory;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.time.LocalTime;
+import domain.transportation.Site;
+import domain.transportation.DeliveryZone;
+import domain.transportation.Truck;
+import domain.transportation.TransportedItem;
+import domain.transportation.DeliveryDocument;
+import domain.transportation.Delivery;
+import enums.SiteType;
+import enums.DeliveryStatus;
+import repository.DriverRepository;
+
+public class ServiceFactory { 
+   
+    private final AuthService authService;
+    private final SchedulingService schedulingService; 
+    private final PersonnelService PersonnelService; 
+    private final TransportService transportService;
+
+    private LocalDate targetTuesday;
+    private LocalDate targetWednesday;
+    private LocalDate targetThursday;
+
+   
+    public ServiceFactory(boolean withData) {
+        System.out.println(">>> ServiceFactory constructor called with withData = " + withData);
+
+        // String connectionString = withData ? "jdbc:sqlite:adss_data.db" : "jdbc:sqlite:adss.db";
+        String connectionString = "jdbc:sqlite:supermarket.db";
+
+
+    if (withData) {
+        clearAllData(connectionString); // clear DB FIRST
+    }
+        EmployeeMapper employeeMapper = new EmployeeMapper(connectionString);
+        ShiftMapper shiftMapper = new ShiftMapper(connectionString);
+        OverrideRequestMapper overrideRequestMapper = new OverrideRequestMapper(connectionString);
+        UserMemory userMemory = new UserMemory();
+        EmployeeMemory employeeMemory = new EmployeeMemory(employeeMapper);
+        ShiftMemory shiftMemory = new ShiftMemory(shiftMapper);
+        RequestMemory requestMemory = new RequestMemory(overrideRequestMapper);
+        DriverRepository driverMemory = new DriverRepository();
+      
+        calculateDynamicDates();
+
+        UserMapper userMapper = new UserMapper();
+        userMapper.resetAllLoginStatuses();
+
+       // System.out.println("DEBUG: Sarah login status after reset is: " + userMapper.selectById(100000001).isLoggedIn());
+
+        UserController userController = new UserController();
+        EmployeeController employeeController = new EmployeeController(userController, employeeMemory, driverMemory);
+        ShiftController shiftController = new ShiftController(shiftMemory, employeeMemory, userController, requestMemory);
+        TransportController transportController = new TransportController(shiftController, driverMemory);
+
+        this.authService = new AuthService(userController, employeeController);
+        this.PersonnelService = new PersonnelService(userController, employeeController, transportController);
+        this.schedulingService = new SchedulingService(shiftController);
+        this.transportService = new TransportService(transportController);
+
+        if (withData) {
+            // clearAllData(connectionString);
+            populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
+            populateTransportData(transportController); // It can find the shifts successfully now!
+        }
+
+    }
+
+    private void clearAllData(String connectionString) {
+        System.out.println(">>> clearAllData RUNNING");
+        String[] tables = {
+            // --- transport ---
+            "TransportedItems",
+            "DeliveryDocuments",
+            "Deliveries",
+            "Drivers",
+            "Trucks",
+            "Sites",
+            // --- HR shift structure  ---
+            "shift_assignments",
+            "shift_overtime",
+            "shift_required_roles",
+            "shifts",
+            "override_requests",
+            // --- HR employee structure ---
+            "slot_submission",
+            "weekly_submission",
+            "employee_certifications",
+            "employee",
+            "Users"
+        };
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection(connectionString);
+            java.sql.Statement stmt = conn.createStatement()) {
+            for (String table : tables) {
+                try {
+                    stmt.executeUpdate("DELETE FROM " + table + ";");
+                } catch (java.sql.SQLException ignore) {
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            throw new RuntimeException("Failed to clear database before seeding", e);
+        }
+    }
+
+    
+    private void calculateDynamicDates() {
+        LocalDate sunday = LocalDate.now();
+        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            sunday = sunday.plusDays(1);
+        }
+        this.targetTuesday = sunday.plusDays(2);  
+        this.targetWednesday = sunday.plusDays(3); 
+        this.targetThursday = sunday.plusDays(4); 
+    }
+
+    public void populateEmployeeMemory(EmployeeMemory employeeMemory, DriverRepository driverMemory){ {
+        LocalDate startDate1 = LocalDate.of(2025, 1, 15);
+        LocalDate startDate2 = LocalDate.of(2024, 6, 1);
+        LocalDate startDate3 = LocalDate.of(2021, 9, 10);
+        LocalDate startDate4 = LocalDate.of(2025, 1, 15);
+
+        Employee emp1 = new Employee(
+                100000001, "Sarah Cohen", 100001,
+                startDate1,
+                EmpType.FULL_TIME, SalType.GLOBAL, 12000,
+                20, true, 1, false,
+                new HashSet<>(List.of(Certification.HR_MANAGER, Certification.SHIFT_MANAGER))
+        );
+
+        Employee emp2 = new Employee(
+                100000002, "Yossi Levi", 100002,
+                startDate2,
+                EmpType.PART_TIME, SalType.HOURLY, 45,
+                10, false, 7, false,
+                new HashSet<>(List.of(Certification.CASHIER, Certification.WAREHOUSE))
+        );
+        emp2.setBranchId(1); 
+        
+
+        // Submitting emp2 constraints for the following week
+        LocalDate today = LocalDate.now();
+        LocalDate sunday = today.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            sunday = sunday.plusDays(1);
+        }
+
+        LocalDate tuesday = sunday.plusDays(2);  // always a Tuesday
+        LocalDate thursday = sunday.plusDays(4); // always a Thursday
+
+        Map<LocalDate, Set<ShiftType>> cons = new HashMap<>();
+        Set<ShiftType> shifts1 = new HashSet<>();
+        shifts1.add(ShiftType.MORNING);
+        Set<ShiftType> shifts2 = new HashSet<>();
+        shifts2.add(ShiftType.MORNING);
+        cons.put(this.targetTuesday, shifts1);
+        cons.put(this.targetThursday, shifts2);
+        emp2.setWeeklyConstraints(cons);
+
+        Employee emp3 = new Employee(
+                100000003, "Dana Mizrahi", 100003,
+                startDate3,
+                EmpType.FULL_TIME, SalType.HOURLY, 55,
+                15, true, 6, true,
+                new HashSet<>(List.of(Certification.WAREHOUSE, Certification.CASHIER))
+        );
+
+        emp3.setBranchId(1); 
+
+        Employee emp4 = new Employee(
+                100000004, "Ron Shapiro", 100004,
+                startDate4,
+                EmpType.FULL_TIME, SalType.GLOBAL, 10000,
+                18, true, 2, true,
+                new HashSet<>(List.of(Certification.SHIFT_MANAGER, Certification.CASHIER))
+        );
+
+        emp4.setBranchId(1);
+
+        Employee emp5 = new Employee(
+            100000005, "Avi Transport", 100005,
+            LocalDate.of(2024, 1, 1),
+            EmpType.FULL_TIME, SalType.GLOBAL, 12000,
+            18, true, 1, false,
+            new HashSet<>(List.of(Certification.DELIVERY_MANAGER))
+        );
+
+        Driver driverEmp = new Driver(
+            100000006,
+            "David Driver",
+            100006,
+            LocalDate.of(2024, 1, 1),
+            EmpType.FULL_TIME,
+            SalType.GLOBAL,
+            11000,
+            18,
+            true,
+            1,
+            false,
+            new HashSet<>(List.of(Certification.DRIVER)),
+            LicenseType.B
+        );
+    driverEmp.setBranchId(1);
+    
+        Driver driverEmp2 = new Driver(
+           100000007,
+        "Dana NoShift",
+        100007,
+        LocalDate.of(2024, 1, 1),
+        EmpType.FULL_TIME,
+        SalType.GLOBAL,
+        11000,
+        18,
+        true,
+        1,
+        false,
+        new HashSet<>(List.of(Certification.DRIVER)),
+        LicenseType.B
+        );
+
+        driverEmp2.setBranchId(1);
+
+        employeeMemory.save(emp1);
+        employeeMemory.save(emp2);
+        employeeMemory.save(emp3);
+        employeeMemory.save(emp4);
+        employeeMemory.save(emp5);
+        employeeMemory.save(driverEmp);
+        employeeMemory.save(driverEmp2);
+        driverMemory.addDriver(driverEmp);
+        driverMemory.addDriver(driverEmp2);
+
+        dataAccess.hr.UserMapper mapper = new dataAccess.hr.UserMapper();
+    
+        insertIfMissing(mapper, 100000001, "sarah123");
+        insertIfMissing(mapper, 100000002, "yossi123");
+        insertIfMissing(mapper, 100000003, "dana1234");
+        insertIfMissing(mapper, 100000004, "ron12345");
+        insertIfMissing(mapper, 100000005, "transport123");
+     } }
+
+
+    public void populateUserMmemory(UserMemory userMemory){
+        User user1 = new User(100000001, "sarah123");   // Sarah Cohen - HR Manager
+        User user2 = new User(100000002, "yossi123");   // Yossi Levi - Cashier
+        User user3 = new User(100000003, "dana1234");   // Dana Mizrahi - Warehouse
+        User user4 = new User(100000004, "ron12345");   // Ron Shapiro - Shift Manager
+        User user5 = new User(100000005, "transport123");
+ 
+        userMemory.save(user1);
+        userMemory.save(user2);
+        userMemory.save(user3);
+        userMemory.save(user4);
+        userMemory.save(user5);
+    }
+
+
+    public void populateShiftMemory(ShiftMemory shiftMemory){
+        
+        // Creating alligned shift dates
+        LocalDate sunday = LocalDate.now();
+        while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            sunday = sunday.plusDays(1);
+        }
+
+        LocalDate tuesday = sunday.plusDays(2);  // always a Tuesday
+        LocalDate wednesday = sunday.plusDays(3); // always a Thursday
+        LocalDate thursday = sunday.plusDays(4); // always a Thursday
+
+
+        // Shift 1 
+        Shift shift1 = new Shift("SHIFT_001",1,this.targetTuesday , ShiftType.MORNING);
+        shift1.setRequirement(Certification.CASHIER, 2);
+        shift1.setRequirement(Certification.WAREHOUSE, 1);
+        shift1.setRequirement(Certification.DRIVER, 1);
+
+        shift1.assignEmployee(Certification.SHIFT_MANAGER, 100000004); 
+        shift1.assignEmployee(Certification.CASHIER, 100000004);       
+        shift1.assignEmployee(Certification.WAREHOUSE, 100000003); 
+        //shift1.assignEmployee(Certification.DRIVER, 100000006); 
+          
+        shiftMemory.save(shift1);
+
+        // first shift for branch 2
+        Shift shift12 = new Shift("SHIFT_001_02",2,this.targetTuesday , ShiftType.MORNING);
+        shift12.setRequirement(Certification.CASHIER, 2);
+        shift12.setRequirement(Certification.WAREHOUSE, 1);
+        shift12.setRequirement(Certification.DRIVER, 1);
+
+        shift12.assignEmployee(Certification.WAREHOUSE, 100000002); 
+        shift12.assignEmployee(Certification.DRIVER, 100000006);
+
+        shiftMemory.save(shift12);
+
+
+        // Tuesday morning shift for Branch 4 
+        Shift shift14 = new Shift("SHIFT_001_04", 4, this.targetTuesday, ShiftType.MORNING);
+        shift14.setRequirement(Certification.CASHIER, 1);
+        shift14.setRequirement(Certification.WAREHOUSE, 1);
+        shift14.setRequirement(Certification.DRIVER, 1);
+
+        shift14.assignEmployee(Certification.WAREHOUSE, 100000002); 
+        shift14.assignEmployee(Certification.DRIVER, 100000006);
+
+        shiftMemory.save(shift14);
+
+        // Shift 2 
+        Shift shift2 = new Shift("SHIFT_002", 1, this.targetWednesday , ShiftType.MORNING);
+        shift2.setRequirement(Certification.CASHIER, 2);
+        shift2.assignEmployee(Certification.SHIFT_MANAGER, 100000001); 
+        shift2.assignEmployee(Certification.CASHIER, 100000003);
+        shiftMemory.save(shift2);       
+
+        // Shift 3 
+        Shift shift3 = new Shift("SHIFT_003", 1, this.targetThursday , ShiftType.MORNING);
+        shift3.setRequirement(Certification.CASHIER, 1);
+        shift3.setRequirement(Certification.WAREHOUSE, 1);
+        shift3.assignEmployee(Certification.SHIFT_MANAGER, 100000004); 
+        shift3.assignEmployee(Certification.CASHIER, 100000002);       
+        shift3.assignEmployee(Certification.WAREHOUSE, 100000003);     
+        shiftMemory.save(shift3);
+
+        // Shift 4 - archived past shift for testing viewHistory
+        Shift shift4 = new Shift("SHIFT_004", 1, LocalDate.of(2026, 1, 15), ShiftType.MORNING);
+        shift4.setRequirement(Certification.CASHIER, 1);
+        shift4.setRequirement(Certification.WAREHOUSE, 1);
+        shift4.assignEmployee(Certification.SHIFT_MANAGER, 100000004);
+        shift4.assignEmployee(Certification.CASHIER, 100000002);
+        shift4.assignEmployee(Certification.WAREHOUSE, 100000003);
+        shiftMemory.save(shift4);
+        shiftMemory.archiveShift(1,LocalDate.of(2026, 1, 15), ShiftType.MORNING);
+    }
+
+  
+    public void populateRequestMemory(RequestMemory requestMemory){
+
+        String requestId = requestMemory.generateId(); 
+        OverrideRequest request = new OverrideRequest(
+        requestId,
+        100000001,                                      // hrId    - Sarah Cohen
+        100000002,                                     // empId   - Yossi Levi
+        this.targetWednesday,        
+        ShiftType.MORNING,                                    // shift - matches shift2
+        Certification.CASHIER                                // role - Yossi is certified as cashier
+        );
+        requestMemory.save(request);
+        
+    }
+    
+    private void populateTestData(UserMemory u, EmployeeMemory e, ShiftMemory s, RequestMemory r, DriverRepository d) {
+        populateUserMmemory(u);
+        populateEmployeeMemory(e, d);
+        populateShiftMemory(s);
+        populateRequestMemory(r);
+    }
+
+    public AuthService getAuthService(){
+        return this.authService;
+    }
+
+    public PersonnelService getPersonnelService(){
+        return this.PersonnelService;
+    }
+
+    public SchedulingService getSchedulingService(){
+        return this.schedulingService;
+    }
+
+    public TransportService getTransportService() {
+        return this.transportService;
+    }
+    private void populateTransportData(TransportController transportController) {
+        // Driver driver = new Driver(
+        //         100000006,
+        //         "David Driver",
+        //         100006,
+        //         LocalDate.of(2024, 1, 1),
+        //         EmpType.FULL_TIME,
+        //         SalType.GLOBAL,
+        //         11000,
+        //         18,
+        //         true,
+        //         1,
+        //         false,
+        //         new HashSet<>(List.of(Certification.DRIVER)),
+        //         LicenseType.B
+        // );
+        // transportController.addDriver(driver);
+
+        transportController.addSite(
+            1,
+            "Beer Sheva Store Branch",
+            "Bar Nisan 6",
+            "0587243922",
+            "Alex Roso",
+            SiteType.BRANCH,
+            1, 
+            "South Zone 101"
+        );
+
+        transportController.addSite(
+            2,
+            "Dimona Store Branch",
+            "Rager 6",
+            "0587243922",
+            "Bar Bussani",
+            SiteType.BRANCH,
+            1, 
+            "South Zone 102"
+        );
+
+        transportController.addSite(
+            3,
+            "Tnuva Dairy Supplier",
+            "Avraham Avinu 10",
+            "0587243922",
+            "Omer Biton",
+            SiteType.SUPPLIER,
+            1, 
+            "South Zone 103"
+        );
+
+        transportController.addSite(
+            4,
+            "Eilat Store Branch",
+            "HaTmarim Blvd 40",
+            "0587243922",
+            "Noam Levi",
+            SiteType.BRANCH,
+            2, 
+            "South Zone 104"
+        );
+
+        transportController.addTruck(
+            "123-45-678",
+            "Volvo FL Series", 
+            3000.0,
+            8000.0,
+            LicenseType.B
+        );
+
+        transportController.addTruck(
+            "222-33-444",
+            "Ford Transit Heavy Utility", 
+            3200.0,     
+            10000.0,      
+            LicenseType.B  
+        );
+
+        transportController.addTruck(
+            "987-65-432",
+            "Isuzu Forward", 
+            4500.0,          
+            12000.0,        
+            LicenseType.C1  
+        );
+
+        transportController.addTruck(
+            "555-12-345",
+            "Scania R-Series", 
+            7500.0,         
+            26000.0,        
+            LicenseType.C    
+        );
+
+
+
+        List<TransportedItem> itemsForDoc1 = new ArrayList<>();
+        itemsForDoc1.add(new TransportedItem(501, "Milk 3%", 100));
+        itemsForDoc1.add(new TransportedItem(502, "White Bread", 50));
+
+        List<TransportedItem> itemsForDoc2 = new ArrayList<>();
+        itemsForDoc2.add(new TransportedItem(503, "Yellow Cheese", 30));
+
+        List<TransportedItem> itemsForDoc3 = new ArrayList<>();    
+
+        List<TransportController.DocInput> docInputs = new ArrayList<>();
+        docInputs.add(new TransportController.DocInput(1001, 2, itemsForDoc1)); 
+        docInputs.add(new TransportController.DocInput(1002, 3, itemsForDoc2));
+        docInputs.add(new TransportController.DocInput(1003, 4, itemsForDoc2));
+         
+
+        transportController.createDelivery(
+                1,                          
+                this.targetTuesday,          
+                LocalTime.of(8, 30),         
+                4000.0,                     
+                1,                           
+                "123-45-678",            
+                100000006,                   
+                docInputs                  
+        );
+
+        // Driver driver2 = new Driver(
+        // 100000007,
+        // "Dana NoShift",
+        // 100007,
+        // LocalDate.of(2024, 1, 1),
+        // EmpType.FULL_TIME,
+        // SalType.GLOBAL,
+        // 11000,
+        // 18,
+        // true,
+        // 1,
+        // false,
+        // new HashSet<>(List.of(Certification.DRIVER)),
+        // LicenseType.B
+        // );
+        // transportController.addDriver(driver2);
+
+        List<TransportedItem> itemsForDoc4 = new ArrayList<>();
+        itemsForDoc4.add(new TransportedItem(504, "Yogurt", 20));
+
+        List<TransportController.DocInput> docInputsPending = new ArrayList<>();
+        docInputsPending.add(new TransportController.DocInput(1004, 2, itemsForDoc4));
+
+        transportController.createDelivery(
+                2,
+                this.targetTuesday,
+                LocalTime.of(9, 0),
+             500.0,
+            1,
+            "222-33-444",
+            100000007,   // driver2 — no shift exists, verification will fail
+                docInputsPending
+        );
+
+    }
+
+    private void insertIfMissing(dataAccess.hr.UserMapper mapper, int id, String password) {
+        if (mapper.selectById(id) == null) {
+            mapper.insert(new dataAccess.hr.UserDTO(id, password, false));
+        }
+    }
+
+
+
+}
+
