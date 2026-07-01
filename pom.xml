@@ -46,7 +46,7 @@
                         </manifest>
                     </archive>
                     <outputDirectory>${project.basedir}</outputDirectory>
-                    <finalName>adss2025_v01</finalName>
+                    <finalName>adss2025_v02</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>

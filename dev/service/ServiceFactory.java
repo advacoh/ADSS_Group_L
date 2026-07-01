@@ -61,9 +61,9 @@ public class ServiceFactory {
         String connectionString = "jdbc:sqlite:supermarket.db";
 
 
-    if (withData) {
+    // if (withData) {
         clearAllData(connectionString); // clear DB FIRST
-    }
+    // }
         EmployeeMapper employeeMapper = new EmployeeMapper(connectionString);
         ShiftMapper shiftMapper = new ShiftMapper(connectionString);
         OverrideRequestMapper overrideRequestMapper = new OverrideRequestMapper(connectionString);
@@ -90,11 +90,11 @@ public class ServiceFactory {
         this.schedulingService = new SchedulingService(shiftController);
         this.transportService = new TransportService(transportController);
 
-        if (withData) {
-            // clearAllData(connectionString);
+        // if (withData) {
+        //     // clearAllData(connectionString);
             populateTestData(userMemory, employeeMemory, shiftMemory, requestMemory, driverMemory);
             populateTransportData(transportController); // It can find the shifts successfully now!
-        }
+        // }
 
     }
 
